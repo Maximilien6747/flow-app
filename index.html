@@ -2,71 +2,48 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-  />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Espace de cours</title>
   <style>
-    :root{
-      --pad:22px;
-      --safe-top: env(safe-area-inset-top);
-      --safe-bottom: env(safe-area-inset-bottom);
-    }
-    *{box-sizing:border-box}
-    html{-webkit-text-size-adjust:100%}
+    :root{ --pad:22px; --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom); }
+    *{ box-sizing:border-box } html{-webkit-text-size-adjust:100%}
     body{
       margin:0; background:#fff; color:#111;
       font:700 clamp(16px,2.6vw,18px)/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial;
     }
     .wrap{
-      max-width: 520px;
-      margin: 0 auto;
-      padding: calc(var(--safe-top) + var(--pad)) var(--pad) calc(var(--safe-bottom) + var(--pad));
-      min-height: 100svh;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
+      max-width:520px; margin:0 auto;
+      min-height:100svh; padding:calc(var(--safe-top)+var(--pad)) var(--pad) calc(var(--safe-bottom)+var(--pad));
+      display:flex; flex-direction:column; gap:24px;
     }
-    h1{
-      margin: 0 0 42px 0;
-      font-size: clamp(28px,8vw,40px);
-      line-height: 1.15;
-    }
-    label{display:block;margin:8px 0 10px}
+    h1{margin:0 0 42px 0; font-size:clamp(28px,8vw,40px); line-height:1.15}
+    h2{margin:0 0 12px 0; font-size:clamp(24px,7vw,32px)}
+    label{display:block; margin:8px 0 10px}
     .input{
-      width: 100%;
-      padding: 16px 18px;
-      border-radius: 18px;
-      border: 4px solid #000;
-      background: #e4e4e4;
-      font: inherit;
-      font-weight: 800;
-      outline: none;
+      width:100%; padding:16px 18px; border-radius:18px;
+      border:4px solid #000; background:#e0e0e0; font:inherit; font-weight:800; outline:none;
     }
-    .input:focus{ background:#f2f2f2 }
     .btn{
-      margin-top: 18px;
-      padding: 14px 18px;
-      border: 3px solid #000;
-      border-radius: 14px;
-      background:#000; color:#fff;
-      font: inherit; font-weight: 900;
-      width: fit-content; cursor:pointer;
+      margin-top:18px; padding:14px 18px; border:3px solid #000; border-radius:14px;
+      background:#000; color:#fff; font:inherit; font-weight:900; width:fit-content; cursor:pointer;
     }
-    .btn:active{ transform: translateY(1px) }
+    .btn:active{ transform:translateY(1px) }
     .hint{margin-top:10px; opacity:.6; font-weight:600}
 
     /* écrans */
     .screen{display:none}
     .screen.active{display:block}
 
-    /* mini accueil après */
-    .title-mini{font-size: clamp(22px,6vw,28px); margin:0}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .pill{
-      padding:10px 14px;border:2px solid #000;border-radius:999px;font-weight:800;background:#fff;cursor:default
+    /* menu principal */
+    .menu{display:flex; flex-direction:column; gap:22px; margin-top:10px}
+    .menu .item{
+      background:#bdbdbd; color:#000; border-radius:22px; padding:20px 24px;
+      border:4px solid #000; font-weight:900; font-size:clamp(18px,5.2vw,24px);
+      display:block; text-decoration:none; text-align:left;
     }
+    .small{font-weight:600; opacity:.65}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .link{background:none; border:0; padding:8px 0; color:#111; text-decoration:underline; font:inherit; font-weight:800; cursor:pointer}
   </style>
 </head>
 <body>
@@ -78,34 +55,35 @@
 
       <label for="prenom">Quel est ton prénom&nbsp;?</label>
       <input id="prenom" class="input" placeholder="Ton prénom" autocomplete="given-name" />
-
       <button id="go" class="btn">Continuer</button>
       <div id="msg" class="hint"></div>
     </section>
 
-    <!-- Écran 2 : petit accueil (prêt pour brancher la suite) -->
+    <!-- Écran 2 : Menu principal -->
     <section id="home" class="screen">
-      <h2 class="title-mini">Bonjour <span id="who">toi</span> 👋</h2>
-      <div class="hint">On branchera ici la suite (To-Do, Emploi du temps, etc.).</div>
-      <div class="row" style="margin-top:8px">
-        <div class="pill">To-Do</div>
-        <div class="pill">Emploi du temps</div>
+      <h2>Bonjour "<span id="who">prenom</span>"</h2>
+
+      <nav class="menu">
+        <a id="btn-cours" class="item" href="javascript:void(0)">cours</a>
+        <a id="btn-emploi" class="item" href="javascript:void(0)">emploie du temps</a>
+        <a id="btn-devoirs" class="item" href="javascript:void(0)">devoirs</a>
+        <a id="btn-controle" class="item" href="javascript:void(0)">controle</a>
+      </nav>
+
+      <div class="row">
+        <button id="change" class="link">changer de prénom</button>
+        <span class="small">• menu à brancher ensuite</span>
       </div>
-      <button id="reset" class="btn" style="margin-top:24px;background:#fff;color:#000">Changer de prénom</button>
     </section>
 
   </main>
 
   <script>
     const $ = (id)=>document.getElementById(id);
-    const screens = { welcome: $('welcome'), home: $('home') };
-    const prenomInput = $('prenom');
-    const who = $('who');
-    const msg = $('msg');
+    const screens = { welcome:$('welcome'), home:$('home') };
+    const who = $('who'), prenomInput = $('prenom'), msg = $('msg');
 
-    function show(id){
-      for (const k in screens) screens[k].classList.toggle('active', k===id);
-    }
+    function show(id){ for(const k in screens) screens[k].classList.toggle('active', k===id); }
 
     function saveAndGo(){
       const name = (prenomInput.value || '').trim();
@@ -116,25 +94,25 @@
     }
 
     $('go').addEventListener('click', saveAndGo);
-    prenomInput.addEventListener('keydown', e => { if(e.key === 'Enter') saveAndGo(); });
-    $('reset').addEventListener('click', ()=>{
+    prenomInput.addEventListener('keydown', e => { if(e.key==='Enter') saveAndGo(); });
+
+    $('change').addEventListener('click', ()=>{
       localStorage.removeItem('prenom');
-      prenomInput.value = '';
-      msg.textContent = '';
-      show('welcome');
-      prenomInput.focus();
+      prenomInput.value=''; msg.textContent='';
+      show('welcome'); prenomInput.focus();
     });
 
-    // Au chargement : si on a déjà un prénom, on saute l'écran 1
+    // placeholders de navigation (à remplacer par tes vraies pages plus tard)
+    $('btn-cours').onclick   = ()=>alert('Ouverture "cours" (à brancher)');
+    $('btn-emploi').onclick  = ()=>alert('Ouverture "emploie du temps" (à brancher)');
+    $('btn-devoirs').onclick = ()=>alert('Ouverture "devoirs" (à brancher)');
+    $('btn-controle').onclick= ()=>alert('Ouverture "controle" (à brancher)');
+
+    // Autostart si prénom déjà enregistré
     window.addEventListener('load', ()=>{
       const name = localStorage.getItem('prenom');
-      if (name) {
-        who.textContent = name;
-        show('home');
-      } else {
-        show('welcome');
-        prenomInput.focus();
-      }
+      if(name){ who.textContent=name; show('home'); }
+      else { show('welcome'); prenomInput.focus(); }
     });
   </script>
 </body>
