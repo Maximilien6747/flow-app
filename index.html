@@ -1,26 +1,141 @@
-<script>
-if ('serviceWorker' in navigator) {
-  // IMPORTANT : chemin relatif vers ./sw.js (scope = /flow-app/)
-  navigator.serviceWorker.register('./sw.js?kill=1', { scope: './' });
-}
-</script>
-<!doctype html><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Test</title><h1>Ça marche 🎉</h1>
-<script>
-(async () => {
-  try {
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      for (const r of regs) { try { await r.unregister(); } catch(e){} }
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  />
+  <title>Espace de cours</title>
+  <style>
+    :root{
+      --pad:22px;
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
     }
-    if (window.caches) {
-      const names = await caches.keys();
-      await Promise.all(names.map(n => caches.delete(n)));
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{
+      margin:0; background:#fff; color:#111;
+      font:700 clamp(16px,2.6vw,18px)/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial;
     }
-  } catch(e) {}
-  if (!location.search.includes('nocache=')) {
-    location.replace(location.pathname + '?nocache=' + Date.now());
-  }
-})();
-</script>
+    .wrap{
+      max-width: 520px;
+      margin: 0 auto;
+      padding: calc(var(--safe-top) + var(--pad)) var(--pad) calc(var(--safe-bottom) + var(--pad));
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    h1{
+      margin: 0 0 42px 0;
+      font-size: clamp(28px,8vw,40px);
+      line-height: 1.15;
+    }
+    label{display:block;margin:8px 0 10px}
+    .input{
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 4px solid #000;
+      background: #e4e4e4;
+      font: inherit;
+      font-weight: 800;
+      outline: none;
+    }
+    .input:focus{ background:#f2f2f2 }
+    .btn{
+      margin-top: 18px;
+      padding: 14px 18px;
+      border: 3px solid #000;
+      border-radius: 14px;
+      background:#000; color:#fff;
+      font: inherit; font-weight: 900;
+      width: fit-content; cursor:pointer;
+    }
+    .btn:active{ transform: translateY(1px) }
+    .hint{margin-top:10px; opacity:.6; font-weight:600}
+
+    /* écrans */
+    .screen{display:none}
+    .screen.active{display:block}
+
+    /* mini accueil après */
+    .title-mini{font-size: clamp(22px,6vw,28px); margin:0}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .pill{
+      padding:10px 14px;border:2px solid #000;border-radius:999px;font-weight:800;background:#fff;cursor:default
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+
+    <!-- Écran 1 : Bienvenue + prénom -->
+    <section id="welcome" class="screen active">
+      <h1>Bienvenue dans ton espace de cours&nbsp;!</h1>
+
+      <label for="prenom">Quel est ton prénom&nbsp;?</label>
+      <input id="prenom" class="input" placeholder="Ton prénom" autocomplete="given-name" />
+
+      <button id="go" class="btn">Continuer</button>
+      <div id="msg" class="hint"></div>
+    </section>
+
+    <!-- Écran 2 : petit accueil (prêt pour brancher la suite) -->
+    <section id="home" class="screen">
+      <h2 class="title-mini">Bonjour <span id="who">toi</span> 👋</h2>
+      <div class="hint">On branchera ici la suite (To-Do, Emploi du temps, etc.).</div>
+      <div class="row" style="margin-top:8px">
+        <div class="pill">To-Do</div>
+        <div class="pill">Emploi du temps</div>
+      </div>
+      <button id="reset" class="btn" style="margin-top:24px;background:#fff;color:#000">Changer de prénom</button>
+    </section>
+
+  </main>
+
+  <script>
+    const $ = (id)=>document.getElementById(id);
+    const screens = { welcome: $('welcome'), home: $('home') };
+    const prenomInput = $('prenom');
+    const who = $('who');
+    const msg = $('msg');
+
+    function show(id){
+      for (const k in screens) screens[k].classList.toggle('active', k===id);
+    }
+
+    function saveAndGo(){
+      const name = (prenomInput.value || '').trim();
+      if(!name){ msg.textContent = "Entre ton prénom pour continuer."; return; }
+      localStorage.setItem('prenom', name);
+      who.textContent = name;
+      show('home');
+    }
+
+    $('go').addEventListener('click', saveAndGo);
+    prenomInput.addEventListener('keydown', e => { if(e.key === 'Enter') saveAndGo(); });
+    $('reset').addEventListener('click', ()=>{
+      localStorage.removeItem('prenom');
+      prenomInput.value = '';
+      msg.textContent = '';
+      show('welcome');
+      prenomInput.focus();
+    });
+
+    // Au chargement : si on a déjà un prénom, on saute l'écran 1
+    window.addEventListener('load', ()=>{
+      const name = localStorage.getItem('prenom');
+      if (name) {
+        who.textContent = name;
+        show('home');
+      } else {
+        show('welcome');
+        prenomInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>
