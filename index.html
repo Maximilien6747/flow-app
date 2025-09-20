@@ -12,11 +12,20 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
-    :root{--bg:#fff;--fg:#111;--muted:#666;--accent:#111;--radius:16px;--safe-bottom:env(safe-area-inset-bottom)}
+    :root{
+      --bg:#fff; --fg:#111; --muted:#666; --accent:#111; --radius:16px;
+      --safe-bottom: env(safe-area-inset-bottom);
+      --hour-h: 48px;              /* hauteur d’1 heure dans la grille */
+      --lane-pad: 8px;             /* marge intérieure de la voie évènements */
+      --pill-bg:#e9e9e9;           /* fond des événements */
+    }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg)}
-    body{display:flex;align-items:center;justify-content:center;font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    .screen{display:none;width:min(640px,96vw);padding:24px;border-radius:var(--radius)}
+    body{
+      display:flex;align-items:center;justify-content:center;
+      font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial
+    }
+    .screen{display:none;width:min(680px,96vw);padding:24px;border-radius:var(--radius)}
     .screen.active{display:flex;flex-direction:column;align-items:center;gap:18px}
     h1,h2{margin:0;text-align:center}
     h1{font-size:clamp(28px,6vw,40px);line-height:1.05}
@@ -37,13 +46,17 @@
     .tab{padding:10px 16px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
     .tab.active{border-color:#111;font-weight:800}
 
+    /* splash */
     .space{background:#000;color:#fff;border-radius:var(--radius);position:relative;overflow:hidden;padding:36px}
     .space.active{display:flex}
-    .stars,.stars2{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(#fff 1px,transparent 1px),radial-gradient(#fff 1px,transparent 1px);background-size:3px 3px,2px 2px;background-position:0 0,1.5px 1.5px;opacity:.7;animation:drift 60s linear infinite}
+    .stars,.stars2{position:absolute;inset:0;pointer-events:none;background-image:
+      radial-gradient(#fff 1px,transparent 1px),radial-gradient(#fff 1px,transparent 1px);
+      background-size:3px 3px,2px 2px;background-position:0 0,1.5px 1.5px;opacity:.7;animation:drift 60s linear infinite}
     .stars2{opacity:.4;background-size:2px 2px,1px 1px;animation-duration:120s}
     @keyframes drift{0%{background-position:0 0,1.5px 1.5px}100%{background-position:1000px 1000px,1001.5px 1001.5px}}
     .space h1{color:#fff}.space .btn{background:#fff;color:#000;border-color:#fff}
 
+    /* To-Do */
     .tasks{gap:14px}
     .taskbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
     .taskbar input[type="date"]{padding:10px 12px;border-radius:10px;border:1px solid #ccc;font:inherit}
@@ -58,15 +71,32 @@
     .adder input{flex:1;min-width:160px}
     .hint{color:var(--muted);font-size:13px}
 
+    /* Emploi du temps — NAV semaine */
     .dayrow{width:100%;display:flex;gap:8px;overflow-x:auto;padding:6px 2px;scroll-snap-type:x mandatory}
     .chip{scroll-snap-align:center;white-space:nowrap;padding:8px 12px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
     .chip.active{border-color:#111;font-weight:800}
-    .schedlist{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px}
-    .event{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #ddd;border-radius:12px}
-    .event .time{font-weight:800}
-    .event .title{font-weight:700}
-    .subtle{font-size:12px;color:#888}
 
+    /* Emploi du temps — HEADER jour + pastille date + “voisins” */
+    .dayHeader{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%;max-width:640px}
+    .dateBadge{border:1.5px solid #111;border-radius:999px;padding:10px 18px;font-weight:900}
+    .hrule{height:2px;background:#111;width:160px;margin:4px auto;border-radius:2px}
+    .neighbors{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:100%;max-width:640px}
+    .nb{color:#9a9a9a;font-weight:900;text-transform:lowercase;text-align:center}
+    .mid{font-size:clamp(22px,6vw,34px);font-weight:900;text-align:center;display:flex;align-items:center;gap:10px}
+    .mid::before,.mid::after{content:"";display:inline-block;width:1px;height:28px;background:#111;opacity:.7}
+
+    /* Emploi du temps — GRILLE horaire */
+    .schedWrap{width:100%;max-width:640px}
+    .schedGrid{display:grid;grid-template-columns:72px 1fr;gap:0 12px}
+    .hours{user-select:none}
+    .h{height:var(--hour-h);display:flex;align-items:flex-start;justify-content:flex-end;padding-right:6px;font-weight:900}
+    .lane{position:relative;height:calc(var(--hour-h) * 12); /* 08→20 par défaut (12 tranches) */ border-left:1px solid #e5e5e5;border-right:1px solid transparent;border-radius:12px;background:
+      linear-gradient(#eee 1px,transparent 1px) repeat-y; background-size:100% var(--hour-h);}
+    .ev{position:absolute;left:var(--lane-pad);right:var(--lane-pad);border:1px solid #111;border-radius:999px;background:var(--pill-bg);display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09)}
+    .ev.small{font-weight:800}
+    .ev .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    /* FAB + bottom sheet */
     .fab{position:fixed;right:16px;bottom:calc(16px + var(--safe-bottom));width:56px;height:56px;border-radius:50%;border:1px solid #111;background:#fff;cursor:pointer;font-size:28px;line-height:0;display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.12)}
     .sheet{position:fixed;left:0;right:0;bottom:0;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -12px 24px rgba(0,0,0,.12);display:none;gap:12px}
     .sheet.open{display:flex;flex-direction:column}
@@ -74,6 +104,11 @@
     .divider{height:1px;background:#eee;width:100%}
     .x{position:absolute;right:12px;top:8px;border:0;background:transparent;font-size:22px;cursor:pointer}
     .pill{padding:8px 12px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
+
+    /* petits écrans : un peu plus compact */
+    @media (max-width:390px){
+      :root{ --hour-h: 44px; }
+    }
   </style>
 </head>
 <body>
@@ -122,12 +157,9 @@
     <!-- 5bis) Sport -->
     <section id="s5sport" class="screen">
       <h2>Pratiquez-vous un sport&nbsp;?</h2>
-      <div class="field">
-        <label class="label" for="sportYes">Sport pratiqué ?</label>
-        <select id="sportYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select>
-      </div>
+      <div class="field"><label class="label" for="sportYes">Sport pratiqué ?</label><select id="sportYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select></div>
       <div id="sportDetails" style="display:none;width:100%">
-        <div class="field"><label class="label" for="sportName">Quel sport ?</label><input id="sportName" type="text" placeholder="Ex. Football"></div>
+        <div class="field"><label class="label" for="sportName">Quel sport ?</label><input id="sportName" type="text" placeholder="Ex. Tennis"></div>
         <div class="field"><span class="label">Entraînements</span><div id="sportRows"></div><button class="pill" id="addSportRow">+ Ajouter une séance</button></div>
       </div>
       <div class="actions"><button class="btn" data-next="s5music">Continuer</button></div>
@@ -136,10 +168,7 @@
     <!-- 5ter) Musique -->
     <section id="s5music" class="screen">
       <h2>Activité musicale&nbsp;?</h2>
-      <div class="field">
-        <label class="label" for="musicYes">Activité musicale ?</label>
-        <select id="musicYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select>
-      </div>
+      <div class="field"><label class="label" for="musicYes">Activité musicale ?</label><select id="musicYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select></div>
       <div id="musicDetails" style="display:none;width:100%">
         <div class="field"><label class="label" for="musicName">Quelle activité ?</label><input id="musicName" type="text" placeholder="Ex. Piano"></div>
         <div class="field"><span class="label">Cours / répétitions</span><div id="musicRows"></div><button class="pill" id="addMusicRow">+ Ajouter une séance</button></div>
@@ -150,10 +179,7 @@
     <!-- 5quater) Conduite -->
     <section id="s5drive" class="screen">
       <h2>Leçons de conduite&nbsp;?</h2>
-      <div class="field">
-        <label class="label" for="driveYes">Leçons de conduite ?</label>
-        <select id="driveYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select>
-      </div>
+      <div class="field"><label class="label" for="driveYes">Leçons de conduite ?</label><select id="driveYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select></div>
       <div id="driveDetails" style="display:none;width:100%">
         <div class="field"><span class="label">Séances</span><div id="driveRows"></div><button class="pill" id="addDriveRow">+ Ajouter une séance</button></div>
       </div>
@@ -191,22 +217,44 @@
         <button class="tab" data-goto="s7">To-Do</button>
         <button class="tab active" data-goto="s8">Emploi du temps</button>
       </div>
+
+      <!-- mini nav semaine -->
       <div id="schedNav" class="taskbar" style="gap:12px;margin-top:-6px">
         <button class="icon" id="prevDay2">◀︎</button>
         <div id="dayRow" class="dayrow" aria-label="Semaine"></div>
         <button class="icon" id="nextDay2">▶︎</button>
         <button class="btn small" id="goToday2">Aujourd’hui</button>
-        <!-- input caché (évite erreurs de JS) -->
         <input type="date" id="dayPicker2" style="display:none" aria-hidden="true">
       </div>
-      <div class="schedlist" id="schedList"></div>
+
+      <!-- header: pastille date + voisins -->
+      <div class="hrule"></div>
+      <div class="dayHeader">
+        <div></div>
+        <div class="dateBadge" id="badgeText">Dim 28/09</div>
+        <div></div>
+      </div>
+      <div class="hrule"></div>
+      <div class="neighbors">
+        <div class="nb" id="prevName">mardi</div>
+        <div class="mid" id="midName">Lundi</div>
+        <div class="nb" id="nextName">mercredi</div>
+      </div>
+
+      <!-- grille horaire -->
+      <div class="schedWrap">
+        <div class="schedGrid">
+          <div class="hours" id="hoursCol"></div>
+          <div class="lane" id="lane"></div>
+        </div>
+      </div>
     </section>
   </main>
 
-  <!-- Bouton + flottant (emploi du temps) -->
+  <!-- Bouton + flottant -->
   <button class="fab" id="fabAdd" title="Ajouter un événement" style="display:none">＋</button>
 
-  <!-- Feuille d’options (+ / OCR) -->
+  <!-- Feuille d’options (manuel / photo OCR) -->
   <div class="sheet" id="sheet">
     <button class="x" id="closeSheet">×</button>
     <h3 style="margin:6px 0 0 0;text-align:center">Ajouter à l’emploi du temps</h3>
@@ -228,7 +276,7 @@
         <button class="btn small" id="runOCR">Scanner (OCR)</button>
         <button class="btn small" id="useGPT" title="Utiliser ChatGPT (optionnel)">ChatGPT ↗</button>
       </div>
-      <textarea id="ocrText" placeholder="Ex.&#10;Lundi 08:00-09:00 Math&#10;Mercredi 10:00-12:00 Sport" style="min-height:120px"></textarea>
+      <textarea id="ocrText" placeholder="Ex.&#10;Lundi 08:00-09:00 Tennis" style="min-height:120px"></textarea>
       <button class="btn" id="parseOCR">Convertir en événements</button>
       <p class="hint">Format : <em>Jour HH:MM-HH:MM Titre</em> ou <em>YYYY-MM-DD HH:MM-HH:MM Titre</em>.</p>
     </div>
@@ -242,6 +290,7 @@
     const startOfWeek=d=>{const x=new Date(d),k=(x.getDay()+6)%7;x.setDate(x.getDate()-k);x.setHours(0,0,0,0);return x}
     const DAYS={lundi:'mon',mardi:'tue',mercredi:'wed',jeudi:'thu',vendredi:'fri',samedi:'sat',dimanche:'sun'}
     const DAY_NAMES=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam']
+    const DAY_FULL=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi']
     const DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun']
     const DAY_JS_2_KEY=['sun','mon','tue','wed','thu','fri','sat']
 
@@ -266,18 +315,17 @@
     const elSportYes=$("sportYes"), elSportDetails=$("sportDetails"), elSportName=$("sportName"), elSportRows=$("sportRows")
     const elMusicYes=$("musicYes"), elMusicDetails=$("musicDetails"), elMusicName=$("musicName"), elMusicRows=$("musicRows")
     const elDriveYes=$("driveYes"), elDriveDetails=$("driveDetails"), elDriveRows=$("driveRows")
-    const elSchedList=$("schedList"), elPicker2=$("dayPicker2"), elDayRow=$("dayRow")
-    const elFab=$("fabAdd"), elSheet=$("sheet"), elManualForm=$("manualForm"), elPhotoForm=$("photoForm")
-    const state={nom:"",age:"",email:"",sexe:"",currentDate:todayISO(),schedDate:todayISO()}
+    const elSchedListWrap=document.querySelector(".schedWrap"), elPicker2=$("dayPicker2"), elDayRow=$("dayRow")
+    const elFab=$("fabAdd"), elSheet=$("sheet"), elManualForm=$("manualForm"), elPhotoForm=$("photoForm"), elManualDateLabel=$("manualDateLabel")
+    const elHours=$("hoursCol"), elLane=$("lane"), elBadge=$("badgeText"), elPrevName=$("prevName"), elNextName=$("nextName"), elMidName=$("midName")
+
+    const state={nom:"",age:"",email:"",sexe:"",currentDate:towardsToday(),schedDate:towardsToday()}
+    function towardsToday(){return todayISO()}
 
     /* ===== UI ===== */
     function show(id){
       screens.forEach(s=>s.classList.toggle("active",s.id===id))
       elFab.style.display=(id==="s8")?"grid":"none"
-      if(id==="s2") elNom.focus()
-      if(id==="s3") elAge.focus()
-      if(id==="s4") elEmail.focus()
-      if(id==="s5") elSexe.focus()
       if(id==="s7"){
         elHello.textContent=state.nom?`Votre flow, ${state.nom}`:"Votre flow"
         elPicker.value=state.currentDate; renderTasks(); elNewTask.focus()
@@ -321,9 +369,9 @@
       row.querySelector(".remove").onclick=()=>row.remove()
       container.appendChild(row)
     }
-    $("addSportRow").onclick=()=>addSessionRow(elSportRows)
-    $("addMusicRow").onclick=()=>addSessionRow(elMusicRows)
-    $("addDriveRow").onclick=()=>addSessionRow(elDriveRows)
+    $("addSportRow")?.addEventListener("click",()=>addSessionRow(elSportRows))
+    $("addMusicRow")?.addEventListener("click",()=>addSessionRow(elMusicRows))
+    $("addDriveRow")?.addEventListener("click",()=>addSessionRow(elDriveRows))
     function commitActivityRows(enabled,title,container){
       if(!enabled) return; const s=loadSchedule()
       ;[...container.querySelectorAll(".row")].forEach(r=>{
@@ -345,13 +393,12 @@
     $("nextDay").onclick=()=>shiftDate("currentDate", 1,elPicker,renderTasks)
     $("goToday").onclick=()=>{state.currentDate=todayISO(); elPicker.value=state.currentDate; renderTasks()}
     elPicker.onchange=()=>{state.currentDate=elPicker.value||todayISO(); renderTasks()}
-
     function shiftDate(which,delta,picker,renderer){
       const d=fromISODate(state[which]); d.setDate(d.getDate()+delta)
       state[which]=toISODate(d); if(picker) picker.value=state[which]; renderer()
     }
 
-    /* Emploi du temps */
+    /* Emploi du temps — semaine */
     function renderWeekRow(){
       elDayRow.innerHTML=""
       const start=startOfWeek(fromISODate(state.schedDate))
@@ -362,21 +409,64 @@
         elDayRow.appendChild(chip)
       }
     }
+
+    /* Emploi du temps — grille verticale */
+    const START_H=8, END_H=20; // 08:00 → 20:00
     function renderSchedule(){
-      elSchedList.innerHTML=""
-      const s=loadSchedule(), d=fromISODate(state.schedDate), dayKey=DAY_JS_2_KEY[d.getDay()]
+      // header (date + voisins)
+      const d=fromISODate(state.schedDate)
+      const dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0")
+      elBadge.textContent = `${DAY_NAMES[d.getDay()]} ${dd}/${mm}`
+      elMidName.textContent = DAY_FULL[d.getDay()]
+      elPrevName.textContent = DAY_FULL[(d.getDay()+6)%7].toLowerCase()
+      elNextName.textContent = DAY_FULL[(d.getDay()+1)%7].toLowerCase()
+
+      // colonne heures
+      elHours.innerHTML=""
+      for(let h=START_H; h<END_H; h++){
+        const item=document.createElement("div"); item.className="h"; item.textContent=`${String(h).padStart(2,"0")}:00`
+        elHours.appendChild(item)
+      }
+
+      // voie évènements
+      elLane.innerHTML=""
+      elLane.style.setProperty('--hour-h', getComputedStyle(document.documentElement).getPropertyValue('--hour-h'))
+
+      const s=loadSchedule()
+      const dayKey=DAY_JS_2_KEY[d.getDay()]
       const weekly=[...(s.weekly[dayKey]||[])], dated=[...(s.dated[state.schedDate]||[])]
-      const all=[...weekly.map(e=>({...e,_kind:"Hebdo"})), ...dated.map(e=>({...e,_kind:"Daté"}))].sort((a,b)=> (a.start||"")<(b.start||"")?-1:1)
-      if(all.length===0){const p=document.createElement("p");p.className="hint";p.textContent="Aucun événement ce jour.";elSchedList.appendChild(p);return}
-      all.forEach(ev=>{const r=document.createElement("div"); r.className="event"; const L=document.createElement("div"); L.innerHTML=`<span class="time">${ev.start??"?"}–${ev.end??"?"}</span> &nbsp; <span class="title">${ev.title??"Événement"}</span>`; const R=document.createElement("div"); R.innerHTML=`<span class="subtle">${ev._kind}</span>`; r.append(L,R); elSchedList.appendChild(r)})
+      const all=[...weekly, ...dated].map(e=>({...e})) // {title,start,end}
+
+      // place chaque évènement
+      const hourH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hour-h')) || 48
+      const laneTop = 0
+      for(const ev of all){
+        const pos = timeToPos(ev.start, hourH), posEnd = timeToPos(ev.end, hourH)
+        if(posEnd<=0 || pos>= (END_H-START_H)*hourH) continue
+        const top = Math.max(0, pos) + laneTop
+        const height = Math.max(22, Math.min((END_H-START_H)*hourH, posEnd) - Math.max(0,pos))
+        const block=document.createElement("div")
+        block.className="ev"+(height<34?" small":"")
+        block.style.top=top+"px"; block.style.height=height+"px"
+        block.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`
+        elLane.appendChild(block)
+      }
     }
+    function timeToPos(t, hourH){
+      // renvoie la position en px depuis 08:00
+      if(!t){return 0}
+      const [H,M]=t.split(":").map(n=>parseInt(n,10)||0)
+      return ((H-START_H)+(M/60))*hourH
+    }
+
+    // flèches / today
     $("prevDay2").onclick=()=>shiftDate("schedDate",-1,elPicker2,()=>{renderWeekRow();renderSchedule()})
     $("nextDay2").onclick=()=>shiftDate("schedDate", 1,elPicker2,()=>{renderWeekRow();renderSchedule()})
     $("goToday2").onclick=()=>{state.schedDate=todayISO(); if(elPicker2) elPicker2.value=state.schedDate; renderWeekRow(); renderSchedule()}
     if(elPicker2){ elPicker2.onchange=()=>{state.schedDate=elPicker2.value||todayISO(); renderWeekRow(); renderSchedule()} }
 
     /* FAB + feuille d’options (manuel / photo) */
-    const openSheet=which=>{ $("manualForm").style.display=which==="manual"?"block":"none"; $("photoForm").style.display=which==="photo"?"block":"none"; $("manualDateLabel").textContent=state.schedDate; elSheet.classList.add("open") }
+    const openSheet=which=>{ elSheet.classList.add("open"); elManualForm.style.display=which==="manual"?"block":"none"; elPhotoForm.style.display=which==="photo"?"block":"none"; $("manualDateLabel").textContent=state.schedDate }
     const closeSheet=()=>elSheet.classList.remove("open")
     elFab.onclick=()=>openSheet()
     $("optManual").onclick=()=>openSheet("manual")
@@ -384,7 +474,7 @@
     $("closeSheet").onclick=closeSheet
     $("addEvent").onclick=()=>{const title=($("evTitle").value||"Événement").trim(), start=$("evStart").value||"08:00", end=$("evEnd").value||"09:00"; const s=loadSchedule(); s.dated[state.schedDate]??=[]; s.dated[state.schedDate].push({title,start,end}); saveSchedule(s); renderSchedule(); closeSheet();}
 
-    /* OCR local (lib chargée à la demande) + option ChatGPT */
+    /* OCR local (+ option ChatGPT) */
     let TESS_LOADING=null; function loadTesseract(){ if(TESS_LOADING) return TESS_LOADING; TESS_LOADING=new Promise((ok,ko)=>{const sc=document.createElement("script"); sc.src="https://unpkg.com/tesseract.js@5.0.4/dist/tesseract.min.js"; sc.onload=()=>ok(window.Tesseract); sc.onerror=ko; document.body.appendChild(sc)}); return TESS_LOADING }
     $("runOCR").onclick=async()=>{const f=$("ttImage").files?.[0]; if(!f){alert("Choisis une image."); return} const T=await loadTesseract(); const {createWorker}=T; const w=await createWorker("eng",1); try{const r=await w.recognize(f); $("ocrText").value=(r?.data?.text||"").trim()}catch(e){alert("OCR indisponible."); console.error(e)}finally{await w.terminate()}}
     window.USE_OPENAI=false; window.OPENAI_API_KEY=""
@@ -397,7 +487,7 @@
       const saved=loadProfile()
       if(saved){Object.assign(state,saved);state.currentDate=todayISO();state.schedDate=todayISO();show("s7")}
       else{show("s1")}
-      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=7").catch(console.error) }
+      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=8").catch(console.error) }
     })
   </script>
 </body>
