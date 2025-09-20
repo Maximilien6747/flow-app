@@ -1,3 +1,20 @@
 <!doctype html><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Test</title><h1>Ça marche 🎉</h1>
+<script>
+(async () => {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs) { try { await r.unregister(); } catch(e){} }
+    }
+    if (window.caches) {
+      const names = await caches.keys();
+      await Promise.all(names.map(n => caches.delete(n)));
+    }
+  } catch(e) {}
+  if (!location.search.includes('nocache=')) {
+    location.replace(location.pathname + '?nocache=' + Date.now());
+  }
+})();
+</script>
