@@ -1,5 +1,5 @@
 // sw.js
-const CACHE = "flow-v6";
+const CACHE = "flow-v7";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (e) => {
@@ -26,6 +26,8 @@ self.addEventListener("fetch", (e) => {
       const copy = res.clone();
       caches.open(CACHE).then((c) => c.put(req, copy));
       return res;
-    }).catch(() => caches.match(req).then(r => r || caches.match("./index.html")))
+    }).catch(() =>
+      caches.match(req).then(r => r || caches.match("./index.html"))
+    )
   );
 });
