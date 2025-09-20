@@ -2,7 +2,6 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <!-- évite le zoom iPhone -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
   <title>Flow</title>
 
@@ -16,10 +15,7 @@
     :root{
       --bg:#fff; --fg:#111; --muted:#777; --accent:#111; --radius:16px;
       --safe-top: env(safe-area-inset-top); --safe-bottom: env(safe-area-inset-bottom);
-      --hour-h: 48px;      /* hauteur d’1h (calendrier) */
-      --lane-pad: 8px;     /* marge intérieure des évènements */
-      --pill-bg:#d9d9d9;   /* fond des événements */
-      --now:#3b7cff;       /* couleur de la ligne actuelle */
+      --hour-h: 48px; --lane-pad: 8px; --pill-bg:#d9d9d9; --now:#3b7cff;
     }
     *{box-sizing:border-box}
     html{-webkit-text-size-adjust:100%}
@@ -27,7 +23,6 @@
     body{display:flex;align-items:center;justify-content:center;
       font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial}
 
-    /* Zones */
     .screen{display:none;width:min(680px,96vw);padding:24px;border-radius:var(--radius)}
     .screen.active{display:flex;flex-direction:column;align-items:center;gap:18px}
     h1{margin:0;text-align:center;font-size:clamp(28px,6vw,40px);line-height:1.05}
@@ -35,17 +30,13 @@
     .btn{padding:12px 18px;border:1px solid var(--accent);border-radius:12px;background:#fff;color:#111;cursor:pointer;font-weight:800}
     .btn.small{padding:8px 12px}
     .btn:active{transform:translateY(1px)}
-    input,select,textarea{
-      padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit;
-      font-size:16px; /* évite le zoom iOS */
-    }
+    input,select,textarea{padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit;font-size:16px}
     input:focus,select:focus,textarea:focus{border-color:#111}
 
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:clamp(6px, calc(var(--safe-top) + 6px), 24px)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:calc(var(--safe-top) + 8px)}
     .tab{padding:10px 16px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
     .tab.active{border-color:#111;font-weight:800}
 
-    /* To-Do */
     .taskbar{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center}
     .taskbar-row{display:flex;gap:8px;align-items:center;justify-content:center}
     .weekday{color:var(--muted);font-weight:800}
@@ -54,8 +45,7 @@
     .task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #ddd;border-radius:14px}
     .task .text{font-weight:700}
     .task.done .text{text-decoration:line-through;color:#888}
-    .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;color:#fff;
-      cursor:pointer;display:grid;place-items:center;font-size:16px;line-height:1}
+    .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;color:#fff;cursor:pointer;display:grid;place-items:center;font-size:16px;line-height:1}
     .task.done .circle{background:#111;color:#fff}
     .arrowBtn{width:42px;height:42px;border-radius:12px;border:1px solid #111;background:#fff;display:grid;place-items:center;cursor:pointer;font-size:20px}
     .arrowBtn.small{width:36px;height:36px;font-size:18px;border-radius:10px}
@@ -66,7 +56,6 @@
       font-size:22px; display:grid; place-items:center; cursor:pointer;
     }
 
-    /* Ajout To-Do */
     .adder{width:100%;max-width:640px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .adder input[type="text"]{flex:1;min-width:160px}
 
@@ -75,48 +64,39 @@
     .calHead .date{font-size:36px;font-weight:900;letter-spacing:1px}
     .neighbors{display:flex;align-items:center;justify-content:center;gap:16px;font-weight:900;color:#9a9a9a}
     .neighbors .mid{font-size:clamp(24px,6vw,34px);color:#111;position:relative}
-    .neighbors .mid::before,.neighbors .mid::after{
-      content:""; display:inline-block; width:2px; height:28px; background:#111; opacity:.8; margin:0 10px; vertical-align:middle
-    }
+    .neighbors .mid::before,.neighbors .mid::after{content:""; display:inline-block; width:2px; height:28px; background:#111; opacity:.8; margin:0 10px; vertical-align:middle}
     .schedWrap{width:100%;max-width:640px}
-    .schedScroll{height:min(70vh,560px); overflow:auto; border-radius:12px}
+    /* >>> la zone scrollable remplit la hauteur dispo, contient l’overscroll et a l’inertie iOS */
+    .schedScroll{height:1px; overflow:auto; border-radius:12px; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y}
     .schedGrid{display:grid;grid-template-columns:72px 1fr;gap:0 12px}
     .hours{user-select:none}
     .h{height:var(--hour-h);display:flex;align-items:flex-start;justify-content:flex-end;padding-right:6px;font-weight:900}
-    .lane{position:relative;height:calc(var(--hour-h) * 24); border-left:1px solid #e5e5e5;border-right:1px solid transparent;border-radius:12px;
-      background: linear-gradient(#eee 1px,transparent 1px) repeat-y; background-size:100% var(--hour-h);}
-    .ev{position:absolute;left:var(--lane-pad);right:var(--lane-pad);border:1.5px solid #111;border-radius:999px;background:var(--pill-bg);
-      display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09)}
+    .lane{position:relative;height:calc(var(--hour-h) * 24); border-left:1px solid #e5e5e5;border-right:1px solid transparent;border-radius:12px;background: linear-gradient(#eee 1px,transparent 1px) repeat-y; background-size:100% var(--hour-h);}
+    .ev{position:absolute;left:var(--lane-pad);right:var(--lane-pad);border:1.5px solid #111;border-radius:999px;background:var(--pill-bg);display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09)}
     .ev.small{font-weight:800}
     .ev .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .nowLine{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--now);box-shadow:0 0 0 1px rgba(59,124,255,.15)}
 
-    /* Gros + (légèrement réduit) */
     .fab{
       position:fixed; right:16px; bottom:calc(16px + var(--safe-bottom));
       width:72px; height:72px; border-radius:50%; border:1.5px solid #111; background:#9c9c9c;
-      color:#111; font-size:44px; line-height:0; display:grid; place-items:center; cursor:pointer;
-      box-shadow:0 10px 26px rgba(0,0,0,.14); z-index:20;
+      color:#111; font-size:44px; line-height:0; display:grid; place-items:center; cursor:pointer; box-shadow:0 10px 26px rgba(0,0,0,.14); z-index:20;
     }
 
-    /* Sheets */
     .sheet{position:fixed;left:0;right:0;bottom:0;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -12px 24px rgba(0,0,0,.12);display:none;gap:12px;z-index:40}
     .sheet.open{display:flex;flex-direction:column}
     .sheet .row{display:flex;gap:8px;flex-wrap:wrap}
     .sheet .x{position:absolute; right:12px; top:8px; border:0; background:transparent; font-size:22px; cursor:pointer}
     .error{color:#d22; font-weight:800}
 
-    @media (max-width:390px){
-      :root{ --hour-h: 44px; }
-    }
+    @media (max-width:390px){ :root{ --hour-h: 44px; } }
   </style>
 </head>
 <body>
-  <!-- ⚙️ paramètres -->
   <button class="gear" id="btnSettings" title="Paramètres">⚙️</button>
 
   <main id="app">
-    <!-- Accueil (juste le nom) -->
+    <!-- Accueil -->
     <section id="s1" class="screen active">
       <h1>Bienvenue dans Flow</h1>
       <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:10px">
@@ -128,7 +108,7 @@
 
     <!-- To-Do -->
     <section id="s7" class="screen">
-      <div class="tabs" style="margin-top:calc(var(--safe-top) + 8px)">
+      <div class="tabs">
         <button class="tab active" data-goto="s7">To-Do</button>
         <button class="tab" data-goto="s8">Emploi du temps</button>
       </div>
@@ -140,14 +120,11 @@
           <button class="arrowBtn small" id="nextDay">▶</button>
         </div>
         <div class="weekday" id="weekdayTD">Lundi</div>
-        <div class="taskbar-row">
-          <button class="btn small" id="goToday">↻ Aujourd’hui</button>
-        </div>
+        <div class="taskbar-row"><button class="btn small" id="goToday">↻ Aujourd’hui</button></div>
       </div>
 
       <div class="tasklist" id="tasklist"></div>
 
-      <!-- Ajout : [texte]  "pour le"  [date]  [Ajouter] -->
       <div class="adder">
         <input id="newTask" type="text" placeholder="Nouvelle tâche…">
         <span style="align-self:center;color:var(--muted);font-weight:800">pour le</span>
@@ -158,7 +135,7 @@
 
     <!-- Emploi du temps -->
     <section id="s8" class="screen">
-      <div class="tabs" style="margin-top:calc(var(--safe-top) + 8px)">
+      <div class="tabs">
         <button class="tab" data-goto="s7">To-Do</button>
         <button class="tab active" data-goto="s8">Emploi du temps</button>
       </div>
@@ -186,63 +163,43 @@
     </section>
   </main>
 
-  <!-- Gros + -->
   <button class="fab" id="fabAdd" title="Ajouter un événement" style="display:none">＋</button>
 
-  <!-- Sheet : AJOUT ÉVÉNEMENT -->
+  <!-- Add event -->
   <div class="sheet" id="sheetAdd">
     <button class="x" id="closeAdd">×</button>
     <h3 style="margin:0;text-align:center">Ajouter dans mon calendrier</h3>
-    <div class="row">
-      <label style="font-weight:800">Le</label>
-      <input type="date" id="evDate" style="flex:1">
-    </div>
-    <div class="row">
-      <label style="font-weight:800">De</label>
-      <input type="time" id="evStart" style="flex:1">
-      <label style="font-weight:800">à</label>
-      <input type="time" id="evEnd" style="flex:1">
-    </div>
-    <div class="row">
-      <input id="evTitle" type="text" placeholder="Titre de l’événement" style="flex:1">
-    </div>
+    <div class="row"><label style="font-weight:800">Le</label><input type="date" id="evDate" style="flex:1"></div>
+    <div class="row"><label style="font-weight:800">De</label><input type="time" id="evStart" style="flex:1"><label style="font-weight:800">à</label><input type="time" id="evEnd" style="flex:1"></div>
+    <div class="row"><input id="evTitle" type="text" placeholder="Titre de l’événement" style="flex:1"></div>
     <div id="addError" class="error" style="display:none"></div>
-    <div class="row" style="justify-content:center">
-      <button class="btn" id="addEvent">Ajouter</button>
-    </div>
+    <div class="row" style="justify-content:center"><button class="btn" id="addEvent">Ajouter</button></div>
   </div>
 
-  <!-- Sheet : PARAMÈTRES -->
+  <!-- Paramètres -->
   <div class="sheet" id="sheetSettings">
     <button class="x" id="closeSettings">×</button>
     <h3 style="margin:0;text-align:center">Paramètres</h3>
-    <div class="row" style="justify-content:center">
-      <button class="btn" id="resetProfile">Réinitialiser le profil</button>
-    </div>
+    <div class="row" style="justify-content:center"><button class="btn" id="resetProfile">Réinitialiser le profil</button></div>
     <p style="color:var(--muted);margin:0;text-align:center">Efface nom, tâches et calendrier.</p>
   </div>
 
   <script>
-    /* ===== Dates ===== */
     const toISODate=d=>{const tz=d.getTimezoneOffset()*60000;const local=new Date(d.getTime()-tz);return local.toISOString().slice(0,10)}
     const fromISODate=s=>{const [y,m,dd]=s.split("-").map(Number);return new Date(y,m-1,dd)}
     const todayISO=()=>toISODate(new Date())
     const DAY_FULL=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi']
 
-    /* ===== Storage ===== */
     const PROFILE_KEY="flowProfile", TASKS_KEY="flowTasks", SCHED_KEY="flowSchedule"
     const loadJSON=(k,d=null)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
     const saveJSON=(k,v)=>localStorage.setItem(k,JSON.stringify(v))
     const clearAll=()=>{localStorage.removeItem(PROFILE_KEY);localStorage.removeItem(TASKS_KEY);localStorage.removeItem(SCHED_KEY)}
-
-    const loadAllTasks=()=>loadJSON(TASKS_KEY,{})
-    const saveAllTasks=d=>saveJSON(TASKS_KEY,d)
+    const loadAllTasks=()=>loadJSON(TASKS_KEY,{}), saveAllTasks=d=>saveJSON(TASKS_KEY,d)
     const tasksFor=dt=>{const all=loadAllTasks();return Array.isArray(all[dt])?all[dt]:[]}
     const saveTasksFor=(dt,arr)=>{const all=loadAllTasks();all[dt]=arr;saveAllTasks(all)}
     function loadSchedule(){const s=loadJSON(SCHED_KEY,{dated:{}});s.dated??={};return s}
     const saveSchedule=s=>saveJSON(SCHED_KEY,s)
 
-    /* ===== State & Refs ===== */
     const screens=[...document.querySelectorAll(".screen")], $=id=>document.getElementById(id)
     const elNom=$("nom"), elStart=$("startContinue")
     const elPicker=$("dayPicker"), elTasklist=$("tasklist"), elNewTask=$("newTask"), newTaskDate=$("newTaskDate"), weekdayTD=$("weekdayTD")
@@ -254,137 +211,87 @@
     let nowTimer=null, nowEl=null
 
     function show(id){
-      // stop timer quand on quitte l’emploi du temps
       if(id!=="s8" && nowTimer){ clearInterval(nowTimer); nowTimer=null }
       screens.forEach(s=>s.classList.toggle("active", s.id===id))
       elFab.style.display = (id==="s8") ? "grid" : "none"
-      if(id==="s7"){
-        elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks()
-        newTaskDate.value = state.currentDate
-      }
+      if(id==="s7"){ elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate }
       if(id==="s8"){ renderCalendar() }
     }
     function goto(id){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.goto===id)); show(id) }
 
-    /* Start */
     window.addEventListener("load", ()=>{
       const prof=loadJSON(PROFILE_KEY,null)
       if(prof){ state.nom = prof.nom||""; show("s7") } else { show("s1") }
-      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=12").catch(console.error) }
+      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=13").catch(console.error) }
     })
-    elStart.addEventListener("click", ()=>{
-      state.nom=(elNom.value||"").trim(); saveJSON(PROFILE_KEY,{nom:state.nom}); goto("s7")
-    })
-    document.addEventListener("click",(e)=>{
-      const tab=e.target.closest(".tab"); if(tab) goto(tab.dataset.goto)
-    })
+    elStart.addEventListener("click", ()=>{ state.nom=(elNom.value||"").trim(); saveJSON(PROFILE_KEY,{nom:state.nom}); goto("s7") })
+    document.addEventListener("click",(e)=>{ const tab=e.target.closest(".tab"); if(tab) goto(tab.dataset.goto) })
 
-    /* ===== To-Do ===== */
-    function updateWeekdayTD(){
-      const d=fromISODate(state.currentDate); const name=DAY_FULL[d.getDay()]
-      weekdayTD.textContent = name.charAt(0).toUpperCase()+name.slice(1)
-    }
+    function updateWeekdayTD(){ const d=fromISODate(state.currentDate); const name=DAY_FULL[d.getDay()]; weekdayTD.textContent = name.charAt(0).toUpperCase()+name.slice(1) }
     function renderTasks(){
       elTasklist.innerHTML=""
       const items=tasksFor(state.currentDate)
-      if(items.length===0){
-        const d=document.createElement("div"); d.className="empty"; d.textContent="Rien à faire"; elTasklist.appendChild(d)
-      } else {
-        items.forEach((t,i)=>{
-          const row=document.createElement("div"); row.className="task"+(t.done?" done":""); row.dataset.index=i
-          const c=document.createElement("button"); c.className="circle"; c.textContent=t.done?"✓":""
-          const tx=document.createElement("span"); tx.className="text"; tx.textContent=t.text
-          row.append(tx,c); elTasklist.appendChild(row)
-        })
-      }
+      if(items.length===0){ const d=document.createElement("div"); d.className="empty"; d.textContent="Rien à faire"; elTasklist.appendChild(d) }
+      else items.forEach((t,i)=>{ const row=document.createElement("div"); row.className="task"+(t.done?" done":""); row.dataset.index=i; const c=document.createElement("button"); c.className="circle"; c.textContent=t.done?"✓":""; const tx=document.createElement("span"); tx.className="text"; tx.textContent=t.text; row.append(tx,c); elTasklist.appendChild(row) })
     }
-    elTasklist.addEventListener("click",e=>{
-      const c=e.target.closest(".circle"); if(!c) return
-      const idx=+c.closest(".task").dataset.index
-      const items=tasksFor(state.currentDate)
-      if(items[idx]){ items[idx].done=!items[idx].done; saveTasksFor(state.currentDate,items); renderTasks() }
-    })
-
-    function shiftDate(which,delta){
-      const d=fromISODate(state[which]); d.setDate(d.getDate()+delta); state[which]=toISODate(d)
-    }
+    elTasklist.addEventListener("click",e=>{ const c=e.target.closest(".circle"); if(!c)return; const idx=+c.closest(".task").dataset.index; const items=tasksFor(state.currentDate); if(items[idx]){ items[idx].done=!items[idx].done; saveTasksFor(state.currentDate,items); renderTasks() }})
+    function shiftDate(which,delta){ const d=fromISODate(state[which]); d.setDate(d.getDate()+delta); state[which]=toISODate(d) }
     elPicker.addEventListener("change", ()=>{state.currentDate=elPicker.value||todayISO(); updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate })
     elPrev.addEventListener("click", ()=>{shiftDate("currentDate",-1); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
     elNext.addEventListener("click", ()=>{shiftDate("currentDate", 1); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
     goToday.addEventListener("click", ()=>{state.currentDate=todayISO(); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
-
     $("addTask").addEventListener("click", addTask)
     elNewTask.addEventListener("keydown", e=>{ if(e.key==="Enter") addTask() })
-    function addTask(){
-      const txt=(elNewTask.value||"").trim(); if(!txt) return
-      const tgt=newTaskDate.value || state.currentDate
-      const items=tasksFor(tgt); items.push({text:txt,done:false}); saveTasksFor(tgt,items)
-      elNewTask.value=""
-      if(tgt===state.currentDate) renderTasks()
-    }
+    function addTask(){ const txt=(elNewTask.value||"").trim(); if(!txt)return; const tgt=newTaskDate.value||state.currentDate; const items=tasksFor(tgt); items.push({text:txt,done:false}); saveTasksFor(tgt,items); elNewTask.value=""; if(tgt===state.currentDate) renderTasks() }
 
-    /* ===== Emploi du temps (00→24 + ligne actuelle) ===== */
+    /* ----- Emploi du temps ----- */
     const START_H=0, END_H=24
+    function sizeSched(){
+      const rect=scroller.getBoundingClientRect()
+      const safeBottom=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom'))||0
+      const available = window.innerHeight - rect.top - 12 - safeBottom
+      scroller.style.height = Math.max(260, available) + "px"
+    }
+    window.addEventListener("resize", ()=>{ if(document.getElementById("s8").classList.contains("active")) sizeSched() })
+
     function renderCalendar(){
+      sizeSched()
       const d=fromISODate(state.schedDate)
       const dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0")
-      elBigDate.textContent = `${dd}/${mm}`
-      const mid=DAY_FULL[d.getDay()]; elMidName.textContent = mid.charAt(0).toUpperCase()+mid.slice(1)
-      elPrevName.textContent = DAY_FULL[(d.getDay()+6)%7]
-      elNextName.textContent = DAY_FULL[(d.getDay()+1)%7]
+      elBigDate.textContent=`${dd}/${mm}`
+      const mid=DAY_FULL[d.getDay()]; elMidName.textContent=mid.charAt(0).toUpperCase()+mid.slice(1)
+      elPrevName.textContent=DAY_FULL[(d.getDay()+6)%7]
+      elNextName.textContent=DAY_FULL[(d.getDay()+1)%7]
 
-      // colonnes
       elHours.innerHTML=""
-      for(let h=START_H; h<END_H; h++){
-        const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`; elHours.appendChild(div)
-      }
+      for(let h=START_H;h<END_H;h++){ const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`; elHours.appendChild(div) }
       elLane.innerHTML=""
 
-      // événements
       const s=loadSchedule(); const arr=[...(s.dated[state.schedDate]||[])]
       const hourH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hour-h'))||48
-      for(const ev of arr){
-        const top=timeToPos(ev.start,hourH), end=timeToPos(ev.end,hourH)
-        const h=Math.max(22,end-top)
-        const pill=document.createElement("div"); pill.className="ev"+(h<34?" small":""); pill.style.top=top+"px"; pill.style.height=h+"px"; pill.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`
-        elLane.appendChild(pill)
-      }
+      for(const ev of arr){ const top=timeToPos(ev.start,hourH), end=timeToPos(ev.end,hourH); const h=Math.max(22,end-top); const pill=document.createElement("div"); pill.className="ev"+(h<34?" small":""); pill.style.top=top+"px"; pill.style.height=h+"px"; pill.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`; elLane.appendChild(pill) }
 
-      // ligne "maintenant" si on regarde aujourd’hui
       if(nowTimer){ clearInterval(nowTimer); nowTimer=null }
+      nowEl=null
       if(state.schedDate===todayISO()){
-        if(!nowEl){ nowEl=document.createElement("div"); nowEl.className="nowLine" }
-        elLane.appendChild(nowEl)
+        nowEl=document.createElement("div"); nowEl.className="nowLine"; elLane.appendChild(nowEl)
         const setNow=()=>{ const n=new Date(), t=`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`; nowEl.style.top=timeToPos(t,hourH)+"px" }
-        setNow()
-        // centrage sur maintenant
-        requestAnimationFrame(()=>centerOnNow(hourH))
-        nowTimer=setInterval(setNow,60*1000)
-      } else {
-        nowEl=null
+        setNow(); requestAnimationFrame(()=>centerOnNow(hourH)); nowTimer=setInterval(setNow,60*1000)
       }
     }
-    function timeToPos(t,h){ if(!t) return 0; const [H,M]=t.split(":").map(n=>parseInt(n,10)||0); return ((H-START_H)+(M/60))*h }
-    function centerOnNow(hourH){
-      const n=new Date(); const t=`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`
-      const pos=timeToPos(t,hourH)
-      const target=Math.max(0, pos - scroller.clientHeight/2)
-      scroller.scrollTop = target
-    }
+    function timeToPos(t,h){ if(!t)return 0; const [H,M]=t.split(":").map(n=>parseInt(n,10)||0); return ((H-START_H)+(M/60))*h }
+    function centerOnNow(hourH){ const n=new Date(); const t=`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`; const pos=timeToPos(t,hourH); scroller.scrollTop=Math.max(0,pos - scroller.clientHeight/2) }
     elPrev2.addEventListener("click", ()=>{shiftDate("schedDate",-1); renderCalendar()})
     elNext2.addEventListener("click", ()=>{shiftDate("schedDate", 1); renderCalendar()})
 
-    /* ===== Gros + → ajout d’évènement ===== */
+    /* Add event */
     const openAdd=()=>{ $("evDate").value=state.schedDate; $("evStart").value="08:00"; $("evEnd").value="09:00"; $("evTitle").value=""; addErr.style.display="none"; sheetAdd.classList.add("open") }
     const closeAdd=()=>sheetAdd.classList.remove("open")
     elFab.addEventListener("click", openAdd)
     $("closeAdd").addEventListener("click", closeAdd)
     $("addEvent").addEventListener("click", ()=>{
-      const date=$("evDate").value||state.schedDate
-      const start=normTime($("evStart").value||"")
-      const end  =normTime($("evEnd").value||"")
-      const title=($("evTitle").value||"Événement").trim()
-      const msg = validateEvent(date,start,end,title)
+      const date=$("evDate").value||state.schedDate, start=normTime($("evStart").value||""), end=normTime($("evEnd").value||""), title=($("evTitle").value||"Événement").trim()
+      const msg=validateEvent(date,start,end,title)
       if(msg){ addErr.textContent=msg; addErr.style.display="block"; return }
       const s=loadSchedule(); s.dated[date] ??= []; s.dated[date].push({title,start,end}); saveSchedule(s)
       if(date===state.schedDate) renderCalendar()
@@ -401,14 +308,11 @@
       return ""
     }
 
-    /* ===== Paramètres ===== */
     const openSettings=()=>sheetSettings.classList.add("open")
     const closeSettings=()=>sheetSettings.classList.remove("open")
     $("btnSettings").addEventListener("click", openSettings)
     $("closeSettings").addEventListener("click", closeSettings)
-    $("resetProfile").addEventListener("click", ()=>{
-      if(confirm("Réinitialiser le profil (nom, tâches, calendrier) ?")){ clearAll(); location.reload() }
-    })
+    $("resetProfile").addEventListener("click", ()=>{ if(confirm("Réinitialiser le profil (nom, tâches, calendrier) ?")){ clearAll(); location.reload() }})
   </script>
 </body>
 </html>
