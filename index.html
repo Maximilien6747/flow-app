@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
   <title>Flow</title>
 
+  <!-- iPhone PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="https://dummyimage.com/180x180/000/fff.png&text=Flow">
@@ -13,46 +14,63 @@
 
   <style>
     :root{
-      --bg:#fff; --fg:#111; --muted:#777; --accent:#111; --radius:16px;
-      --safe-top: env(safe-area-inset-top); --safe-bottom: env(safe-area-inset-bottom);
-      --hour-h: 48px; --lane-pad: 8px; --pill-bg:#d9d9d9; --now:#3b7cff;
+      /* couleurs dynamiques (modifiées par le thème) */
+      --bg:#ffffff; --fg:#111111; --ink:#111111;
+      --grid:#eeeeee; --pill-bg:#d9d9d9; --accent:#1e88e5; --now:#3b7cff;
+
+      --radius:16px;
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+
+      --hour-h: 48px;   /* hauteur d’1h (zoomable) */
+      --lane-pad: 8px;
     }
+
     *{box-sizing:border-box}
     html{-webkit-text-size-adjust:100%}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg)}
-    body{display:flex;align-items:center;justify-content:center;
-      font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{
+      display:flex;align-items:center;justify-content:center;
+      font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial
+    }
 
+    /* Écrans */
     .screen{display:none;width:min(680px,96vw);padding:24px;border-radius:var(--radius)}
     .screen.active{display:flex;flex-direction:column;align-items:center;gap:18px}
     h1{margin:0;text-align:center;font-size:clamp(28px,6vw,40px);line-height:1.05}
 
-    .btn{padding:12px 18px;border:1px solid var(--accent);border-radius:12px;background:#fff;color:#111;cursor:pointer;font-weight:800}
+    /* Contrôles */
+    .btn{padding:12px 18px;border:1px solid var(--ink);border-radius:12px;background:var(--bg);color:var(--fg);cursor:pointer;font-weight:800}
     .btn.small{padding:8px 12px}
     .btn:active{transform:translateY(1px)}
-    input,select,textarea{padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit;font-size:16px}
-    input:focus,select:focus,textarea:focus{border-color:#111}
+    input,select,textarea{
+      padding:12px 14px;border-radius:12px;border:1px solid var(--ink);outline:none;font:inherit;
+      background:var(--bg); color:var(--fg); font-size:16px; /* anti-zoom iOS */
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 
     .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:calc(var(--safe-top) + 8px)}
-    .tab{padding:10px 16px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
-    .tab.active{border-color:#111;font-weight:800}
+    .tab{padding:10px 16px;border:1px solid var(--ink);border-radius:999px;background:var(--bg);cursor:pointer}
+    .tab.active{border-color:var(--accent);}
 
+    /* To-Do */
     .taskbar{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center}
     .taskbar-row{display:flex;gap:8px;align-items:center;justify-content:center}
-    .weekday{color:var(--muted);font-weight:800}
+    .weekday{color:var(--fg);opacity:.7;font-weight:800}
     .tasklist{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px;min-height:30vh}
-    .empty{display:flex;align-items:center;justify-content:center;color:#9aa;min-height:32vh;font-size:clamp(18px,4.6vw,28px);font-weight:900}
-    .task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #ddd;border-radius:14px}
+    .empty{display:flex;align-items:center;justify-content:center;opacity:.6;min-height:32vh;font-size:clamp(18px,4.6vw,28px);font-weight:900}
+    .task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--ink);border-radius:14px;background:var(--bg)}
     .task .text{font-weight:700}
-    .task.done .text{text-decoration:line-through;color:#888}
-    .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;color:#fff;cursor:pointer;display:grid;place-items:center;font-size:16px;line-height:1}
-    .task.done .circle{background:#111;color:#fff}
-    .arrowBtn{width:42px;height:42px;border-radius:12px;border:1px solid #111;background:#fff;display:grid;place-items:center;cursor:pointer;font-size:20px}
+    .task.done .text{text-decoration:line-through;opacity:.6}
+    .circle{width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);background:var(--bg);color:var(--bg);
+      cursor:pointer;display:grid;place-items:center;font-size:16px;line-height:1}
+    .task.done .circle{background:var(--ink);color:var(--bg)}
+    .arrowBtn{width:42px;height:42px;border-radius:12px;border:1px solid var(--ink);background:var(--bg);display:grid;place-items:center;cursor:pointer;font-size:20px}
     .arrowBtn.small{width:36px;height:36px;font-size:18px;border-radius:10px}
 
     .gear{
       position:fixed; left:16px; top: calc(56px + var(--safe-top)); z-index:30;
-      width:44px; height:44px; border-radius:12px; border:1px solid #111; background:#fff;
+      width:44px; height:44px; border-radius:12px; border:1px solid var(--ink); background:var(--bg);
       font-size:22px; display:grid; place-items:center; cursor:pointer;
     }
 
@@ -62,37 +80,50 @@
     /* Emploi du temps */
     .calHead{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:4px}
     .calHead .date{font-size:36px;font-weight:900;letter-spacing:1px}
-    .neighbors{display:flex;align-items:center;justify-content:center;gap:16px;font-weight:900;color:#9a9a9a}
-    .neighbors .mid{font-size:clamp(24px,6vw,34px);color:#111;position:relative}
-    .neighbors .mid::before,.neighbors .mid::after{content:""; display:inline-block; width:2px; height:28px; background:#111; opacity:.8; margin:0 10px; vertical-align:middle}
+    .calControls{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+    .seg{display:flex;border:1px solid var(--ink);border-radius:12px;overflow:hidden}
+    .seg button{border:0;background:var(--bg);padding:8px 12px;cursor:pointer}
+    .seg button.active{background:var(--accent);color:#fff}
+    .neighbors{display:flex;align-items:center;justify-content:center;gap:16px;font-weight:900;opacity:.7}
+    .neighbors .mid{font-size:clamp(24px,6vw,34px);color:var(--fg);position:relative;opacity:1}
+    .neighbors .mid::before,.neighbors .mid::after{content:""; display:inline-block; width:2px; height:28px; background:var(--ink); opacity:.8; margin:0 10px; vertical-align:middle}
     .schedWrap{width:100%;max-width:640px}
-    /* >>> la zone scrollable remplit la hauteur dispo, contient l’overscroll et a l’inertie iOS */
-    .schedScroll{height:1px; overflow:auto; border-radius:12px; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y}
-    .schedGrid{display:grid;grid-template-columns:72px 1fr;gap:0 12px}
+    .schedScroll{height:1px; overflow:auto; border-radius:12px; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y; background:var(--bg)}
+    .dayGrid{display:grid;grid-template-columns:72px 1fr;gap:0 12px}
+    .weekGrid{display:grid;grid-template-columns:72px repeat(7,1fr);gap:0 6px}
     .hours{user-select:none}
     .h{height:var(--hour-h);display:flex;align-items:flex-start;justify-content:flex-end;padding-right:6px;font-weight:900}
-    .lane{position:relative;height:calc(var(--hour-h) * 24); border-left:1px solid #e5e5e5;border-right:1px solid transparent;border-radius:12px;background: linear-gradient(#eee 1px,transparent 1px) repeat-y; background-size:100% var(--hour-h);}
-    .ev{position:absolute;left:var(--lane-pad);right:var(--lane-pad);border:1.5px solid #111;border-radius:999px;background:var(--pill-bg);display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09)}
+    .lane{position:relative;height:calc(var(--hour-h) * 24); border-left:1px solid var(--grid); border-radius:12px;
+      background: linear-gradient(var(--grid) 1px, transparent 1px) repeat-y; background-size:100% var(--hour-h);}
+    .ev{position:absolute;left:var(--lane-pad);right:var(--lane-pad);border:1.5px solid var(--ink);border-radius:999px;background:var(--pill-bg);
+      display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09); color:var(--fg)}
     .ev.small{font-weight:800}
     .ev .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .nowLine{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--now);box-shadow:0 0 0 1px rgba(59,124,255,.15)}
+    .nowLine{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--now)}
+    .month{display:none;width:100%}
+    .month.active{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .mcell{border:1px solid var(--grid);border-radius:10px;min-height:80px;padding:6px;font-weight:800;position:relative}
+    .mnum{opacity:.7}
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);position:absolute;right:6px;bottom:6px}
 
     .fab{
       position:fixed; right:16px; bottom:calc(16px + var(--safe-bottom));
-      width:72px; height:72px; border-radius:50%; border:1.5px solid #111; background:#9c9c9c;
+      width:72px; height:72px; border-radius:50%; border:1.5px solid var(--ink); background:#9c9c9c;
       color:#111; font-size:44px; line-height:0; display:grid; place-items:center; cursor:pointer; box-shadow:0 10px 26px rgba(0,0,0,.14); z-index:20;
     }
 
-    .sheet{position:fixed;left:0;right:0;bottom:0;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -12px 24px rgba(0,0,0,.12);display:none;gap:12px;z-index:40}
+    /* Sheets */
+    .sheet{position:fixed;left:0;right:0;bottom:0;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));background:var(--bg);color:var(--fg);border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -12px 24px rgba(0,0,0,.12);display:none;gap:12px;z-index:40;border:1px solid var(--ink)}
     .sheet.open{display:flex;flex-direction:column}
     .sheet .row{display:flex;gap:8px;flex-wrap:wrap}
-    .sheet .x{position:absolute; right:12px; top:8px; border:0; background:transparent; font-size:22px; cursor:pointer}
+    .sheet .x{position:absolute; right:12px; top:8px; border:0; background:transparent; font-size:22px; cursor:pointer;color:var(--fg)}
     .error{color:#d22; font-weight:800}
 
     @media (max-width:390px){ :root{ --hour-h: 44px; } }
   </style>
 </head>
 <body>
+  <!-- ⚙️ paramètres -->
   <button class="gear" id="btnSettings" title="Paramètres">⚙️</button>
 
   <main id="app">
@@ -125,10 +156,12 @@
 
       <div class="tasklist" id="tasklist"></div>
 
+      <!-- Ajout tâche : [texte]  "pour le"  [date]  [répéter]  [Ajouter] -->
       <div class="adder">
         <input id="newTask" type="text" placeholder="Nouvelle tâche…">
-        <span style="align-self:center;color:var(--muted);font-weight:800">pour le</span>
+        <span style="align-self:center;opacity:.7;font-weight:800">pour le</span>
         <input type="date" id="newTaskDate">
+        <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="taskRepeat"> Répéter chaque semaine</label>
         <button class="btn" id="addTask">Ajouter</button>
       </div>
     </section>
@@ -152,100 +185,290 @@
         <div id="nextName">mercredi</div>
       </div>
 
+      <div class="calControls">
+        <div class="seg" id="viewSeg">
+          <button data-view="day"   class="active">Jour</button>
+          <button data-view="week">Semaine</button>
+          <button data-view="month">Mois</button>
+        </div>
+        <input type="date" id="calPicker">
+        <label style="display:flex;gap:6px;align-items:center" id="zoomWrap">
+          Zoom <input type="range" id="zoom" min="28" max="72" step="4" value="48">
+        </label>
+      </div>
+
       <div class="schedWrap">
         <div class="schedScroll" id="schedScroll">
-          <div class="schedGrid">
+          <!-- Day / Week -->
+          <div class="dayGrid" id="gridDay" style="display:none">
             <div class="hours" id="hoursCol"></div>
-            <div class="lane" id="lane"></div>
+            <div class="lane"  id="lane"></div>
           </div>
+
+          <div class="weekGrid" id="gridWeek" style="display:none">
+            <div class="hours" id="hoursWeek"></div>
+            <div id="weekCols" style="display:contents"></div>
+          </div>
+
+          <!-- Month -->
+          <div class="month" id="monthGrid"></div>
         </div>
       </div>
     </section>
   </main>
 
+  <!-- Gros + -->
   <button class="fab" id="fabAdd" title="Ajouter un événement" style="display:none">＋</button>
 
-  <!-- Add event -->
+  <!-- Sheet : AJOUT ÉVÉNEMENT -->
   <div class="sheet" id="sheetAdd">
     <button class="x" id="closeAdd">×</button>
     <h3 style="margin:0;text-align:center">Ajouter dans mon calendrier</h3>
-    <div class="row"><label style="font-weight:800">Le</label><input type="date" id="evDate" style="flex:1"></div>
-    <div class="row"><label style="font-weight:800">De</label><input type="time" id="evStart" style="flex:1"><label style="font-weight:800">à</label><input type="time" id="evEnd" style="flex:1"></div>
-    <div class="row"><input id="evTitle" type="text" placeholder="Titre de l’événement" style="flex:1"></div>
+    <div class="row">
+      <label style="font-weight:800">Le</label>
+      <input type="date" id="evDate" style="flex:1">
+    </div>
+    <div class="row">
+      <label style="font-weight:800">De</label>
+      <input type="time" id="evStart" style="flex:1">
+      <label style="font-weight:800">à</label>
+      <input type="time" id="evEnd" style="flex:1">
+    </div>
+    <div class="row">
+      <input id="evTitle" type="text" placeholder="Titre de l’événement" style="flex:1">
+    </div>
+    <div class="row">
+      <input id="evPlace" type="text" placeholder="Lieu (optionnel)" style="flex:1">
+    </div>
     <div id="addError" class="error" style="display:none"></div>
-    <div class="row" style="justify-content:center"><button class="btn" id="addEvent">Ajouter</button></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="addEvent">Ajouter</button>
+    </div>
   </div>
 
-  <!-- Paramètres -->
+  <!-- Sheet : PARAMÈTRES -->
   <div class="sheet" id="sheetSettings">
     <button class="x" id="closeSettings">×</button>
     <h3 style="margin:0;text-align:center">Paramètres</h3>
-    <div class="row" style="justify-content:center"><button class="btn" id="resetProfile">Réinitialiser le profil</button></div>
-    <p style="color:var(--muted);margin:0;text-align:center">Efface nom, tâches et calendrier.</p>
+
+    <div class="row" style="align-items:center">
+      <strong>Thème&nbsp;:</strong>
+      <label><input type="radio" name="mode" value="light" id="modeLight" checked> Clair</label>
+      <label><input type="radio" name="mode" value="dark"  id="modeDark"> Sombre</label>
+    </div>
+    <div class="row" style="align-items:center">
+      <strong>Finition&nbsp;:</strong>
+      <select id="tintSelect">
+        <option value="blue">Bleu</option>
+        <option value="red">Rouge</option>
+        <option value="purple">Violet</option>
+        <option value="white">Blanc</option>
+        <option value="black">Noir</option>
+      </select>
+      <span id="tintNote" style="opacity:.7"></span>
+    </div>
+    <div class="row" style="justify-content:center;gap:8px">
+      <button class="btn" id="applyTheme">Appliquer</button>
+      <button class="btn" id="resetProfile">Réinitialiser le profil</button>
+    </div>
+    <p style="opacity:.6;margin:0;text-align:center">La réinitialisation efface nom, tâches et calendrier.</p>
   </div>
 
   <script>
+    /* ------------- Dates ------------- */
     const toISODate=d=>{const tz=d.getTimezoneOffset()*60000;const local=new Date(d.getTime()-tz);return local.toISOString().slice(0,10)}
     const fromISODate=s=>{const [y,m,dd]=s.split("-").map(Number);return new Date(y,m-1,dd)}
     const todayISO=()=>toISODate(new Date())
     const DAY_FULL=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi']
+    const prevMonday=d=>{const dd=new Date(d); const day=(dd.getDay()+6)%7; dd.setDate(dd.getDate()-day); return dd}
 
-    const PROFILE_KEY="flowProfile", TASKS_KEY="flowTasks", SCHED_KEY="flowSchedule"
+    /* ------------- Storage ------------- */
+    const PROFILE_KEY="flowProfile", TASKS_KEY="flowTasksV2", SCHED_KEY="flowSchedule", THEME_KEY="flowTheme"
     const loadJSON=(k,d=null)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
     const saveJSON=(k,v)=>localStorage.setItem(k,JSON.stringify(v))
-    const clearAll=()=>{localStorage.removeItem(PROFILE_KEY);localStorage.removeItem(TASKS_KEY);localStorage.removeItem(SCHED_KEY)}
-    const loadAllTasks=()=>loadJSON(TASKS_KEY,{}), saveAllTasks=d=>saveJSON(TASKS_KEY,d)
-    const tasksFor=dt=>{const all=loadAllTasks();return Array.isArray(all[dt])?all[dt]:[]}
-    const saveTasksFor=(dt,arr)=>{const all=loadAllTasks();all[dt]=arr;saveAllTasks(all)}
+    const clearAll=()=>{[PROFILE_KEY,TASKS_KEY,SCHED_KEY].forEach(k=>localStorage.removeItem(k))}
+
+    /* tasks v2 = { dated:{date:[{text,done}]}, recurring:[{text,dow,start,done:{[date]:true}}] } */
+    function loadTasks(){
+      let t=loadJSON(TASKS_KEY,null)
+      if(!t){
+        // migration depuis l’ancien format {date:[...]}
+        const old=loadJSON("flowTasks",null)
+        if(old && !old.dated){ t={dated:old,recurring:[]} } else { t={dated:{},recurring:[]} }
+        saveJSON(TASKS_KEY,t)
+      }
+      t.dated ??= {}; t.recurring ??= []
+      return t
+    }
+    const saveTasks=t=>saveJSON(TASKS_KEY,t)
+
     function loadSchedule(){const s=loadJSON(SCHED_KEY,{dated:{}});s.dated??={};return s}
     const saveSchedule=s=>saveJSON(SCHED_KEY,s)
 
+    /* ------------- State/Refs ------------- */
     const screens=[...document.querySelectorAll(".screen")], $=id=>document.getElementById(id)
     const elNom=$("nom"), elStart=$("startContinue")
-    const elPicker=$("dayPicker"), elTasklist=$("tasklist"), elNewTask=$("newTask"), newTaskDate=$("newTaskDate"), weekdayTD=$("weekdayTD")
+
+    // To-Do
+    const elPicker=$("dayPicker"), elTasklist=$("tasklist"), elNewTask=$("newTask"),
+      newTaskDate=$("newTaskDate"), weekdayTD=$("weekdayTD"), taskRepeat=$("taskRepeat")
     const elPrev=$("prevDay"), elNext=$("nextDay"), goToday=$("goToday")
-    const elPrev2=$("prevDay2"), elNext2=$("nextDay2"), elBigDate=$("bigDate"), elLane=$("lane"), elHours=$("hoursCol")
-    const elPrevName=$("prevName"), elNextName=$("nextName"), elMidName=$("midName"), scroller=$("schedScroll")
+
+    // Calendar
+    const elPrev2=$("prevDay2"), elNext2=$("nextDay2"), elBigDate=$("bigDate"),
+      elLane=$("lane"), elHours=$("hoursCol"),
+      elHoursWeek=$("hoursWeek"), weekCols=$("weekCols"),
+      scroller=$("schedScroll"), gridDay=$("gridDay"), gridWeek=$("gridWeek"),
+      monthGrid=$("monthGrid"), calPicker=$("calPicker")
+    const elPrevName=$("prevName"), elNextName=$("nextName"), elMidName=$("midName")
+    const viewSeg=$("viewSeg"), zoom=$("zoom"), zoomWrap=$("zoomWrap")
+
+    // Others
     const elFab=$("fabAdd"), sheetAdd=$("sheetAdd"), sheetSettings=$("sheetSettings"), addErr=$("addError")
-    const state={nom:"", currentDate:todayISO(), schedDate:todayISO()}
+    const modeLight=$("modeLight"), modeDark=$("modeDark"), tintSelect=$("tintSelect"), tintNote=$("tintNote")
+
+    const state={nom:"", currentDate:todayISO(), schedDate:todayISO(), view:"day"}
     let nowTimer=null, nowEl=null
 
+    /* ------------- Theme ------------- */
+    const TINTS={ blue:"#1e88e5", red:"#e53935", purple:"#8e24aa", black:"#000000", white:"#ffffff" }
+    function applyTheme(mode,tint){
+      // contrainte: sombre ≠ noir ; clair ≠ blanc
+      if(mode==="dark" && tint==="black") tint="blue"
+      if(mode==="light"&& tint==="white") tint="blue"
+
+      const isDark = mode==="dark"
+      const vars = {
+        "--bg": isDark? "#0b0b0b" : "#ffffff",
+        "--fg": isDark? "#f5f5f5" : "#111111",
+        "--ink": isDark? "rgba(255,255,255,.9)" : "#111111",
+        "--grid":isDark? "#2e2e2e" : "#eeeeee",
+        "--pill-bg": isDark? "#2a2a2a" : "#d9d9d9",
+        "--accent": TINTS[tint] || TINTS.blue,
+        "--now": TINTS[tint] || TINTS.blue
+      }
+      for(const k in vars){ document.documentElement.style.setProperty(k, vars[k]) }
+      // UI désactivation des options interdites
+      [...tintSelect.options].forEach(opt=>{
+        if((mode==="dark" && opt.value==="black") || (mode==="light" && opt.value==="white")){
+          opt.disabled=true
+        } else opt.disabled=false
+      })
+      tintNote.textContent = mode==="dark" ? "(noir indisponible)" : "(blanc indisponible)"
+      saveJSON(THEME_KEY,{mode,tint})
+    }
+    function loadTheme(){
+      const t=loadJSON(THEME_KEY,{mode:"light",tint:"blue"})
+      modeLight.checked = t.mode==="light"; modeDark.checked = t.mode==="dark"
+      tintSelect.value = t.tint
+      applyTheme(t.mode,t.tint)
+    }
+
+    /* ------------- UI helpers ------------- */
     function show(id){
       if(id!=="s8" && nowTimer){ clearInterval(nowTimer); nowTimer=null }
       screens.forEach(s=>s.classList.toggle("active", s.id===id))
-      elFab.style.display = (id==="s8") ? "grid" : "none"
-      if(id==="s7"){ elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate }
+      elFab.style.display = (id==="s8" && state.view!=="month") ? "grid" : "none"
+      if(id==="s7"){
+        elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks()
+        newTaskDate.value=state.currentDate
+      }
       if(id==="s8"){ renderCalendar() }
     }
     function goto(id){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.goto===id)); show(id) }
-
     window.addEventListener("load", ()=>{
+      loadTheme()
       const prof=loadJSON(PROFILE_KEY,null)
-      if(prof){ state.nom = prof.nom||""; show("s7") } else { show("s1") }
-      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=13").catch(console.error) }
+      if(prof){ state.nom=prof.nom||""; show("s7") } else { show("s1") }
+      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=14").catch(console.error) }
     })
+
+    /* ------------- Onboarding ------------- */
     elStart.addEventListener("click", ()=>{ state.nom=(elNom.value||"").trim(); saveJSON(PROFILE_KEY,{nom:state.nom}); goto("s7") })
     document.addEventListener("click",(e)=>{ const tab=e.target.closest(".tab"); if(tab) goto(tab.dataset.goto) })
 
-    function updateWeekdayTD(){ const d=fromISODate(state.currentDate); const name=DAY_FULL[d.getDay()]; weekdayTD.textContent = name.charAt(0).toUpperCase()+name.slice(1) }
+    /* ------------- To-Do ------------- */
+    function updateWeekdayTD(){ const d=fromISODate(state.currentDate); const name=DAY_FULL[d.getDay()]; weekdayTD.textContent=name.charAt(0).toUpperCase()+name.slice(1) }
+
+    function getTasksFor(date){
+      const store=loadTasks()
+      const dated=[...(store.dated[date]||[])]
+      // récurrents de même jour (dow) et commencés
+      const dow=fromISODate(date).getDay()
+      const rec=[]
+      store.recurring.forEach((r,idx)=>{
+        const ok = r.dow===dow && (!r.start || r.start<=date)
+        if(ok){
+          rec.push({__rec:true, idx, text:r.text, done: !!(r.done && r.done[date]) })
+        }
+      })
+      return {dated,rec,store}
+    }
+
     function renderTasks(){
       elTasklist.innerHTML=""
-      const items=tasksFor(state.currentDate)
-      if(items.length===0){ const d=document.createElement("div"); d.className="empty"; d.textContent="Rien à faire"; elTasklist.appendChild(d) }
-      else items.forEach((t,i)=>{ const row=document.createElement("div"); row.className="task"+(t.done?" done":""); row.dataset.index=i; const c=document.createElement("button"); c.className="circle"; c.textContent=t.done?"✓":""; const tx=document.createElement("span"); tx.className="text"; tx.textContent=t.text; row.append(tx,c); elTasklist.appendChild(row) })
+      const {dated,rec}=getTasksFor(state.currentDate)
+      const items=[...rec.map(o=>({...o})), ...dated.map(o=>({...o, __dated:true}))]
+
+      if(items.length===0){ const d=document.createElement("div"); d.className="empty"; d.textContent="Rien à faire"; elTasklist.appendChild(d); return }
+
+      items.forEach((t,i)=>{
+        const row=document.createElement("div"); row.className="task"+(t.done?" done":""); row.dataset.index=i
+        row.dataset.type = t.__rec ? "rec":"dated"
+        if(t.__rec) row.dataset.recIdx = t.idx
+        const c=document.createElement("button"); c.className="circle"; c.textContent=t.done?"✓":""
+        const tx=document.createElement("span"); tx.className="text"; tx.textContent=t.text
+        row.append(tx,c); elTasklist.appendChild(row)
+      })
     }
-    elTasklist.addEventListener("click",e=>{ const c=e.target.closest(".circle"); if(!c)return; const idx=+c.closest(".task").dataset.index; const items=tasksFor(state.currentDate); if(items[idx]){ items[idx].done=!items[idx].done; saveTasksFor(state.currentDate,items); renderTasks() }})
+
+    elTasklist.addEventListener("click",e=>{
+      const c=e.target.closest(".circle"); if(!c) return
+      const row=c.closest(".task")
+      const type=row.dataset.type
+      const store=loadTasks()
+
+      if(type==="dated"){
+        const list=store.dated[state.currentDate]||[]
+        const idx=[...elTasklist.children].indexOf(row)
+        // idx includes recs; map to only dated index:
+        const datedIndex = [...elTasklist.children].filter(el=>el.dataset.type==="dated").indexOf(row)
+        if(list[datedIndex]) list[datedIndex].done=!list[datedIndex].done
+      } else { // recurring: mark done for that date only
+        const ridx=parseInt(row.dataset.recIdx,10)
+        store.recurring[ridx].done ??= {}
+        store.recurring[ridx].done[state.currentDate] = !store.recurring[ridx].done[state.currentDate]
+      }
+      saveTasks(store); renderTasks()
+    })
+
     function shiftDate(which,delta){ const d=fromISODate(state[which]); d.setDate(d.getDate()+delta); state[which]=toISODate(d) }
     elPicker.addEventListener("change", ()=>{state.currentDate=elPicker.value||todayISO(); updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate })
     elPrev.addEventListener("click", ()=>{shiftDate("currentDate",-1); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
     elNext.addEventListener("click", ()=>{shiftDate("currentDate", 1); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
     goToday.addEventListener("click", ()=>{state.currentDate=todayISO(); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
+
     $("addTask").addEventListener("click", addTask)
     elNewTask.addEventListener("keydown", e=>{ if(e.key==="Enter") addTask() })
-    function addTask(){ const txt=(elNewTask.value||"").trim(); if(!txt)return; const tgt=newTaskDate.value||state.currentDate; const items=tasksFor(tgt); items.push({text:txt,done:false}); saveTasksFor(tgt,items); elNewTask.value=""; if(tgt===state.currentDate) renderTasks() }
+    function addTask(){
+      const txt=(elNewTask.value||"").trim(); if(!txt) return
+      const tgt=newTaskDate.value || state.currentDate
+      const store=loadTasks()
+      if(taskRepeat.checked){
+        const dow=fromISODate(tgt).getDay()
+        store.recurring.push({text:txt,dow,start:tgt,done:{}})
+      }else{
+        store.dated[tgt] ??= []
+        store.dated[tgt].push({text:txt,done:false})
+      }
+      saveTasks(store)
+      elNewTask.value=""; taskRepeat.checked=false
+      if(tgt===state.currentDate) renderTasks()
+    }
 
-    /* ----- Emploi du temps ----- */
+    /* ------------- Emploi du temps ------------- */
     const START_H=0, END_H=24
+
     function sizeSched(){
       const rect=scroller.getBoundingClientRect()
       const safeBottom=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom'))||0
@@ -254,22 +477,53 @@
     }
     window.addEventListener("resize", ()=>{ if(document.getElementById("s8").classList.contains("active")) sizeSched() })
 
+    function setView(v){
+      state.view=v
+      Array.from(viewSeg.querySelectorAll("button")).forEach(b=>b.classList.toggle("active", b.dataset.view===v))
+      gridDay.style.display = v==="day" ? "grid":"none"
+      gridWeek.style.display= v==="week"? "grid":"none"
+      monthGrid.classList.toggle("active", v==="month")
+      zoomWrap.style.display = (v==="month") ? "none" : "flex"
+      elFab.style.display = (v!=="month") ? "grid" : "none"
+      renderCalendar()
+    }
+
+    viewSeg.addEventListener("click",(e)=>{ const b=e.target.closest("button"); if(!b) return; setView(b.dataset.view) })
+    zoom.addEventListener("input", ()=>{ document.documentElement.style.setProperty('--hour-h', zoom.value+'px') })
+
+    calPicker.addEventListener("change", ()=>{ state.schedDate=calPicker.value||todayISO(); renderCalendar() })
+    elPrev2.addEventListener("click", ()=>{shiftDate("schedDate",-1); renderCalendar()})
+    elNext2.addEventListener("click", ()=>{shiftDate("schedDate", 1); renderCalendar()})
+
     function renderCalendar(){
       sizeSched()
+      calPicker.value=state.schedDate
       const d=fromISODate(state.schedDate)
       const dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0")
       elBigDate.textContent=`${dd}/${mm}`
       const mid=DAY_FULL[d.getDay()]; elMidName.textContent=mid.charAt(0).toUpperCase()+mid.slice(1)
-      elPrevName.textContent=DAY_FULL[(d.getDay()+6)%7]
-      elNextName.textContent=DAY_FULL[(d.getDay()+1)%7]
+      elPrevName.textContent=DAY_FULL[(d.getDay()+6)%7]; elNextName.textContent=DAY_FULL[(d.getDay()+1)%7]
 
-      elHours.innerHTML=""
-      for(let h=START_H;h<END_H;h++){ const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`; elHours.appendChild(div) }
+      if(state.view==="day"){ renderDay() }
+      else if(state.view==="week"){ renderWeek() }
+      else { renderMonth() }
+    }
+
+    function renderDay(){
+      gridDay.style.display="grid"; gridWeek.style.display="none"; monthGrid.classList.remove("active")
+      elHours.innerHTML=""; for(let h=START_H;h<END_H;h++){ const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`; elHours.appendChild(div) }
       elLane.innerHTML=""
 
       const s=loadSchedule(); const arr=[...(s.dated[state.schedDate]||[])]
       const hourH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hour-h'))||48
-      for(const ev of arr){ const top=timeToPos(ev.start,hourH), end=timeToPos(ev.end,hourH); const h=Math.max(22,end-top); const pill=document.createElement("div"); pill.className="ev"+(h<34?" small":""); pill.style.top=top+"px"; pill.style.height=h+"px"; pill.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`; elLane.appendChild(pill) }
+      for(const ev of arr){
+        const top=timeToPos(ev.start,hourH), end=timeToPos(ev.end,hourH)
+        const h=Math.max(22,end-top)
+        const pill=document.createElement("div"); pill.className="ev"+(h<34?" small":""); pill.style.top=top+"px"; pill.style.height=h+"px"
+        pill.title = (ev.place? `${ev.title} • ${ev.place}` : ev.title)
+        pill.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`
+        elLane.appendChild(pill)
+      }
 
       if(nowTimer){ clearInterval(nowTimer); nowTimer=null }
       nowEl=null
@@ -279,21 +533,79 @@
         setNow(); requestAnimationFrame(()=>centerOnNow(hourH)); nowTimer=setInterval(setNow,60*1000)
       }
     }
-    function timeToPos(t,h){ if(!t)return 0; const [H,M]=t.split(":").map(n=>parseInt(n,10)||0); return ((H-START_H)+(M/60))*h }
-    function centerOnNow(hourH){ const n=new Date(); const t=`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`; const pos=timeToPos(t,hourH); scroller.scrollTop=Math.max(0,pos - scroller.clientHeight/2) }
-    elPrev2.addEventListener("click", ()=>{shiftDate("schedDate",-1); renderCalendar()})
-    elNext2.addEventListener("click", ()=>{shiftDate("schedDate", 1); renderCalendar()})
 
-    /* Add event */
-    const openAdd=()=>{ $("evDate").value=state.schedDate; $("evStart").value="08:00"; $("evEnd").value="09:00"; $("evTitle").value=""; addErr.style.display="none"; sheetAdd.classList.add("open") }
+    function renderWeek(){
+      gridDay.style.display="none"; gridWeek.style.display="grid"; monthGrid.classList.remove("active")
+      elHoursWeek.innerHTML=""; for(let h=START_H;h<END_H;h++){ const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`; elHoursWeek.appendChild(div) }
+      weekCols.innerHTML=""
+
+      const hourH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hour-h'))||48
+      const s=loadSchedule()
+      const monday=prevMonday(fromISODate(state.schedDate))
+      for(let i=0;i<7;i++){
+        const dt=new Date(monday); dt.setDate(monday.getDate()+i)
+        const iso=toISODate(dt)
+        const col=document.createElement("div"); col.className="lane"; col.dataset.date=iso
+        // événements du jour
+        const arr=[...(s.dated[iso]||[])]
+        for(const ev of arr){
+          const top=timeToPos(ev.start,hourH), end=timeToPos(ev.end,hourH)
+          const h=Math.max(22,end-top)
+          const pill=document.createElement("div"); pill.className="ev"+(h<34?" small":""); pill.style.top=top+"px"; pill.style.height=h+"px"
+          pill.title = (ev.place? `${ev.title} • ${ev.place}` : ev.title)
+          pill.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`
+          col.appendChild(pill)
+        }
+        // ligne "now" si aujourd'hui
+        if(iso===todayISO()){
+          const nl=document.createElement("div"); nl.className="nowLine"; col.appendChild(nl)
+          const setNow=()=>{ const n=new Date(), t=`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`; nl.style.top=timeToPos(t,hourH)+"px" }
+          setNow(); if(!nowTimer){ nowTimer=setInterval(setNow,60*1000) }
+        }
+        weekCols.appendChild(col)
+      }
+      // centre sur aujourd'hui si semaine courante
+      if(state.schedDate===todayISO()) requestAnimationFrame(()=>centerOnNow(hourH))
+    }
+
+    function renderMonth(){
+      gridDay.style.display="none"; gridWeek.style.display="none"; monthGrid.classList.add("active"); monthGrid.innerHTML=""
+      const base=fromISODate(state.schedDate)
+      const first=new Date(base.getFullYear(), base.getMonth(), 1)
+      // début sur lundi précédent
+      const start=prevMonday(first)
+      const s=loadSchedule()
+      for(let i=0;i<42;i++){
+        const d=new Date(start); d.setDate(start.getDate()+i)
+        const iso=toISODate(d)
+        const cell=document.createElement("div"); cell.className="mcell"
+        const num=document.createElement("div"); num.className="mnum"; num.textContent=String(d.getDate()).padStart(2,"0")
+        cell.appendChild(num)
+        if(s.dated[iso] && s.dated[iso].length>0){
+          const dot=document.createElement("div"); dot.className="dot"; cell.appendChild(dot)
+        }
+        cell.addEventListener("click",()=>{ state.schedDate=iso; setView("day") })
+        monthGrid.appendChild(cell)
+      }
+    }
+
+    function timeToPos(t,h){ if(!t) return 0; const [H,M]=t.split(":").map(n=>parseInt(n,10)||0); return ((H-START_H)+(M/60))*h }
+    function centerOnNow(hourH){ const n=new Date(); const t=`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`; const pos=timeToPos(t,hourH); scroller.scrollTop=Math.max(0,pos - scroller.clientHeight/2) }
+
+    /* add event */
+    const openAdd=()=>{ $("evDate").value=state.schedDate; $("evStart").value="08:00"; $("evEnd").value="09:00"; $("evTitle").value=""; $("evPlace").value=""; addErr.style.display="none"; sheetAdd.classList.add("open") }
     const closeAdd=()=>sheetAdd.classList.remove("open")
     elFab.addEventListener("click", openAdd)
     $("closeAdd").addEventListener("click", closeAdd)
     $("addEvent").addEventListener("click", ()=>{
-      const date=$("evDate").value||state.schedDate, start=normTime($("evStart").value||""), end=normTime($("evEnd").value||""), title=($("evTitle").value||"Événement").trim()
-      const msg=validateEvent(date,start,end,title)
+      const date=$("evDate").value||state.schedDate
+      const start=normTime($("evStart").value||"")
+      const end  =normTime($("evEnd").value||"")
+      const title=($("evTitle").value||"Événement").trim()
+      const place=($("evPlace").value||"").trim()
+      const msg = validateEvent(date,start,end,title)
       if(msg){ addErr.textContent=msg; addErr.style.display="block"; return }
-      const s=loadSchedule(); s.dated[date] ??= []; s.dated[date].push({title,start,end}); saveSchedule(s)
+      const s=loadSchedule(); s.dated[date] ??= []; s.dated[date].push({title,start,end,place}); saveSchedule(s)
       if(date===state.schedDate) renderCalendar()
       closeAdd()
     })
@@ -308,11 +620,22 @@
       return ""
     }
 
+    /* ------------- Paramètres ------------- */
     const openSettings=()=>sheetSettings.classList.add("open")
     const closeSettings=()=>sheetSettings.classList.remove("open")
     $("btnSettings").addEventListener("click", openSettings)
     $("closeSettings").addEventListener("click", closeSettings)
-    $("resetProfile").addEventListener("click", ()=>{ if(confirm("Réinitialiser le profil (nom, tâches, calendrier) ?")){ clearAll(); location.reload() }})
+    $("applyTheme").addEventListener("click", ()=>{
+      const mode = modeDark.checked ? "dark" : "light"
+      const tint = tintSelect.value
+      applyTheme(mode,tint)
+    })
+    $("resetProfile").addEventListener("click", ()=>{
+      if(confirm("Réinitialiser le profil (nom, tâches, calendrier) ?")){ clearAll(); location.reload() }
+    })
+
+    // init vue calendrier
+    setView("day")
   </script>
 </body>
 </html>
