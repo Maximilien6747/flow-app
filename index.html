@@ -1,101 +1,159 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flow</title>
+<script>
+  /* ===== Helpers dates ===== */
+  function toISODate(d){const tz=d.getTimezoneOffset()*60000;const local=new Date(d.getTime()-tz);return local.toISOString().slice(0,10)}
+  function fromISODate(s){const [y,m,dd]=s.split("-").map(Number);return new Date(y,m-1,dd)}
+  function todayISO(){return toISODate(new Date())}
 
-  <!-- iPhone plein écran -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="https://dummyimage.com/180x180/000/fff.png&text=Flow">
+  /* ===== Clés de stockage ===== */
+  const PROFILE_KEY = "flowProfile";   // {nom, age, email, sexe}
+  const TASKS_KEY   = "flowTasks";     // { "YYYY-MM-DD": [ {text,done}, ... ] }
 
-  <meta name="theme-color" content="#000000">
-  <link rel="manifest" href="manifest.json">
+  /* ===== State ===== */
+  const state = { nom:"", age:"", email:"", sexe:"", currentDate: todayISO() };
 
-  <style>
-    :root{--bg:#fff;--fg:#111;--muted:#666;--accent:#111;--radius:16px}
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg)}
-    body{display:flex;align-items:center;justify-content:center;font:600 18px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    .screen{display:none;width:min(780px,92vw);padding:32px;border-radius:var(--radius)}
-    .screen.active{display:flex;flex-direction:column;align-items:center;gap:24px}
-    h1,h2{margin:0;text-align:center} h1{font-size:42px;line-height:1.05} h2{font-size:28px}
-    p{margin:0;color:var(--muted);text-align:center}
-    .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-    .btn{padding:12px 22px;border:1px solid var(--accent);border-radius:12px;background:#fff;color:#111;cursor:pointer;font-weight:700}
-    .btn.small{padding:8px 14px} .btn:active{transform:translateY(1px)}
-    .field{display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;align-items:stretch}
-    .label{font-weight:700}
-    input,select{padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit}
-    input:focus,select:focus{border-color:#111}
-    .space{background:#000;color:#fff;border-radius:var(--radius);position:relative;overflow:hidden;padding:48px}
-    .space.active{display:flex}
-    .stars,.stars2{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(#fff 1px,transparent 1px),radial-gradient(#fff 1px,transparent 1px);background-size:3px 3px,2px 2px;background-position:0 0,1.5px 1.5px;opacity:.7;animation:drift 60s linear infinite}
-    .stars2{opacity:.4;background-size:2px 2px,1px 1px;animation-duration:120s}
-    @keyframes drift{0%{background-position:0 0,1.5px 1.5px}100%{background-position:1000px 1000px,1001.5px 1001.5px}}
-    .space h1{color:#fff}.space .btn{background:#fff;color:#000;border-color:#fff}
-    .tasks{gap:18px}
-    .taskbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
-    .taskbar input[type="date"]{padding:10px 12px;border-radius:10px;border:1px solid #ccc;font:inherit}
-    .icon{width:40px;height:40px;border-radius:10px;border:1px solid #111;background:#fff;cursor:pointer;display:grid;place-items:center;font-weight:900}
-    .tasklist{width:100%;max-width:620px;display:flex;flex-direction:column;gap:12px}
-    .task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid #ddd;border-radius:14px}
-    .task .text{font-weight:700}.task.done .text{text-decoration:line-through;color:#888}
-    .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;cursor:pointer;flex:0 0 auto;display:grid;place-items:center;font-size:16px;line-height:1;user-select:none}
-    .task.done .circle{background:#111;color:#fff}
-    .adder{width:100%;max-width:620px;display:flex;gap:10px;justify-content:center;margin-top:8px}
-    .adder input{flex:1;min-width:160px}
-    .hint{color:var(--muted);font-size:14px}
-  </style>
-</head>
-<body>
-  <main id="app">
-    <section id="s1" class="screen active"><h1>Bienvenue dans Flow</h1><p>Un mini parcours en quelques étapes.</p><div class="actions"><button class="btn" data-next="s2">Continuer</button></div></section>
-    <section id="s2" class="screen"><h2>Quel est votre nom&nbsp;?</h2><div class="field"><label class="label" for="nom">Nom</label><input id="nom" type="text" placeholder="Entrez votre nom" autocomplete="name"></div><div class="actions"><button class="btn" data-next="s3">Continuer</button></div></section>
-    <section id="s3" class="screen"><h2>Quel est votre âge&nbsp;?</h2><div class="field"><label class="label" for="age">Âge</label><input id="age" type="number" min="0" step="1" placeholder="Ex. 30" inputmode="numeric"></div><div class="actions"><button class="btn" data-next="s4">Continuer</button></div></section>
-    <section id="s4" class="screen"><h2>Votre email</h2><div class="field"><label class="label" for="email">Email</label><input id="email" type="email" placeholder="vous@example.com" autocomplete="email"></div><div class="actions"><button class="btn" data-next="s5">Continuer</button></div></section>
-    <section id="s5" class="screen"><h2>Votre sexe</h2><div class="field"><label class="label" for="sexe">Sexe</label><select id="sexe"><option value="" selected>Choisir…</option><option>Femme</option><option>Homme</option><option>Autre</option><option>Préférer ne pas dire</option></select></div><div class="actions"><button class="btn" data-next="s6">Continuer</button></div></section>
-    <section id="s6" class="screen space"><div class="stars"></div><div class="stars2"></div><h1>Cliquez pour entrer dans votre flow</h1><div class="actions"><button class="btn" data-next="s7">Entrer</button></div></section>
-    <section id="s7" class="screen tasks">
-      <h2 id="hello">Votre flow</h2>
-      <div class="taskbar">
-        <button class="icon" id="prevDay">◀︎</button>
-        <input type="date" id="dayPicker">
-        <button class="icon" id="nextDay">▶︎</button>
-        <button class="btn small" id="goToday">Aujourd’hui</button>
-      </div>
-      <p class="hint">Tâches enregistrées par date (localStorage).</p>
-      <div class="tasklist" id="tasklist"></div>
-      <div class="adder"><input id="newTask" type="text" placeholder="Nouvelle tâche…"><button class="btn" id="addTask">Ajouter</button></div>
-    </section>
-  </main>
+  /* ===== Profile load/save ===== */
+  function loadProfile(){
+    try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || null; }
+    catch { return null; }
+  }
+  function saveProfile(p){ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+  function clearProfile(){ localStorage.removeItem(PROFILE_KEY); }
 
-  <script>
-    function toISODate(d){const tz=d.getTimezoneOffset()*60000;const local=new Date(d.getTime()-tz);return local.toISOString().slice(0,10)}
-    function fromISODate(s){const [y,m,dd]=s.split("-").map(Number);return new Date(y,m-1,dd)}
-    function todayISO(){return toISODate(new Date())}
-    const state={nom:"",age:"",email:"",sexe:"",currentDate:todayISO()};
-    const LS_KEY="flowTasks";
-    function loadAll(){try{return JSON.parse(localStorage.getItem(LS_KEY))||{}}catch{return{}}}
-    function saveAll(d){localStorage.setItem(LS_KEY,JSON.stringify(d))}
-    function loadTasksFor(date){const all=loadAll();return Array.isArray(all[date])?all[date]:[]}
-    function saveTasksFor(date,t){const all=loadAll();all[date]=t;saveAll(all)}
-    (function(){const all=loadAll();const t=todayISO();if(!all[t]){all[t]=[{text:"Peindre la voiture",done:false},{text:"Peindre le chat",done:false},{text:"Peindre la maison",done:false}];saveAll(all)}})();
-    const screens=[...document.querySelectorAll(".screen")];
-    function show(id){screens.forEach(s=>s.classList.toggle("active",s.id===id)); if(id==="s2")nom.focus(); if(id==="s3")age.focus(); if(id==="s4")email.focus(); if(id==="s5")sexe.focus(); if(id==="s7"){hello.textContent=state.nom?`Votre flow, ${state.nom}`:"Votre flow"; dayPicker.value=state.currentDate; renderTasks(); newTask.focus();}}
-    document.addEventListener("click",e=>{const btn=e.target.closest("[data-next]"); if(!btn)return; const cur=document.querySelector(".screen.active")?.id; if(cur==="s2")state.nom=(nom.value||"").trim(); if(cur==="s3")state.age=(age.value||"").trim(); if(cur==="s4")state.email=(email.value||"").trim(); if(cur==="s5")state.sexe=sexe.value; show(btn.dataset.next);});
-    nom.addEventListener("keydown",e=>{if(e.key==="Enter")show("s3")}); age.addEventListener("keydown",e=>{if(e.key==="Enter")show("s4")}); email.addEventListener("keydown",e=>{if(e.key==="Enter")show("s5")}); sexe.addEventListener("keydown",e=>{if(e.key==="Enter")show("s6")});
-    function renderTasks(){tasklist.innerHTML=""; const tasks=loadTasksFor(state.currentDate); if(tasks.length===0){const p=document.createElement("p"); p.className="hint"; p.textContent="Aucune tâche pour ce jour."; tasklist.appendChild(p); return;} tasks.forEach((t,i)=>{const item=document.createElement("div"); item.className="task"+(t.done?" done":""); item.dataset.index=String(i); const text=document.createElement("span"); text.className="text"; text.textContent=t.text; const circle=document.createElement("button"); circle.className="circle"; circle.textContent="✓"; item.append(text,circle); tasklist.appendChild(item);});}
-    tasklist.addEventListener("click",e=>{const c=e.target.closest(".circle"); if(!c)return; const item=c.closest(".task"); const idx=Number(item.dataset.index); const tasks=loadTasksFor(state.currentDate); if(tasks[idx]){tasks[idx].done=!tasks[idx].done; saveTasksFor(state.currentDate,tasks); renderTasks();}});
-    function addTask(){const txt=(newTask.value||"").trim(); if(!txt)return; const tasks=loadTasksFor(state.currentDate); tasks.push({text:txt,done:false}); saveTasksFor(state.currentDate,tasks); newTask.value=""; renderTasks();}
-    addTaskBtn=document.getElementById("addTask"); addTaskBtn.addEventListener("click",addTask); newTask.addEventListener("keydown",e=>{if(e.key==="Enter")addTask()});
-    function setDateAndRender(d){state.currentDate=toISODate(d); dayPicker.value=state.currentDate; renderTasks();}
-    prevDay.addEventListener("click",()=>{const d=fromISODate(state.currentDate); d.setDate(d.getDate()-1); setDateAndRender(d);});
-    nextDay.addEventListener("click",()=>{const d=fromISODate(state.currentDate); d.setDate(d.getDate()+1); setDateAndRender(d);});
-    goToday.addEventListener("click",()=>{setDateAndRender(new Date())});
-    dayPicker.addEventListener("change",()=>{state.currentDate=dayPicker.value||todayISO(); renderTasks();});
-    if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("./sw.js").catch(console.error); }); }
-  </script>
-</body>
-</html>
+  /* ===== Tasks load/save ===== */
+  function loadAllTasks(){ try{ return JSON.parse(localStorage.getItem(TASKS_KEY)) || {}; } catch{ return {}; } }
+  function saveAllTasks(data){ localStorage.setItem(TASKS_KEY, JSON.stringify(data)); }
+  function loadTasksFor(date){ const all=loadAllTasks(); return Array.isArray(all[date])?all[date]:[]; }
+  function saveTasksFor(date, tasks){ const all=loadAllTasks(); all[date]=tasks; saveAllTasks(all); }
+
+  /* Seed tâches du jour au 1er lancement */
+  (function seed(){
+    const all = loadAllTasks(); const today = todayISO();
+    if(!all[today]){
+      all[today] = [
+        { text:"Peindre la voiture", done:false },
+        { text:"Peindre le chat",   done:false },
+        { text:"Peindre la maison", done:false },
+      ];
+      saveAllTasks(all);
+    }
+  })();
+
+  /* ===== Navigation d’écrans ===== */
+  const screens = [...document.querySelectorAll(".screen")];
+  function show(id){
+    screens.forEach(s => s.classList.toggle("active", s.id === id));
+    if(id==="s2") document.getElementById("nom").focus();
+    if(id==="s3") document.getElementById("age").focus();
+    if(id==="s4") document.getElementById("email").focus();
+    if(id==="s5") document.getElementById("sexe").focus();
+    if(id==="s7"){
+      // Personnalisation & init UI
+      document.getElementById("hello").textContent = state.nom ? `Votre flow, ${state.nom}` : "Votre flow";
+      const picker = document.getElementById("dayPicker");
+      picker.value = state.currentDate;
+      renderTasks();
+      document.getElementById("newTask").focus();
+
+      // Ajoute un bouton "Réinitialiser le profil" si absent
+      const bar = document.querySelector(".taskbar");
+      if(!document.getElementById("resetProfile")){
+        const reset = document.createElement("button");
+        reset.id = "resetProfile"; reset.className = "btn small"; reset.textContent = "Réinitialiser le profil";
+        reset.addEventListener("click", ()=>{ clearProfile(); show("s1"); });
+        bar.appendChild(reset);
+      }
+    }
+  }
+
+  // Boutons "Continuer" entre les écrans
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-next]");
+    if(!btn) return;
+    const current = document.querySelector(".screen.active")?.id;
+
+    // Capture des champs au vol
+    if(current==="s2") state.nom   = (document.getElementById("nom").value   || "").trim();
+    if(current==="s3") state.age   = (document.getElementById("age").value   || "").trim();
+    if(current==="s4") state.email = (document.getElementById("email").value || "").trim();
+
+    // Quand on quitte l’écran "sexe", on SAUVEGARDE le profil
+    if(current==="s5"){
+      state.sexe = document.getElementById("sexe").value;
+      saveProfile({ nom: state.nom, age: state.age, email: state.email, sexe: state.sexe });
+    }
+
+    show(btn.dataset.next);
+  });
+
+  // Entrée pour avancer
+  document.getElementById("nom").addEventListener("keydown", e => { if(e.key==="Enter") show("s3"); });
+  document.getElementById("age").addEventListener("keydown", e => { if(e.key==="Enter") show("s4"); });
+  document.getElementById("email").addEventListener("keydown", e => { if(e.key==="Enter") show("s5"); });
+  document.getElementById("sexe").addEventListener("keydown", e => { if(e.key==="Enter") { 
+    state.sexe = document.getElementById("sexe").value; 
+    saveProfile({ nom: state.nom, age: state.age, email: state.email, sexe: state.sexe });
+    show("s6"); 
+  }});
+
+  /* ===== To-Do : rendu & interactions ===== */
+  function renderTasks(){
+    const list = document.getElementById("tasklist");
+    list.innerHTML = "";
+    const tasks = loadTasksFor(state.currentDate);
+    if(tasks.length === 0){
+      const empty = document.createElement("p"); empty.className = "hint"; empty.textContent = "Aucune tâche pour ce jour.";
+      list.appendChild(empty); return;
+    }
+    tasks.forEach((t, idx) => {
+      const item = document.createElement("div");
+      item.className = "task" + (t.done ? " done" : ""); item.dataset.index = String(idx);
+
+      const text = document.createElement("span"); text.className = "text"; text.textContent = t.text;
+      const circle = document.createElement("button"); circle.className = "circle"; circle.textContent = "✓"; circle.setAttribute("aria-label","Effectuer la tâche");
+
+      item.append(text, circle); list.appendChild(item);
+    });
+  }
+  document.getElementById("tasklist").addEventListener("click", (e) => {
+    const circle = e.target.closest(".circle"); if(!circle) return;
+    const item = circle.closest(".task"); const idx = Number(item.dataset.index);
+    const tasks = loadTasksFor(state.currentDate);
+    if(tasks[idx]){ tasks[idx].done = !tasks[idx].done; saveTasksFor(state.currentDate, tasks); renderTasks(); }
+  });
+
+  // Ajouter une tâche
+  function addTask(){
+    const input = document.getElementById("newTask");
+    const txt = (input.value || "").trim(); if(!txt) return;
+    const tasks = loadTasksFor(state.currentDate);
+    tasks.push({ text: txt, done: false });
+    saveTasksFor(state.currentDate, tasks);
+    input.value = ""; renderTasks();
+  }
+  document.getElementById("addTask").addEventListener("click", addTask);
+  document.getElementById("newTask").addEventListener("keydown", (e) => { if(e.key === "Enter") addTask(); });
+
+  // Navigation entre jours
+  const picker = document.getElementById("dayPicker");
+  document.getElementById("prevDay").addEventListener("click", () => { const d=fromISODate(state.currentDate); d.setDate(d.getDate()-1); state.currentDate=toISODate(d); picker.value=state.currentDate; renderTasks(); });
+  document.getElementById("nextDay").addEventListener("click", () => { const d=fromISODate(state.currentDate); d.setDate(d.getDate()+1); state.currentDate=toISODate(d); picker.value=state.currentDate; renderTasks(); });
+  document.getElementById("goToday").addEventListener("click", () => { state.currentDate=todayISO(); picker.value=state.currentDate; renderTasks(); });
+  picker.addEventListener("change", () => { state.currentDate = picker.value || todayISO(); renderTasks(); });
+
+  /* ===== Démarrage : si profil déjà enregistré → saute l’onboarding ===== */
+  window.addEventListener("load", () => {
+    const saved = loadProfile();
+    if(saved){
+      Object.assign(state, saved);              // remet nom/âge/email/sexe
+      state.currentDate = todayISO();           // démarre sur aujourd’hui
+      show("s7");                               // arrive direct sur la To-Do
+    }else{
+      show("s1");                               // parcours d’accueil la 1ère fois
+    }
+
+    // PWA / Service Worker (ok en HTTPS/GitHub Pages)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(console.error);
+    }
+  });
+</script>
