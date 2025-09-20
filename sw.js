@@ -1,5 +1,5 @@
 // sw.js
-const CACHE = "flow-v3";
+const CACHE = "flow-v4";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (e) => {
@@ -19,14 +19,14 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   const url = new URL(req.url);
 
-  // Toujours servir index.html pour la racine
+  // Servir index.html pour la racine
   if (url.origin === location.origin &&
       (url.pathname.endsWith("/") || url.pathname.endsWith("/index.html"))) {
     e.respondWith(caches.match("./index.html").then(r => r || fetch("./index.html")));
     return;
   }
 
-  // Network-first, fallback cache, puis index.html
+  // Network-first avec fallback cache puis index.html
   e.respondWith(
     fetch(req).then(res => {
       const copy = res.clone();
