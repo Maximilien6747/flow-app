@@ -5,115 +5,211 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Espace de cours</title>
   <style>
-    :root{ --pad:22px; --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom); }
-    *{ box-sizing:border-box } html{-webkit-text-size-adjust:100%}
+    :root{
+      --pad:22px; --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
+      --ink:#000; --bg:#fff; --fg:#111;
+      --radius:22px; --thick:4px; --dur:300ms; --ease:cubic-bezier(.2,.7,.3,1);
+      /* couleurs pastels pour les matières */
+      --c-fr: #fac3cf; --c-his:#ffd9b3; --c-svt:#c9f0db; --c-chi:#fff3b8;
+      --c-snt:#cfeeff; --c-ses:#f1dbff; --c-ang:#ffc6e9;
+    }
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
     body{
-      margin:0; background:#fff; color:#111;
+      margin:0;background:var(--bg);color:var(--fg);
       font:700 clamp(16px,2.6vw,18px)/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial;
     }
-    .wrap{
-      max-width:520px; margin:0 auto;
-      min-height:100svh; padding:calc(var(--safe-top)+var(--pad)) var(--pad) calc(var(--safe-bottom)+var(--pad));
-      display:flex; flex-direction:column; gap:24px;
+    .app{
+      max-width:520px;margin:0 auto;position:relative;
+      padding:calc(var(--safe-top)+var(--pad)) var(--pad) calc(var(--safe-bottom)+var(--pad));
+      min-height:100svh;
     }
-    h1{margin:0 0 42px 0; font-size:clamp(28px,8vw,40px); line-height:1.15}
-    h2{margin:0 0 12px 0; font-size:clamp(24px,7vw,32px)}
-    label{display:block; margin:8px 0 10px}
-    .input{
-      width:100%; padding:16px 18px; border-radius:18px;
-      border:4px solid #000; background:#e0e0e0; font:inherit; font-weight:800; outline:none;
+    h1{margin:0 0 42px;font-size:clamp(28px,8vw,40px);line-height:1.15}
+    h2{margin:0 0 12px;font-size:clamp(24px,7vw,32px)}
+    label{display:block;margin:8px 0 10px}
+    input{
+      width:100%;padding:16px 18px;border-radius:18px;background:#e0e0e0;
+      border:var(--thick) solid var(--ink);font:inherit;font-weight:800;outline:none;
     }
     .btn{
-      margin-top:18px; padding:14px 18px; border:3px solid #000; border-radius:14px;
-      background:#000; color:#fff; font:inherit; font-weight:900; width:fit-content; cursor:pointer;
+      margin-top:18px;padding:14px 18px;border:3px solid var(--ink);border-radius:14px;
+      background:var(--ink);color:#fff;font:inherit;font-weight:900;cursor:pointer;width:fit-content;
     }
-    .btn:active{ transform:translateY(1px) }
-    .hint{margin-top:10px; opacity:.6; font-weight:600}
+    .btn:active{transform:translateY(1px)}
+    .link{background:none;border:0;padding:8px 0;color:var(--fg);text-decoration:underline;font:inherit;font-weight:800;cursor:pointer}
+    .hint{margin-top:10px;opacity:.6;font-weight:600}
 
-    /* écrans */
-    .screen{display:none}
-    .screen.active{display:block}
-
-    /* menu principal */
-    .menu{display:flex; flex-direction:column; gap:22px; margin-top:10px}
-    .menu .item{
-      background:#bdbdbd; color:#000; border-radius:22px; padding:20px 24px;
-      border:4px solid #000; font-weight:900; font-size:clamp(18px,5.2vw,24px);
-      display:block; text-decoration:none; text-align:left;
+    /* --- navigation/animations --- */
+    .stack{position:relative}
+    .screen{
+      position:absolute; inset:0; opacity:0; pointer-events:none;
+      transform:translateX(40px);
     }
-    .small{font-weight:600; opacity:.65}
-    .row{display:flex; gap:10px; flex-wrap:wrap}
-    .link{background:none; border:0; padding:8px 0; color:#111; text-decoration:underline; font:inherit; font-weight:800; cursor:pointer}
+    .screen.active{opacity:1; pointer-events:auto; transform:none}
+    .anim-out-left{animation:outLeft var(--dur) var(--ease) both}
+    .anim-in-right{animation:inRight var(--dur) var(--ease) both}
+    .anim-out-right{animation:outRight var(--dur) var(--ease) both}
+    .anim-in-left{animation:inLeft var(--dur) var(--ease) both}
+    @keyframes outLeft  {from{opacity:1;transform:translateX(0)}   to{opacity:0;transform:translateX(-40px)}}
+    @keyframes inRight  {from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)}}
+    @keyframes outRight {from{opacity:1;transform:translateX(0)}   to{opacity:0;transform:translateX(40px)}}
+    @keyframes inLeft   {from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+
+    /* --- cartes menu & matières --- */
+    .menu{display:flex;flex-direction:column;gap:22px;margin-top:10px}
+    .cardLink{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      padding:20px 18px;background:#bdbdbd;border:var(--thick) solid var(--ink);
+      border-radius:var(--radius); text-decoration:none; color:inherit; cursor:pointer;
+      box-shadow:0 6px 14px rgba(0,0,0,.06);
+      font-size:clamp(18px,5.2vw,24px); font-weight:900;
+    }
+    .pillArrow{min-width:56px;height:40px;border:3px solid var(--ink);border-radius:999px;display:grid;place-items:center;font-weight:900;background:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .back{
+      width:42px;height:42px;border:3px solid var(--ink);border-radius:50%;display:grid;place-items:center;
+      background:#fff;cursor:pointer
+    }
+    .list{display:flex;flex-direction:column;gap:18px;margin-top:12px}
+    .mat{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:18px;border-radius:var(--radius);border:var(--thick) solid var(--ink);
+      box-shadow:0 6px 14px rgba(0,0,0,.06);font-size:clamp(18px,5.2vw,24px);font-weight:900}
+    .left{display:flex;align-items:center;gap:12px}
+    .icon{font-size:1.2em}
   </style>
 </head>
 <body>
-  <main class="wrap">
+  <main class="app">
+    <div id="stack" class="stack" aria-live="polite" aria-atomic="true">
 
-    <!-- Écran 1 : Bienvenue + prénom -->
-    <section id="welcome" class="screen active">
-      <h1>Bienvenue dans ton espace de cours&nbsp;!</h1>
+      <!-- Écran 1 : prénom -->
+      <section id="scr-welcome" class="screen active">
+        <h1>Bienvenue dans ton espace de cours&nbsp;!</h1>
+        <label for="prenom">Quel est ton prénom&nbsp;?</label>
+        <input id="prenom" placeholder="Ton prénom" autocomplete="given-name" />
+        <button id="go" class="btn">Continuer</button>
+        <div id="msg" class="hint"></div>
+      </section>
 
-      <label for="prenom">Quel est ton prénom&nbsp;?</label>
-      <input id="prenom" class="input" placeholder="Ton prénom" autocomplete="given-name" />
-      <button id="go" class="btn">Continuer</button>
-      <div id="msg" class="hint"></div>
-    </section>
+      <!-- Écran 2 : menu -->
+      <section id="scr-home" class="screen" aria-hidden="true">
+        <h2>Bonjour "<span id="who">prenom</span>"</h2>
+        <nav class="menu">
+          <a id="btn-cours"   class="cardLink">cours        <span class="pillArrow">→</span></a>
+          <a id="btn-emploi"  class="cardLink">emploie du temps <span class="pillArrow">→</span></a>
+          <a id="btn-devoirs" class="cardLink">devoirs      <span class="pillArrow">→</span></a>
+          <a id="btn-controle"class="cardLink">controle     <span class="pillArrow">→</span></a>
+        </nav>
+        <button id="change" class="link" style="margin-top:8px">changer de prénom</button>
+      </section>
 
-    <!-- Écran 2 : Menu principal -->
-    <section id="home" class="screen">
-      <h2>Bonjour "<span id="who">prenom</span>"</h2>
+      <!-- Écran 3 : cours (liste matières) -->
+      <section id="scr-cours" class="screen" aria-hidden="true">
+        <div class="row" style="margin-bottom:6px">
+          <button id="back-home" class="back" aria-label="Retour">←</button>
+          <h2 style="margin:0">Cours</h2>
+        </div>
 
-      <nav class="menu">
-        <a id="btn-cours" class="item" href="javascript:void(0)">cours</a>
-        <a id="btn-emploi" class="item" href="javascript:void(0)">emploie du temps</a>
-        <a id="btn-devoirs" class="item" href="javascript:void(0)">devoirs</a>
-        <a id="btn-controle" class="item" href="javascript:void(0)">controle</a>
-      </nav>
+        <div class="list" id="mat-list">
+          <!-- rempli par JS -->
+        </div>
+      </section>
 
-      <div class="row">
-        <button id="change" class="link">changer de prénom</button>
-        <span class="small">• menu à brancher ensuite</span>
-      </div>
-    </section>
-
+    </div>
   </main>
 
   <script>
-    const $ = (id)=>document.getElementById(id);
-    const screens = { welcome:$('welcome'), home:$('home') };
-    const who = $('who'), prenomInput = $('prenom'), msg = $('msg');
+    // helpers
+    const $ = sel => document.querySelector(sel);
+    const stack = $('#stack');
+    function setStackHeight(h){ stack.style.height = h + 'px'; }
+    function activeScreen(){ return $('.screen.active'); }
 
-    function show(id){ for(const k in screens) screens[k].classList.toggle('active', k===id); }
-
-    function saveAndGo(){
-      const name = (prenomInput.value || '').trim();
-      if(!name){ msg.textContent = "Entre ton prénom pour continuer."; return; }
-      localStorage.setItem('prenom', name);
-      who.textContent = name;
-      show('home');
+    // animation de navigation
+    function navigate(fromEl, toEl, dir='forward'){
+      if (fromEl===toEl) return;
+      // fixer la hauteur pour éviter le "saut"
+      setStackHeight(Math.max(fromEl.scrollHeight, toEl.scrollHeight));
+      // classes d'animation
+      fromEl.classList.remove('active');
+      toEl.classList.add('active');
+      const outClass = dir==='forward' ? 'anim-out-left' : 'anim-out-right';
+      const inClass  = dir==='forward' ? 'anim-in-right' : 'anim-in-left';
+      fromEl.classList.add(outClass);
+      toEl.classList.add(inClass);
+      // nettoyage à la fin
+      const done = () => {
+        fromEl.classList.remove(outClass);
+        toEl.classList.remove(inClass);
+        setStackHeight(toEl.scrollHeight);
+      };
+      toEl.addEventListener('animationend', done, {once:true});
     }
 
-    $('go').addEventListener('click', saveAndGo);
-    prenomInput.addEventListener('keydown', e => { if(e.key==='Enter') saveAndGo(); });
+    // état prénom
+    const who = $('#who'), prenomInput = $('#prenom'), msg = $('#msg');
+    function showHome(){
+      const name = (localStorage.getItem('prenom')||'').trim();
+      if (!name){ navigate($('#scr-home'), $('#scr-welcome'), 'back'); prenomInput.focus(); return; }
+      who.textContent = name;
+      navigate(activeScreen(), $('#scr-home'), 'forward');
+    }
+    function saveAndGo(){
+      const name = (prenomInput.value||'').trim();
+      if (!name){ msg.textContent = "Entre ton prénom pour continuer."; return; }
+      localStorage.setItem('prenom', name);
+      who.textContent = name;
+      navigate($('#scr-welcome'), $('#scr-home'), 'forward');
+    }
 
-    $('change').addEventListener('click', ()=>{
-      localStorage.removeItem('prenom');
-      prenomInput.value=''; msg.textContent='';
-      show('welcome'); prenomInput.focus();
-    });
+    // évènements
+    $('#go').onclick = saveAndGo;
+    prenomInput.addEventListener('keydown', e=>{ if(e.key==='Enter') saveAndGo(); });
+    $('#change').onclick = ()=>{ localStorage.removeItem('prenom'); prenomInput.value=''; msg.textContent=''; navigate($('#scr-home'), $('#scr-welcome'), 'back'); prenomInput.focus(); };
 
-    // placeholders de navigation (à remplacer par tes vraies pages plus tard)
-    $('btn-cours').onclick   = ()=>alert('Ouverture "cours" (à brancher)');
-    $('btn-emploi').onclick  = ()=>alert('Ouverture "emploie du temps" (à brancher)');
-    $('btn-devoirs').onclick = ()=>alert('Ouverture "devoirs" (à brancher)');
-    $('btn-controle').onclick= ()=>alert('Ouverture "controle" (à brancher)');
+    // boutons menu
+    $('#btn-cours').onclick   = ()=> navigate($('#scr-home'), $('#scr-cours'), 'forward');
+    $('#btn-emploi').onclick  = ()=> alert('Écran "Emploi du temps" à brancher');
+    $('#btn-devoirs').onclick = ()=> alert('Écran "Devoirs" à brancher');
+    $('#btn-controle').onclick= ()=> alert('Écran "Contrôle" à brancher');
 
-    // Autostart si prénom déjà enregistré
+    // retour depuis cours
+    $('#back-home').onclick = ()=> navigate($('#scr-cours'), $('#scr-home'), 'back');
+
+    // remplir la liste des matières avec icônes & couleurs
+    const subjects = [
+      {name:'français',  color:'var(--c-fr)',  icon:'📚'},
+      {name:'histoire',  color:'var(--c-his)', icon:'🏛️'},
+      {name:'SVT',       color:'var(--c-svt)', icon:'🧬'},
+      {name:'Chimie',    color:'var(--c-chi)', icon:'⚗️'},
+      {name:'SNT',       color:'var(--c-snt)', icon:'💻'},
+      {name:'SES',       color:'var(--c-ses)', icon:'📈'},
+      {name:'Anglais',   color:'var(--c-ang)', icon:'🇬🇧'}
+    ];
+    const list = $('#mat-list');
+    for (const s of subjects){
+      const li = document.createElement('button');
+      li.className='mat'; li.style.background = s.color; li.type='button';
+      li.innerHTML = `
+        <span class="left"><span class="title">${s.name}</span> <span class="icon" aria-hidden="true">${s.icon}</span></span>
+        <span class="pillArrow">→</span>
+      `;
+      li.onclick = ()=> alert('Ouvrir la page du cours : ' + s.name);
+      list.appendChild(li);
+    }
+
+    // init
     window.addEventListener('load', ()=>{
-      const name = localStorage.getItem('prenom');
-      if(name){ who.textContent=name; show('home'); }
-      else { show('welcome'); prenomInput.focus(); }
+      const hasName = !!(localStorage.getItem('prenom')||'').trim();
+      if (hasName){
+        $('#scr-welcome').classList.remove('active');
+        $('#scr-home').classList.add('active');
+        who.textContent = localStorage.getItem('prenom');
+      }
+      // hauteur initiale
+      setStackHeight(activeScreen().scrollHeight);
     });
+    window.addEventListener('resize', ()=> setStackHeight(activeScreen().scrollHeight));
   </script>
 </body>
 </html>
