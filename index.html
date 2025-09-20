@@ -18,17 +18,23 @@
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg)}
     body{display:flex;align-items:center;justify-content:center;font:600 18px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    .screen{display:none;width:min(780px,92vw);padding:32px;border-radius:var(--radius)}
+    .screen{display:none;width:min(900px,94vw);padding:32px;border-radius:var(--radius)}
     .screen.active{display:flex;flex-direction:column;align-items:center;gap:24px}
     h1,h2{margin:0;text-align:center} h1{font-size:42px;line-height:1.05} h2{font-size:28px}
     p{margin:0;color:var(--muted);text-align:center}
     .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
     .btn{padding:12px 22px;border:1px solid var(--accent);border-radius:12px;background:#fff;color:#111;cursor:pointer;font-weight:700}
     .btn.small{padding:8px 14px} .btn:active{transform:translateY(1px)}
-    .field{display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;align-items:stretch}
+    .field{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;align-items:stretch}
     .label{font-weight:700}
-    input,select{padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit}
-    input:focus,select:focus{border-color:#111}
+    input,select,textarea{padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit}
+    textarea{min-height:120px;resize:vertical}
+    input:focus,select:focus,textarea:focus{border-color:#111}
+
+    /* Nav onglets (To-Do / Emploi du temps) */
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .tab{padding:10px 16px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
+    .tab.active{border-color:#111;font-weight:800}
 
     /* Écran spatial */
     .space{background:#000;color:#fff;border-radius:var(--radius);position:relative;overflow:hidden;padding:48px}
@@ -45,15 +51,25 @@
     .taskbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
     .taskbar input[type="date"]{padding:10px 12px;border-radius:10px;border:1px solid #ccc;font:inherit}
     .icon{width:40px;height:40px;border-radius:10px;border:1px solid #111;background:#fff;cursor:pointer;display:grid;place-items:center;font-weight:900}
-    .tasklist{width:100%;max-width:620px;display:flex;flex-direction:column;gap:12px}
+    .tasklist{width:100%;max-width:680px;display:flex;flex-direction:column;gap:12px}
     .task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid #ddd;border-radius:14px}
     .task .text{font-weight:700}
     .task.done .text{text-decoration:line-through;color:#888}
     .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;cursor:pointer;flex:0 0 auto;display:grid;place-items:center;font-size:16px;line-height:1;user-select:none}
     .task.done .circle{background:#111;color:#fff}
-    .adder{width:100%;max-width:620px;display:flex;gap:10px;justify-content:center;margin-top:8px}
+    .adder{width:100%;max-width:680px;display:flex;gap:10px;justify-content:center;margin-top:8px}
     .adder input{flex:1;min-width:160px}
     .hint{color:var(--muted);font-size:14px}
+
+    /* Emploi du temps */
+    .schedlist{width:100%;max-width:780px;display:flex;flex-direction:column;gap:10px}
+    .event{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #ddd;border-radius:12px}
+    .event .time{font-weight:800}
+    .event .title{font-weight:700}
+    .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+    .row > *{flex:1;min-width:160px}
+    .row .btn{flex:0 0 auto}
+    .subtle{font-size:13px;color:#888}
   </style>
 </head>
 <body>
@@ -96,6 +112,66 @@
           <option>Femme</option><option>Homme</option><option>Autre</option><option>Préférer ne pas dire</option>
         </select>
       </div>
+      <div class="actions"><button class="btn" data-next="s5sport">Continuer</button></div>
+    </section>
+
+    <!-- 5bis) Sport -->
+    <section id="s5sport" class="screen">
+      <h2>Pratiquez-vous un sport&nbsp;?</h2>
+      <div class="field">
+        <label class="label" for="sportYes">Sport pratiqué ?</label>
+        <select id="sportYes">
+          <option value="non" selected>Non</option>
+          <option value="oui">Oui</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label" for="sportName">Quel sport ?</label>
+        <input id="sportName" type="text" placeholder="Ex. Football">
+      </div>
+      <div class="field">
+        <label class="label" for="sportTimes">Jours & horaires d’entraînement</label>
+        <input id="sportTimes" type="text" placeholder="Ex. Lundi 18:00-19:30; Mercredi 17:00-18:00">
+        <p class="subtle">Format : Jour HH:MM-HH:MM ; séparés par des “;”</p>
+      </div>
+      <div class="actions"><button class="btn" data-next="s5music">Continuer</button></div>
+    </section>
+
+    <!-- 5ter) Activité musicale -->
+    <section id="s5music" class="screen">
+      <h2>Activité musicale&nbsp;?</h2>
+      <div class="field">
+        <label class="label" for="musicYes">Activité musicale ?</label>
+        <select id="musicYes">
+          <option value="non" selected>Non</option>
+          <option value="oui">Oui</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label" for="musicName">Quelle activité ?</label>
+        <input id="musicName" type="text" placeholder="Ex. Piano">
+      </div>
+      <div class="field">
+        <label class="label" for="musicTimes">Jours & horaires</label>
+        <input id="musicTimes" type="text" placeholder="Ex. Mardi 16:30-17:30">
+      </div>
+      <div class="actions"><button class="btn" data-next="s5drive">Continuer</button></div>
+    </section>
+
+    <!-- 5quater) Leçons de conduite -->
+    <section id="s5drive" class="screen">
+      <h2>Leçons de conduite&nbsp;?</h2>
+      <div class="field">
+        <label class="label" for="driveYes">Leçons de conduite ?</label>
+        <select id="driveYes">
+          <option value="non" selected>Non</option>
+          <option value="oui">Oui</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label" for="driveTimes">Jours & horaires</label>
+        <input id="driveTimes" type="text" placeholder="Ex. Jeudi 14:00-15:00">
+      </div>
       <div class="actions"><button class="btn" data-next="s6">Continuer</button></div>
     </section>
 
@@ -106,8 +182,12 @@
       <div class="actions"><button class="btn" data-next="s7">Entrer</button></div>
     </section>
 
-    <!-- 7) Tâches par jour -->
+    <!-- 7) To-Do -->
     <section id="s7" class="screen tasks">
+      <div class="tabs">
+        <button class="tab active" data-goto="s7">To-Do</button>
+        <button class="tab" data-goto="s8">Emploi du temps</button>
+      </div>
       <h2 id="hello">Votre flow</h2>
       <div class="taskbar">
         <button class="icon" id="prevDay" aria-label="Jour précédent">◀︎</button>
@@ -119,33 +199,87 @@
       <div class="tasklist" id="tasklist"></div>
       <div class="adder"><input id="newTask" type="text" placeholder="Nouvelle tâche…"><button class="btn" id="addTask">Ajouter</button></div>
     </section>
+
+    <!-- 8) Emploi du temps -->
+    <section id="s8" class="screen">
+      <div class="tabs">
+        <button class="tab" data-goto="s7">To-Do</button>
+        <button class="tab active" data-goto="s8">Emploi du temps</button>
+      </div>
+      <h2>Emploi du temps</h2>
+      <div class="taskbar">
+        <button class="icon" id="prevDay2" aria-label="Jour précédent">◀︎</button>
+        <input type="date" id="dayPicker2">
+        <button class="icon" id="nextDay2" aria-label="Jour suivant">▶︎</button>
+        <button class="btn small" id="goToday2">Aujourd’hui</button>
+      </div>
+
+      <p class="hint">Événements récurrents (hebdo) + événements datés.</p>
+      <div class="schedlist" id="schedList"></div>
+
+      <h3>Ajouter un événement (manuel)</h3>
+      <div class="row">
+        <input id="evTitle" type="text" placeholder="Titre (ex. Math)">
+        <input id="evDate" type="date">
+        <input id="evStart" type="time" placeholder="Début">
+        <input id="evEnd" type="time" placeholder="Fin">
+        <button class="btn" id="addEvent">Ajouter</button>
+      </div>
+
+      <h3>Depuis une photo (OCR beta)</h3>
+      <div class="row">
+        <input id="ttImage" type="file" accept="image/*" capture="environment">
+        <button class="btn" id="runOCR">Scanner (OCR)</button>
+      </div>
+      <div class="field">
+        <label class="label" for="ocrText">Texte OCR (éditez si besoin)</label>
+        <textarea id="ocrText" placeholder="Une ligne par événement :&#10;Lundi 08:00-09:00 Math&#10;Mercredi 10:00-12:00 Sport"></textarea>
+        <button class="btn" id="parseOCR">Convertir en événements</button>
+        <p class="subtle">Format attendu : <em>Jour HH:MM-HH:MM Titre</em>, une ligne par événement. Les jours sont reconnus en français.</p>
+      </div>
+    </section>
   </main>
 
   <script>
-    /* ===== Helpers dates ===== */
+    /* ===== Helpers dates & jours ===== */
     function toISODate(d){const tz=d.getTimezoneOffset()*60000;const local=new Date(d.getTime()-tz);return local.toISOString().slice(0,10)}
     function fromISODate(s){const [y,m,dd]=s.split("-").map(Number);return new Date(y,m-1,dd)}
     function todayISO(){return toISODate(new Date())}
+    const DAYS = {lundi:'mon',mardi:'tue',mercredi:'wed',jeudi:'thu',vendredi:'fri',samedi:'sat',dimanche:'sun'};
+    const DAY_ORDER = ['sun','mon','tue','wed','thu','fri','sat']; // JS getDay (0=Sun)
 
     /* ===== Clés de stockage ===== */
     const PROFILE_KEY = "flowProfile";   // {nom, age, email, sexe}
     const TASKS_KEY   = "flowTasks";     // { "YYYY-MM-DD": [ {text,done}, ... ] }
+    const SCHED_KEY   = "flowSchedule";  // { weekly:{mon:[{title,start,end}]...}, dated:{'YYYY-MM-DD':[...]} }
 
     /* ===== State ===== */
-    const state = { nom:"", age:"", email:"", sexe:"", currentDate: todayISO() };
+    const state = { nom:"", age:"", email:"", sexe:"", currentDate: todayISO(), schedDate: todayISO() };
 
-    /* ===== Profile load/save ===== */
-    function loadProfile(){ try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || null; } catch { return null; } }
-    function saveProfile(p){ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+    /* ===== Storage helpers ===== */
+    function loadJSON(key, def=null){ try{ return JSON.parse(localStorage.getItem(key)) ?? def; } catch{ return def; } }
+    function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+    function loadProfile(){ return loadJSON(PROFILE_KEY, null); }
+    function saveProfile(p){ saveJSON(PROFILE_KEY, p); }
     function clearProfile(){ localStorage.removeItem(PROFILE_KEY); }
 
-    /* ===== Tasks load/save ===== */
-    function loadAllTasks(){ try{ return JSON.parse(localStorage.getItem(TASKS_KEY)) || {}; } catch{ return {}; } }
-    function saveAllTasks(data){ localStorage.setItem(TASKS_KEY, JSON.stringify(data)); }
+    function loadAllTasks(){ return loadJSON(TASKS_KEY, {}); }
+    function saveAllTasks(d){ saveJSON(TASKS_KEY, d); }
     function loadTasksFor(date){ const all=loadAllTasks(); return Array.isArray(all[date])?all[date]:[]; }
-    function saveTasksFor(date, tasks){ const all=loadAllTasks(); all[date]=tasks; saveAllTasks(all); }
+    function saveTasksFor(date,tasks){ const all=loadAllTasks(); all[date]=tasks; saveAllTasks(all); }
 
-    /* Seed tâches du jour au 1er lancement */
+    function loadSchedule(){
+      const def = { weekly:{mon:[],tue:[],wed:[],thu:[],fri:[],sat:[],sun:[]}, dated:{} };
+      const s = loadJSON(SCHED_KEY, def);
+      // Ensure keys exist
+      for (const k of ['mon','tue','wed','thu','fri','sat','sun']) s.weekly[k] ??= [];
+      s.dated ??= {};
+      return s;
+    }
+    function saveSchedule(s){ saveJSON(SCHED_KEY, s); }
+
+    /* ===== Seed tâches jour 1 ===== */
     (function seed(){
       const all = loadAllTasks(); const today = todayISO();
       if(!all[today]){
@@ -158,8 +292,8 @@
       }
     })();
 
-    /* ===== Navigation d’écrans ===== */
-    const screens = [...document.querySelectorAll(".screen")];
+    /* ===== UI refs ===== */
+    const screens=[...document.querySelectorAll(".screen")];
     const elNom = document.getElementById("nom");
     const elAge = document.getElementById("age");
     const elEmail = document.getElementById("email");
@@ -169,6 +303,25 @@
     const elTasklist = document.getElementById("tasklist");
     const elNewTask = document.getElementById("newTask");
 
+    // Schedule refs
+    const elPicker2 = document.getElementById("dayPicker2");
+    const elSchedList = document.getElementById("schedList");
+    const elEvTitle = document.getElementById("evTitle");
+    const elEvDate  = document.getElementById("evDate");
+    const elEvStart = document.getElementById("evStart");
+    const elEvEnd   = document.getElementById("evEnd");
+
+    // Onboarding activity refs
+    const elSportYes = document.getElementById("sportYes");
+    const elSportName = document.getElementById("sportName");
+    const elSportTimes = document.getElementById("sportTimes");
+    const elMusicYes = document.getElementById("musicYes");
+    const elMusicName = document.getElementById("musicName");
+    const elMusicTimes = document.getElementById("musicTimes");
+    const elDriveYes = document.getElementById("driveYes");
+    const elDriveTimes = document.getElementById("driveTimes");
+
+    /* ===== Navigation écrans ===== */
     function show(id){
       screens.forEach(s => s.classList.toggle("active", s.id === id));
       if(id==="s2") elNom.focus();
@@ -180,9 +333,8 @@
         elPicker.value = state.currentDate;
         renderTasks();
         elNewTask.focus();
-
-        // Ajoute un bouton "Réinitialiser le profil" (pour recommencer)
-        const bar = document.querySelector(".taskbar");
+        // Ajoute Reset profil si absent
+        const bar = document.querySelector("#s7 .taskbar");
         if(!document.getElementById("resetProfile")){
           const reset = document.createElement("button");
           reset.id = "resetProfile"; reset.className = "btn small"; reset.textContent = "Réinitialiser le profil";
@@ -190,28 +342,45 @@
           bar.appendChild(reset);
         }
       }
+      if(id==="s8"){
+        elPicker2.value = state.schedDate;
+        renderSchedule();
+      }
     }
 
-    // Boutons "Continuer" entre les écrans
+    // Onglets
+    document.addEventListener("click", (e)=>{
+      const tab = e.target.closest(".tab");
+      if(!tab) return;
+      const to = tab.dataset.goto;
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.goto === to));
+      show(to);
+    });
+
+    // Boutons "Continuer"
     document.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-next]");
       if(!btn) return;
       const current = document.querySelector(".screen.active")?.id;
 
-      // Capture des champs au vol
       if(current==="s2") state.nom   = (elNom.value   || "").trim();
       if(current==="s3") state.age   = (elAge.value   || "").trim();
       if(current==="s4") state.email = (elEmail.value || "").trim();
 
-      // En quittant l’écran "sexe", on SAUVEGARDE le profil
       if(current==="s5"){
         state.sexe = elSexe.value;
         saveProfile({ nom: state.nom, age: state.age, email: state.email, sexe: state.sexe });
       }
+
+      // À la sortie de s5sport/s5music/s5drive : intègre les événements hebdos
+      if(current==="s5sport") addWeeklyFromText(elSportYes.value==="oui", elSportName.value.trim()||"Sport", elSportTimes.value, "Sport");
+      if(current==="s5music") addWeeklyFromText(elMusicYes.value==="oui", elMusicName.value.trim()||"Musique", elMusicTimes.value, "Musique");
+      if(current==="s5drive") addWeeklyFromText(elDriveYes.value==="oui", "Leçon de conduite", elDriveTimes.value, "Conduite");
+
       show(btn.dataset.next);
     });
 
-    // Entrée pour avancer
+    // Enter pour avancer
     elNom.addEventListener("keydown", e => { if(e.key==="Enter") show("s3"); });
     elAge.addEventListener("keydown", e => { if(e.key==="Enter") show("s4"); });
     elEmail.addEventListener("keydown", e => { if(e.key==="Enter") show("s5"); });
@@ -219,7 +388,7 @@
       if(e.key==="Enter") {
         state.sexe = elSexe.value;
         saveProfile({ nom: state.nom, age: state.age, email: state.email, sexe: state.sexe });
-        show("s6");
+        show("s5sport");
       }
     });
 
@@ -231,79 +400,200 @@
         const empty = document.createElement("p");
         empty.className = "hint";
         empty.textContent = "Aucune tâche pour ce jour.";
-        elTasklist.appendChild(empty);
-        return;
+        elTasklist.appendChild(empty); return;
       }
       tasks.forEach((t, idx) => {
         const item = document.createElement("div");
         item.className = "task" + (t.done ? " done" : "");
         item.dataset.index = String(idx);
-
-        const text = document.createElement("span");
-        text.className = "text";
-        text.textContent = t.text;
-
-        const circle = document.createElement("button");
-        circle.className = "circle";
-        circle.textContent = "✓";
-        circle.setAttribute("aria-label","Effectuer la tâche");
-
-        item.append(text, circle);
-        elTasklist.appendChild(item);
+        const text = document.createElement("span"); text.className="text"; text.textContent=t.text;
+        const circle = document.createElement("button"); circle.className="circle"; circle.textContent="✓"; circle.setAttribute("aria-label","Effectuer la tâche");
+        item.append(text, circle); elTasklist.appendChild(item);
       });
     }
-
     document.getElementById("tasklist").addEventListener("click", (e) => {
       const circle = e.target.closest(".circle"); if(!circle) return;
-      const item = circle.closest(".task");
-      const idx = Number(item.dataset.index);
+      const item = circle.closest(".task"); const idx = Number(item.dataset.index);
       const tasks = loadTasksFor(state.currentDate);
       if(tasks[idx]){ tasks[idx].done = !tasks[idx].done; saveTasksFor(state.currentDate, tasks); renderTasks(); }
     });
-
-    // Ajouter une tâche
+    document.getElementById("addTask").addEventListener("click", addTask);
+    elNewTask.addEventListener("keydown", (e) => { if(e.key === "Enter") addTask(); });
     function addTask(){
-      const txt = (elNewTask.value || "").trim();
-      if(!txt) return;
+      const txt = (elNewTask.value || "").trim(); if(!txt) return;
       const tasks = loadTasksFor(state.currentDate);
       tasks.push({ text: txt, done: false });
       saveTasksFor(state.currentDate, tasks);
-      elNewTask.value = "";
-      renderTasks();
+      elNewTask.value = ""; renderTasks();
     }
-    document.getElementById("addTask").addEventListener("click", addTask);
-    elNewTask.addEventListener("keydown", (e) => { if(e.key === "Enter") addTask(); });
+    document.getElementById("prevDay").addEventListener("click", ()=>shiftTaskDate(-1));
+    document.getElementById("nextDay").addEventListener("click", ()=>shiftTaskDate(1));
+    document.getElementById("goToday").addEventListener("click", ()=>{ state.currentDate=todayISO(); elPicker.value=state.currentDate; renderTasks(); });
+    elPicker.addEventListener("change", ()=>{ state.currentDate = elPicker.value || todayISO(); renderTasks(); });
+    function shiftTaskDate(delta){
+      const d = fromISODate(state.currentDate); d.setDate(d.getDate()+delta);
+      state.currentDate = toISODate(d); elPicker.value=state.currentDate; renderTasks();
+    }
 
-    // Navigation entre jours
-    document.getElementById("prevDay").addEventListener("click", () => {
-      const d = fromISODate(state.currentDate); d.setDate(d.getDate()-1);
-      state.currentDate = toISODate(d); elPicker.value = state.currentDate; renderTasks();
-    });
-    document.getElementById("nextDay").addEventListener("click", () => {
-      const d = fromISODate(state.currentDate); d.setDate(d.getDate()+1);
-      state.currentDate = toISODate(d); elPicker.value = state.currentDate; renderTasks();
-    });
-    document.getElementById("goToday").addEventListener("click", () => {
-      state.currentDate = todayISO(); elPicker.value = state.currentDate; renderTasks();
-    });
-    elPicker.addEventListener("change", () => {
-      state.currentDate = elPicker.value || todayISO(); renderTasks();
+    /* ===== Emploi du temps ===== */
+    function addWeeklyFromText(enabled, name, text, kindLabel){
+      if(!enabled) return;
+      const schedule = loadSchedule();
+      const entries = (text||"").split(";").map(s=>s.trim()).filter(Boolean);
+      for(const entry of entries){
+        // ex. "Lundi 18:00-19:30"  ou  "Mercredi 17:00-18:00"
+        const m = entry.match(/^([a-zA-Zéèêîûàùôç]+)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/i);
+        if(!m) continue;
+        const dayWord = m[1].toLowerCase();
+        const start = normTime(m[2]); const end = normTime(m[3]);
+        const dayKey = DAYS[dayWord];
+        if(!dayKey) continue;
+        schedule.weekly[dayKey].push({title: (name||kindLabel), start, end});
+      }
+      saveSchedule(schedule);
+    }
+
+    function normTime(t){ // "8:0" -> "08:00"
+      const [H,M] = t.split(":").map(x=>x.padStart(2,"0"));
+      return `${H}:${M}`;
+    }
+
+    function renderSchedule(){
+      elSchedList.innerHTML = "";
+      const schedule = loadSchedule();
+      const day = fromISODate(state.schedDate).getDay(); // 0-6 (Sun-Sat)
+      const dayKey = DAY_ORDER[day];
+
+      // Weekly events for this weekday
+      const weekly = [...schedule.weekly[dayKey]];
+
+      // Dated events
+      const dated = schedule.dated[state.schedDate] ? [...schedule.dated[state.schedDate]] : [];
+
+      const all = [...weekly.map(e=>({...e, _kind:"weekly"})), ...dated.map(e=>({...e, _kind:"dated"}))]
+        .sort((a,b)=> (a.start||"") < (b.start||"") ? -1 : 1);
+
+      if(all.length===0){
+        const p = document.createElement("p");
+        p.className="hint"; p.textContent="Aucun événement ce jour.";
+        elSchedList.appendChild(p); return;
+      }
+
+      for(const ev of all){
+        const row = document.createElement("div");
+        row.className="event";
+        const left = document.createElement("div");
+        left.innerHTML = `<span class="time">${ev.start ?? "?"}–${ev.end ?? "?"}</span> &nbsp; <span class="title">${ev.title ?? "Événement"}</span>`;
+        const right = document.createElement("div");
+        right.innerHTML = `<span class="subtle">${ev._kind==="weekly"?"Hebdo":"Daté"}</span>`;
+        row.append(left,right);
+        elSchedList.appendChild(row);
+      }
+    }
+
+    // Ajouter un événement daté (manuel)
+    document.getElementById("addEvent").addEventListener("click", ()=>{
+      const title=(elEvTitle.value||"Événement").trim();
+      const date = elEvDate.value || state.schedDate;
+      const start = elEvStart.value || "08:00";
+      const end   = elEvEnd.value   || "09:00";
+      const schedule = loadSchedule();
+      schedule.dated[date] ??= [];
+      schedule.dated[date].push({title,start,end});
+      saveSchedule(schedule);
+      elEvTitle.value=""; elEvStart.value=""; elEvEnd.value="";
+      if(date===state.schedDate) renderSchedule();
     });
 
-    /* ===== Démarrage : si profil déjà enregistré → saute l’onboarding ===== */
+    // Navigation de dates pour l'emploi du temps
+    document.getElementById("prevDay2").addEventListener("click", ()=>shiftSchedDate(-1));
+    document.getElementById("nextDay2").addEventListener("click", ()=>shiftSchedDate(1));
+    document.getElementById("goToday2").addEventListener("click", ()=>{ state.schedDate=todayISO(); elPicker2.value=state.schedDate; renderSchedule(); });
+    elPicker2.addEventListener("change", ()=>{ state.schedDate = elPicker2.value || todayISO(); renderSchedule(); });
+    function shiftSchedDate(delta){
+      const d = fromISODate(state.schedDate); d.setDate(d.getDate()+delta);
+      state.schedDate = toISODate(d); elPicker2.value=state.schedDate; renderSchedule();
+    }
+
+    /* ===== OCR Beta (Tesseract.js) ===== */
+    // On ne charge Tesseract.js que si l'utilisateur clique sur OCR (pour gagner du temps)
+    let TESS_LOADING = null;
+    function loadTesseract(){
+      if(TESS_LOADING) return TESS_LOADING;
+      TESS_LOADING = new Promise((resolve, reject)=>{
+        const s = document.createElement("script");
+        s.src = "https://unpkg.com/tesseract.js@5.0.4/dist/tesseract.min.js";
+        s.onload = ()=> resolve(window.Tesseract);
+        s.onerror = reject;
+        document.body.appendChild(s);
+      });
+      return TESS_LOADING;
+    }
+
+    document.getElementById("runOCR").addEventListener("click", async ()=>{
+      const file = document.getElementById("ttImage").files?.[0];
+      if(!file){ alert("Choisis d’abord une image."); return; }
+      const T = await loadTesseract();
+      const { createWorker } = T;
+      const worker = await createWorker("eng", 1); // “eng” par défaut (on peut charger “fra” ensuite si besoin)
+      try{
+        const ret = await worker.recognize(file);
+        document.getElementById("ocrText").value = (ret?.data?.text || "").trim();
+      } catch(e){
+        alert("OCR indisponible. Vérifie ta connexion.");
+        console.error(e);
+      } finally {
+        await worker.terminate();
+      }
+    });
+
+    // Convertit texte OCR -> événements hebdo (si jour repéré) OU datés si date AAAA-MM-JJ détectée
+    document.getElementById("parseOCR").addEventListener("click", ()=>{
+      const raw = document.getElementById("ocrText").value || "";
+      if(!raw.trim()){ alert("Aucun texte à convertir."); return; }
+      const lines = raw.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      const schedule = loadSchedule();
+      let added = 0;
+
+      for(const line of lines){
+        // Cas 1 : Jour HH:MM-HH:MM Titre
+        let m = line.match(/^([a-zA-Zéèêîûàùôç]+)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*(.*)$/i);
+        if(m){
+          const dayKey = DAYS[m[1].toLowerCase()];
+          if(dayKey){
+            schedule.weekly[dayKey].push({title:(m[4]||"Cours").trim()||"Cours", start:normTime(m[2]), end:normTime(m[3])});
+            added++; continue;
+          }
+        }
+        // Cas 2 : 2025-09-20 HH:MM-HH:MM Titre  (daté)
+        m = line.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*(.*)$/);
+        if(m){
+          const date=m[1], start=normTime(m[2]), end=normTime(m[3]), title=(m[4]||"Cours").trim()||"Cours";
+          schedule.dated[date] ??= []; schedule.dated[date].push({title,start,end});
+          added++; continue;
+        }
+      }
+
+      saveSchedule(schedule);
+      alert(added ? `${added} événement(s) ajouté(s).` : "Aucun événement reconnu (vérifie le format).");
+      renderSchedule();
+    });
+
+    /* ===== Démarrage : skip onboarding si profil présent ===== */
     window.addEventListener("load", () => {
       const saved = loadProfile();
       if(saved){
         Object.assign(state, saved);
         state.currentDate = todayISO();
-        show("s7");               // arrive direct sur la To-Do
+        state.schedDate = todayISO();
+        show("s7");               // arrive direct sur To-Do
       }else{
         show("s1");               // parcours d’accueil la 1ère fois
       }
 
       // PWA / Service Worker (versionnée pour éviter écran blanc)
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js?v=3").catch(console.error);
+        navigator.serviceWorker.register("./sw.js?v=4").catch(console.error);
       }
     });
   </script>
