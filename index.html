@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Flow</title>
 
+  <!-- iPhone (PWA plein écran) -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="https://dummyimage.com/180x180/000/fff.png&text=Flow">
@@ -13,11 +14,11 @@
 
   <style>
     :root{
-      --bg:#fff; --fg:#111; --muted:#666; --accent:#111; --radius:16px;
+      --bg:#fff; --fg:#111; --muted:#777; --accent:#111; --radius:16px;
       --safe-bottom: env(safe-area-inset-bottom);
-      --hour-h: 48px;              /* hauteur d’1 heure dans la grille */
-      --lane-pad: 8px;             /* marge intérieure de la voie évènements */
-      --pill-bg:#e9e9e9;           /* fond des événements */
+      --hour-h: 48px;      /* hauteur d’1h dans la grille du calendrier */
+      --lane-pad: 8px;     /* marge intérieure de la voie événements */
+      --pill-bg:#d9d9d9;   /* fond des événements */
     }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg)}
@@ -25,223 +26,145 @@
       display:flex;align-items:center;justify-content:center;
       font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial
     }
+
+    /* Zones d’écran */
     .screen{display:none;width:min(680px,96vw);padding:24px;border-radius:var(--radius)}
     .screen.active{display:flex;flex-direction:column;align-items:center;gap:18px}
     h1,h2{margin:0;text-align:center}
     h1{font-size:clamp(28px,6vw,40px);line-height:1.05}
     h2{font-size:clamp(20px,4.8vw,28px)}
-    p{margin:0;color:var(--muted);text-align:center}
     .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-    .btn{padding:12px 18px;border:1px solid var(--accent);border-radius:12px;background:#fff;color:#111;cursor:pointer;font-weight:700}
+
+    .btn{padding:12px 18px;border:1px solid var(--accent);border-radius:12px;background:#fff;color:#111;cursor:pointer;font-weight:800}
     .btn.small{padding:8px 12px}
     .btn:active{transform:translateY(1px)}
-    .field{display:flex;flex-direction:column;gap:8px;width:100%;max-width:520px;align-items:stretch}
-    .label{font-weight:700}
-    input,select,textarea{padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit}
-    input:focus,select:focus,textarea:focus{border-color:#111}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    .row>*{flex:1;min-width:120px}
+    input,select{padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit}
+    input:focus,select:focus{border-color:#111}
 
     .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
     .tab{padding:10px 16px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
     .tab.active{border-color:#111;font-weight:800}
 
-    /* splash */
-    .space{background:#000;color:#fff;border-radius:var(--radius);position:relative;overflow:hidden;padding:36px}
-    .space.active{display:flex}
-    .stars,.stars2{position:absolute;inset:0;pointer-events:none;background-image:
-      radial-gradient(#fff 1px,transparent 1px),radial-gradient(#fff 1px,transparent 1px);
-      background-size:3px 3px,2px 2px;background-position:0 0,1.5px 1.5px;opacity:.7;animation:drift 60s linear infinite}
-    .stars2{opacity:.4;background-size:2px 2px,1px 1px;animation-duration:120s}
-    @keyframes drift{0%{background-position:0 0,1.5px 1.5px}100%{background-position:1000px 1000px,1001.5px 1001.5px}}
-    .space h1{color:#fff}.space .btn{background:#fff;color:#000;border-color:#fff}
-
     /* To-Do */
-    .tasks{gap:14px}
-    .taskbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
-    .taskbar input[type="date"]{padding:10px 12px;border-radius:10px;border:1px solid #ccc;font:inherit}
-    .icon{width:40px;height:40px;border-radius:10px;border:1px solid #111;background:#fff;cursor:pointer;display:grid;place-items:center;font-weight:900}
+    .taskbar{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center}
+    .taskbar-row{display:flex;gap:8px;align-items:center;justify-content:center}
     .tasklist{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px}
     .task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #ddd;border-radius:14px}
     .task .text{font-weight:700}
     .task.done .text{text-decoration:line-through;color:#888}
-    .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;cursor:pointer;flex:0 0 auto;display:grid;place-items:center;font-size:16px;line-height:1}
+    .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;cursor:pointer;display:grid;place-items:center;font-size:16px;line-height:1}
     .task.done .circle{background:#111;color:#fff}
     .adder{width:100%;max-width:640px;display:flex;gap:8px;justify-content:center}
     .adder input{flex:1;min-width:160px}
-    .hint{color:var(--muted);font-size:13px}
+    .spin{display:inline-block; animation:rot 1.8s linear infinite}
+    @keyframes rot{to{transform:rotate(360deg)}}
 
-    /* Emploi du temps — NAV semaine */
-    .dayrow{width:100%;display:flex;gap:8px;overflow-x:auto;padding:6px 2px;scroll-snap-type:x mandatory}
-    .chip{scroll-snap-align:center;white-space:nowrap;padding:8px 12px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
-    .chip.active{border-color:#111;font-weight:800}
+    /* Paramètres (engrenage) */
+    .gear{
+      position:fixed; left:16px; top:16px; z-index:30;
+      width:44px; height:44px; border-radius:12px; border:1px solid #111; background:#fff;
+      font-size:22px; display:grid; place-items:center; cursor:pointer;
+    }
 
-    /* Emploi du temps — HEADER jour + pastille date + “voisins” */
-    .dayHeader{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%;max-width:640px}
-    .dateBadge{border:1.5px solid #111;border-radius:999px;padding:10px 18px;font-weight:900}
-    .hrule{height:2px;background:#111;width:160px;margin:4px auto;border-radius:2px}
-    .neighbors{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:100%;max-width:640px}
-    .nb{color:#9a9a9a;font-weight:900;text-transform:lowercase;text-align:center}
-    .mid{font-size:clamp(22px,6vw,34px);font-weight:900;text-align:center;display:flex;align-items:center;gap:10px}
-    .mid::before,.mid::after{content:"";display:inline-block;width:1px;height:28px;background:#111;opacity:.7}
+    /* Emploi du temps — header identique à ta maquette */
+    .calHead{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:4px}
+    .calHead .date{font-size:36px;font-weight:900;letter-spacing:1px}
+    .arrowBtn{width:42px;height:42px;border-radius:12px;border:1px solid #111;background:#fff;display:grid;place-items:center;cursor:pointer;font-size:22px}
+    .neighbors{display:flex;align-items:center;justify-content:center;gap:16px;font-weight:900;color:#9a9a9a}
+    .neighbors .mid{font-size:clamp(24px,6vw,34px);color:#111;position:relative}
+    .neighbors .mid::before,.neighbors .mid::after{
+      content:""; display:inline-block; width:2px; height:28px; background:#111; opacity:.8; margin:0 10px; vertical-align:middle
+    }
 
-    /* Emploi du temps — GRILLE horaire */
+    /* Grille verticale (08:00→19:00 à gauche, pilules à droite) */
     .schedWrap{width:100%;max-width:640px}
     .schedGrid{display:grid;grid-template-columns:72px 1fr;gap:0 12px}
     .hours{user-select:none}
     .h{height:var(--hour-h);display:flex;align-items:flex-start;justify-content:flex-end;padding-right:6px;font-weight:900}
-    .lane{position:relative;height:calc(var(--hour-h) * 12); /* 08→20 par défaut (12 tranches) */ border-left:1px solid #e5e5e5;border-right:1px solid transparent;border-radius:12px;background:
-      linear-gradient(#eee 1px,transparent 1px) repeat-y; background-size:100% var(--hour-h);}
-    .ev{position:absolute;left:var(--lane-pad);right:var(--lane-pad);border:1px solid #111;border-radius:999px;background:var(--pill-bg);display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09)}
+    .lane{position:relative;height:calc(var(--hour-h) * 12); border-left:1px solid #e5e5e5; border-right:1px solid transparent; border-radius:12px;
+      background: linear-gradient(#eee 1px,transparent 1px) repeat-y; background-size:100% var(--hour-h);}
+    .ev{position:absolute;left:var(--lane-pad);right:var(--lane-pad);border:1.5px solid #111;border-radius:999px;background:var(--pill-bg);
+      display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09)}
     .ev.small{font-weight:800}
     .ev .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    /* FAB + bottom sheet */
-    .fab{position:fixed;right:16px;bottom:calc(16px + var(--safe-bottom));width:56px;height:56px;border-radius:50%;border:1px solid #111;background:#fff;cursor:pointer;font-size:28px;line-height:0;display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.12)}
-    .sheet{position:fixed;left:0;right:0;bottom:0;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -12px 24px rgba(0,0,0,.12);display:none;gap:12px}
-    .sheet.open{display:flex;flex-direction:column}
-    .sheet .row{align-items:center}
-    .divider{height:1px;background:#eee;width:100%}
-    .x{position:absolute;right:12px;top:8px;border:0;background:transparent;font-size:22px;cursor:pointer}
-    .pill{padding:8px 12px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
+    /* Bouton + (gros, gris) */
+    .fab{
+      position:fixed; right:16px; bottom:calc(16px + var(--safe-bottom));
+      width:80px; height:80px; border-radius:50%; border:1.5px solid #111; background:#9c9c9c;
+      color:#111; font-size:48px; line-height:0; display:grid; place-items:center; cursor:pointer;
+      box-shadow:0 10px 26px rgba(0,0,0,.14); z-index:20;
+    }
 
-    /* petits écrans : un peu plus compact */
+    /* Feuilles (bottom sheets) */
+    .sheet{position:fixed;left:0;right:0;bottom:0;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -12px 24px rgba(0,0,0,.12);display:none;gap:12px;z-index:40}
+    .sheet.open{display:flex;flex-direction:column}
+    .sheet .row{display:flex;gap:8px;flex-wrap:wrap}
+    .sheet .x{position:absolute; right:12px; top:8px; border:0; background:transparent; font-size:22px; cursor:pointer}
+    .error{color:#d22; font-weight:800}
+
     @media (max-width:390px){
       :root{ --hour-h: 44px; }
     }
   </style>
 </head>
 <body>
+  <!-- engrenage (paramètres) -->
+  <button class="gear" id="btnSettings" title="Paramètres">⚙️</button>
+
   <main id="app">
-    <!-- 1) Bienvenue -->
+    <!-- 1) Bienvenue (phrase retirée) -->
     <section id="s1" class="screen active">
       <h1>Bienvenue dans Flow</h1>
-      <p>Un mini parcours en quelques étapes.</p>
-      <div class="actions"><button class="btn" data-next="s2">Continuer</button></div>
-    </section>
-
-    <!-- 2) Nom -->
-    <section id="s2" class="screen">
-      <h2>Quel est votre nom&nbsp;?</h2>
-      <div class="field"><label class="label" for="nom">Nom</label><input id="nom" type="text" placeholder="Entrez votre nom" autocomplete="name"></div>
-      <div class="actions"><button class="btn" data-next="s3">Continuer</button></div>
-    </section>
-
-    <!-- 3) Âge -->
-    <section id="s3" class="screen">
-      <h2>Quel est votre âge&nbsp;?</h2>
-      <div class="field"><label class="label" for="age">Âge</label><input id="age" type="number" min="0" step="1" placeholder="Ex. 30" inputmode="numeric"></div>
-      <div class="actions"><button class="btn" data-next="s4">Continuer</button></div>
-    </section>
-
-    <!-- 4) Email -->
-    <section id="s4" class="screen">
-      <h2>Votre email</h2>
-      <div class="field"><label class="label" for="email">Email</label><input id="email" type="email" placeholder="vous@example.com" autocomplete="email"></div>
-      <div class="actions"><button class="btn" data-next="s5">Continuer</button></div>
-    </section>
-
-    <!-- 5) Sexe -->
-    <section id="s5" class="screen">
-      <h2>Votre sexe</h2>
-      <div class="field">
-        <label class="label" for="sexe">Sexe</label>
-        <select id="sexe">
-          <option value="" selected>Choisir…</option>
-          <option>Femme</option><option>Homme</option><option>Autre</option><option>Préférer ne pas dire</option>
-        </select>
+      <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:10px">
+        <label for="nom" style="font-weight:800">Quel est votre nom ?</label>
+        <input id="nom" type="text" placeholder="Entrez votre nom" autocomplete="name">
       </div>
-      <div class="actions"><button class="btn" data-next="s5sport">Continuer</button></div>
+      <div class="actions"><button class="btn" id="startContinue">Continuer</button></div>
     </section>
 
-    <!-- 5bis) Sport -->
-    <section id="s5sport" class="screen">
-      <h2>Pratiquez-vous un sport&nbsp;?</h2>
-      <div class="field"><label class="label" for="sportYes">Sport pratiqué ?</label><select id="sportYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select></div>
-      <div id="sportDetails" style="display:none;width:100%">
-        <div class="field"><label class="label" for="sportName">Quel sport ?</label><input id="sportName" type="text" placeholder="Ex. Tennis"></div>
-        <div class="field"><span class="label">Entraînements</span><div id="sportRows"></div><button class="pill" id="addSportRow">+ Ajouter une séance</button></div>
-      </div>
-      <div class="actions"><button class="btn" data-next="s5music">Continuer</button></div>
-    </section>
-
-    <!-- 5ter) Musique -->
-    <section id="s5music" class="screen">
-      <h2>Activité musicale&nbsp;?</h2>
-      <div class="field"><label class="label" for="musicYes">Activité musicale ?</label><select id="musicYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select></div>
-      <div id="musicDetails" style="display:none;width:100%">
-        <div class="field"><label class="label" for="musicName">Quelle activité ?</label><input id="musicName" type="text" placeholder="Ex. Piano"></div>
-        <div class="field"><span class="label">Cours / répétitions</span><div id="musicRows"></div><button class="pill" id="addMusicRow">+ Ajouter une séance</button></div>
-      </div>
-      <div class="actions"><button class="btn" data-next="s5drive">Continuer</button></div>
-    </section>
-
-    <!-- 5quater) Conduite -->
-    <section id="s5drive" class="screen">
-      <h2>Leçons de conduite&nbsp;?</h2>
-      <div class="field"><label class="label" for="driveYes">Leçons de conduite ?</label><select id="driveYes"><option value="non" selected>Non</option><option value="oui">Oui</option></select></div>
-      <div id="driveDetails" style="display:none;width:100%">
-        <div class="field"><span class="label">Séances</span><div id="driveRows"></div><button class="pill" id="addDriveRow">+ Ajouter une séance</button></div>
-      </div>
-      <div class="actions"><button class="btn" data-next="s6">Continuer</button></div>
-    </section>
-
-    <!-- 6) Espace -->
-    <section id="s6" class="screen space">
-      <div class="stars"></div><div class="stars2"></div>
-      <h1>Cliquez pour entrer dans votre flow</h1>
-      <div class="actions"><button class="btn" data-next="s7">Entrer</button></div>
-    </section>
-
-    <!-- 7) To-Do -->
-    <section id="s7" class="screen tasks">
+    <!-- 2) To-Do (en premier après le nom) -->
+    <section id="s7" class="screen">
       <div class="tabs">
         <button class="tab active" data-goto="s7">To-Do</button>
         <button class="tab" data-goto="s8">Emploi du temps</button>
       </div>
-      <h2 id="hello">Votre flow</h2>
+
       <div class="taskbar">
-        <button class="icon" id="prevDay">◀︎</button>
-        <input type="date" id="dayPicker">
-        <button class="icon" id="nextDay">▶︎</button>
-        <button class="btn small" id="goToday">Aujourd’hui</button>
+        <div class="taskbar-row">
+          <input type="date" id="dayPicker">
+        </div>
+        <div class="taskbar-row">
+          <button class="btn small" id="goToday"><span class="spin">↻</span>&nbsp;Aujourd’hui</button>
+        </div>
       </div>
-      <p class="hint">Tâches enregistrées par date (localStorage).</p>
+
       <div class="tasklist" id="tasklist"></div>
-      <div class="adder"><input id="newTask" type="text" placeholder="Nouvelle tâche…"><button class="btn" id="addTask">Ajouter</button></div>
+      <div class="adder">
+        <input id="newTask" type="text" placeholder="Nouvelle tâche…">
+        <button class="btn" id="addTask">Ajouter</button>
+      </div>
     </section>
 
-    <!-- 8) Emploi du temps -->
+    <!-- 3) Emploi du temps (présentation comme ta maquette) -->
     <section id="s8" class="screen">
       <div class="tabs">
         <button class="tab" data-goto="s7">To-Do</button>
         <button class="tab active" data-goto="s8">Emploi du temps</button>
       </div>
 
-      <!-- mini nav semaine -->
-      <div id="schedNav" class="taskbar" style="gap:12px;margin-top:-6px">
-        <button class="icon" id="prevDay2">◀︎</button>
-        <div id="dayRow" class="dayrow" aria-label="Semaine"></div>
-        <button class="icon" id="nextDay2">▶︎</button>
-        <button class="btn small" id="goToday2">Aujourd’hui</button>
-        <input type="date" id="dayPicker2" style="display:none" aria-hidden="true">
+      <div class="calHead">
+        <button class="arrowBtn" id="prevDay2">◀</button>
+        <div class="date" id="bigDate">20/09</div>
+        <button class="arrowBtn" id="nextDay2">▶</button>
       </div>
 
-      <!-- header: pastille date + voisins -->
-      <div class="hrule"></div>
-      <div class="dayHeader">
-        <div></div>
-        <div class="dateBadge" id="badgeText">Dim 28/09</div>
-        <div></div>
-      </div>
-      <div class="hrule"></div>
       <div class="neighbors">
-        <div class="nb" id="prevName">mardi</div>
+        <div id="prevName">mardi</div>
         <div class="mid" id="midName">Lundi</div>
-        <div class="nb" id="nextName">mercredi</div>
+        <div id="nextName">mercredi</div>
       </div>
 
-      <!-- grille horaire -->
       <div class="schedWrap">
         <div class="schedGrid">
           <div class="hours" id="hoursCol"></div>
@@ -251,243 +174,215 @@
     </section>
   </main>
 
-  <!-- Bouton + flottant -->
+  <!-- GROS + (ajout d’événement) -->
   <button class="fab" id="fabAdd" title="Ajouter un événement" style="display:none">＋</button>
 
-  <!-- Feuille d’options (manuel / photo OCR) -->
-  <div class="sheet" id="sheet">
-    <button class="x" id="closeSheet">×</button>
-    <h3 style="margin:6px 0 0 0;text-align:center">Ajouter à l’emploi du temps</h3>
+  <!-- Sheet : AJOUT ÉVÉNEMENT -->
+  <div class="sheet" id="sheetAdd">
+    <button class="x" id="closeAdd">×</button>
+    <h3 style="margin:0;text-align:center">Ajouter dans mon calendrier</h3>
+    <div class="row">
+      <label style="font-weight:800">Le</label>
+      <input type="date" id="evDate" style="flex:1">
+    </div>
+    <div class="row">
+      <label style="font-weight:800">De</label>
+      <input type="time" id="evStart" style="flex:1">
+      <label style="font-weight:800">à</label>
+      <input type="time" id="evEnd" style="flex:1">
+    </div>
+    <div class="row">
+      <input id="evTitle" type="text" placeholder="Titre de l’événement" style="flex:1">
+    </div>
+    <div id="addError" class="error" style="display:none"></div>
     <div class="row" style="justify-content:center">
-      <button class="pill" id="optManual">Manuellement</button>
-      <button class="pill" id="optPhoto">Depuis une photo</button>
-    </div>
-    <div class="divider"></div>
-    <div id="manualForm" class="field" style="display:none">
-      <span class="label">Nouvel événement (pour le <span id="manualDateLabel"></span>)</span>
-      <input id="evTitle" type="text" placeholder="Titre (ex. Math)">
-      <div class="row"><input id="evStart" type="time"><input id="evEnd" type="time"></div>
       <button class="btn" id="addEvent">Ajouter</button>
-    </div>
-    <div id="photoForm" class="field" style="display:none">
-      <span class="label">Photo de l’emploi du temps</span>
-      <input id="ttImage" type="file" accept="image/*" capture="environment">
-      <div class="row" style="justify-content:center">
-        <button class="btn small" id="runOCR">Scanner (OCR)</button>
-        <button class="btn small" id="useGPT" title="Utiliser ChatGPT (optionnel)">ChatGPT ↗</button>
-      </div>
-      <textarea id="ocrText" placeholder="Ex.&#10;Lundi 08:00-09:00 Tennis" style="min-height:120px"></textarea>
-      <button class="btn" id="parseOCR">Convertir en événements</button>
-      <p class="hint">Format : <em>Jour HH:MM-HH:MM Titre</em> ou <em>YYYY-MM-DD HH:MM-HH:MM Titre</em>.</p>
     </div>
   </div>
 
+  <!-- Sheet : PARAMÈTRES -->
+  <div class="sheet" id="sheetSettings">
+    <button class="x" id="closeSettings">×</button>
+    <h3 style="margin:0;text-align:center">Paramètres</h3>
+    <div class="row" style="align-items:center">
+      <label for="resetSelect" style="font-weight:800">Réinitialiser le profil</label>
+      <select id="resetSelect" style="flex:1">
+        <option value="non" selected>Non</option>
+        <option value="oui">Oui</option>
+      </select>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="applySettings">Appliquer</button>
+    </div>
+    <p style="color:var(--muted);margin:0;text-align:center">La réinitialisation efface nom, tâches et calendrier.</p>
+  </div>
+
   <script>
-    /* ===== Dates / jours ===== */
+    /* ===== Helpers dates ===== */
     const toISODate=d=>{const tz=d.getTimezoneOffset()*60000;const local=new Date(d.getTime()-tz);return local.toISOString().slice(0,10)}
     const fromISODate=s=>{const [y,m,dd]=s.split("-").map(Number);return new Date(y,m-1,dd)}
     const todayISO=()=>toISODate(new Date())
-    const startOfWeek=d=>{const x=new Date(d),k=(x.getDay()+6)%7;x.setDate(x.getDate()-k);x.setHours(0,0,0,0);return x}
-    const DAYS={lundi:'mon',mardi:'tue',mercredi:'wed',jeudi:'thu',vendredi:'fri',samedi:'sat',dimanche:'sun'}
     const DAY_NAMES=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam']
-    const DAY_FULL=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi']
-    const DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun']
-    const DAY_JS_2_KEY=['sun','mon','tue','wed','thu','fri','sat']
+    const DAY_FULL=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi']
 
     /* ===== Storage ===== */
     const PROFILE_KEY="flowProfile", TASKS_KEY="flowTasks", SCHED_KEY="flowSchedule"
     const loadJSON=(k,d=null)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
     const saveJSON=(k,v)=>localStorage.setItem(k,JSON.stringify(v))
-    const loadProfile=()=>loadJSON(PROFILE_KEY,null), saveProfile=p=>saveJSON(PROFILE_KEY,p), clearProfile=()=>localStorage.removeItem(PROFILE_KEY)
-    const loadAllTasks=()=>loadJSON(TASKS_KEY,{}), saveAllTasks=d=>saveJSON(TASKS_KEY,d)
-    const loadTasksFor=dt=>{const all=loadAllTasks();return Array.isArray(all[dt])?all[dt]:[]}
-    const saveTasksFor=(dt,t)=>{const all=loadAllTasks();all[dt]=t;saveAllTasks(all)}
-    function loadSchedule(){const def={weekly:{mon:[],tue:[],wed:[],thu:[],fri:[],sat:[],sun:[]},dated:{}};const s=loadJSON(SCHED_KEY,def);for(const k of DAY_KEYS)s.weekly[k]??=[];s.dated??={};return s}
+    const clearAll=()=>{localStorage.removeItem(PROFILE_KEY);localStorage.removeItem(TASKS_KEY);localStorage.removeItem(SCHED_KEY)}
+
+    const loadAllTasks=()=>loadJSON(TASKS_KEY,{})
+    const saveAllTasks=d=>saveJSON(TASKS_KEY,d)
+    const tasksFor=dt=>{const all=loadAllTasks();return Array.isArray(all[dt])?all[dt]:[]}
+    const saveTasksFor=(dt,arr)=>{const all=loadAllTasks();all[dt]=arr;saveAllTasks(all)}
+    function loadSchedule(){const s=loadJSON(SCHED_KEY,{dated:{}});s.dated??={};return s}
     const saveSchedule=s=>saveJSON(SCHED_KEY,s)
 
-    /* seed To-Do */
-    (function(){const all=loadAllTasks();const t=todayISO();if(!all[t]){all[t]=[{text:"Peindre la voiture",done:false},{text:"Peindre le chat",done:false},{text:"Peindre la maison",done:false}];saveAllTasks(all)}})()
+    /* ===== State & Refs ===== */
+    const screens=[...document.querySelectorAll(".screen")]
+    const $=id=>document.getElementById(id)
+    const elNom=$("nom"), elStart=$("startContinue")
+    const elPicker=$("dayPicker"), elTasklist=$("tasklist"), elNewTask=$("newTask")
+    const elPrev2=$("prevDay2"), elNext2=$("nextDay2"), elBigDate=$("bigDate"), elLane=$("lane"), elHours=$("hoursCol")
+    const elPrevName=$("prevName"), elNextName=$("nextName"), elMidName=$("midName")
+    const elFab=$("fabAdd"), sheetAdd=$("sheetAdd"), sheetSettings=$("sheetSettings"), addErr=$("addError")
 
-    /* ===== Refs / state ===== */
-    const screens=[...document.querySelectorAll(".screen")], $=id=>document.getElementById(id)
-    const elNom=$("nom"), elAge=$("age"), elEmail=$("email"), elSexe=$("sexe")
-    const elHello=$("hello"), elPicker=$("dayPicker"), elTasklist=$("tasklist"), elNewTask=$("newTask")
-    const elSportYes=$("sportYes"), elSportDetails=$("sportDetails"), elSportName=$("sportName"), elSportRows=$("sportRows")
-    const elMusicYes=$("musicYes"), elMusicDetails=$("musicDetails"), elMusicName=$("musicName"), elMusicRows=$("musicRows")
-    const elDriveYes=$("driveYes"), elDriveDetails=$("driveDetails"), elDriveRows=$("driveRows")
-    const elSchedListWrap=document.querySelector(".schedWrap"), elPicker2=$("dayPicker2"), elDayRow=$("dayRow")
-    const elFab=$("fabAdd"), elSheet=$("sheet"), elManualForm=$("manualForm"), elPhotoForm=$("photoForm"), elManualDateLabel=$("manualDateLabel")
-    const elHours=$("hoursCol"), elLane=$("lane"), elBadge=$("badgeText"), elPrevName=$("prevName"), elNextName=$("nextName"), elMidName=$("midName")
+    const state={nom:"", currentDate:todayISO(), schedDate:todayISO()}
 
-    const state={nom:"",age:"",email:"",sexe:"",currentDate:towardsToday(),schedDate:towardsToday()}
-    function towardsToday(){return todayISO()}
-
-    /* ===== UI ===== */
+    /* ===== UI helpers ===== */
     function show(id){
-      screens.forEach(s=>s.classList.toggle("active",s.id===id))
-      elFab.style.display=(id==="s8")?"grid":"none"
-      if(id==="s7"){
-        elHello.textContent=state.nom?`Votre flow, ${state.nom}`:"Votre flow"
-        elPicker.value=state.currentDate; renderTasks(); elNewTask.focus()
-        const bar=document.querySelector("#s7 .taskbar")
-        if(!$("resetProfile")){const b=document.createElement("button");b.id="resetProfile";b.className="btn small";b.textContent="Réinitialiser le profil";b.onclick=()=>{clearProfile();show("s1")};bar.appendChild(b)}
-      }
-      if(id==="s8"){
-        if(elPicker2) elPicker2.value=state.schedDate
-        renderWeekRow(); renderSchedule()
-      }
+      screens.forEach(s=>s.classList.toggle("active", s.id===id))
+      elFab.style.display = (id==="s8") ? "grid" : "none"
+      if(id==="s7"){ elPicker.value=state.currentDate; renderTasks(); elNewTask.focus() }
+      if(id==="s8"){ renderCalendar() }
     }
+    function goto(id){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.goto===id)); show(id) }
 
-    // Tabs + navigation
-    document.addEventListener("click",e=>{
-      const tab=e.target.closest(".tab"); if(tab){const to=tab.dataset.goto;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.goto===to)); show(to); return}
-      const btn=e.target.closest("[data-next]"); if(!btn) return
-      const cur=document.querySelector(".screen.active")?.id
-      if(cur==="s2") state.nom=(elNom.value||"").trim()
-      if(cur==="s3") state.age=(elAge.value||"").trim()
-      if(cur==="s4") state.email=(elEmail.value||"").trim()
-      if(cur==="s5"){state.sexe=elSexe.value; saveProfile({nom:state.nom,age:state.age,email:state.email,sexe:state.sexe})}
-      if(cur==="s5sport") commitActivityRows(elSportYes.value==="oui", elSportName.value.trim()||"Sport", elSportRows)
-      if(cur==="s5music") commitActivityRows(elMusicYes.value==="oui", elMusicName.value.trim()||"Musique", elMusicRows)
-      if(cur==="s5drive") commitActivityRows(elDriveYes.value==="oui", "Leçon de conduite", elDriveRows)
-      show(btn.dataset.next)
+    /* ===== Démarrage ===== */
+    window.addEventListener("load", ()=>{
+      const prof=loadJSON(PROFILE_KEY,null)
+      if(prof){ state.nom = prof.nom||""; show("s7") } else { show("s1") }
+      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=9").catch(console.error) }
     })
-    elNom.addEventListener("keydown",e=>{if(e.key==="Enter")show("s3")})
-    elAge.addEventListener("keydown",e=>{if(e.key==="Enter")show("s4")})
-    elEmail.addEventListener("keydown",e=>{if(e.key==="Enter")show("s5")})
-    elSexe.addEventListener("keydown",e=>{if(e.key==="Enter"){state.sexe=elSexe.value;saveProfile({nom:state.nom,age:state.age,email:state.email,sexe:state.sexe});show("s5sport")}})
-    const toggleDetails=(sel,box)=>box.style.display= sel.value==="oui" ? "block":"none"
-    elSportYes.onchange=()=>toggleDetails(elSportYes,elSportDetails)
-    elMusicYes.onchange=()=>toggleDetails(elMusicYes,elMusicDetails)
-    elDriveYes.onchange=()=>toggleDetails(elDriveYes,elDriveDetails)
 
-    // Ajout de séance (jour + heures)
-    const dayOptions=`<option value="mon">Lundi</option><option value="tue">Mardi</option><option value="wed">Mercredi</option><option value="thu">Jeudi</option><option value="fri">Vendredi</option><option value="sat">Samedi</option><option value="sun">Dimanche</option>`
-    function addSessionRow(container){
-      const row=document.createElement("div"); row.className="row"
-      row.innerHTML=`<select class="dow">${dayOptions}</select><input type="time" class="tstart"><input type="time" class="tend"><button class="pill remove">Supprimer</button>`
-      row.querySelector(".remove").onclick=()=>row.remove()
-      container.appendChild(row)
-    }
-    $("addSportRow")?.addEventListener("click",()=>addSessionRow(elSportRows))
-    $("addMusicRow")?.addEventListener("click",()=>addSessionRow(elMusicRows))
-    $("addDriveRow")?.addEventListener("click",()=>addSessionRow(elDriveRows))
-    function commitActivityRows(enabled,title,container){
-      if(!enabled) return; const s=loadSchedule()
-      ;[...container.querySelectorAll(".row")].forEach(r=>{
-        const dow=r.querySelector(".dow").value, st=r.querySelector(".tstart").value||"08:00", en=r.querySelector(".tend").value||"09:00"
-        if(DAY_KEYS.includes(dow)) s.weekly[dow].push({title,start:st,end:en})
-      }); saveSchedule(s)
-    }
+    // Bienvenue → continuer
+    elStart.addEventListener("click", ()=>{
+      state.nom = (elNom.value||"").trim()
+      saveJSON(PROFILE_KEY,{nom:state.nom})
+      goto("s7")
+    })
 
-    /* To-Do */
+    /* ===== Tabs ===== */
+    document.addEventListener("click",(e)=>{
+      const tab=e.target.closest(".tab"); if(!tab) return
+      goto(tab.dataset.goto)
+    })
+
+    /* ===== To-Do ===== */
     function renderTasks(){
       elTasklist.innerHTML=""
-      const tasks=loadTasksFor(state.currentDate)
-      if(tasks.length===0){const p=document.createElement("p");p.className="hint";p.textContent="Aucune tâche pour ce jour.";elTasklist.appendChild(p);return}
-      tasks.forEach((t,i)=>{const it=document.createElement("div");it.className="task"+(t.done?" done":"");it.dataset.index=i; const tx=document.createElement("span");tx.className="text";tx.textContent=t.text; const c=document.createElement("button");c.className="circle";c.textContent="✓"; it.append(tx,c); elTasklist.appendChild(it)})
-    }
-    elTasklist.addEventListener("click",e=>{const c=e.target.closest(".circle"); if(!c) return; const i=+c.closest(".task").dataset.index; const tasks=loadTasksFor(state.currentDate); if(tasks[i]){tasks[i].done=!tasks[i].done; saveTasksFor(state.currentDate,tasks); renderTasks();}})
-    $("addTask").onclick=()=>{const txt=(elNewTask.value||"").trim(); if(!txt)return; const tasks=loadTasksFor(state.currentDate); tasks.push({text:txt,done:false}); saveTasksFor(state.currentDate,tasks); elNewTask.value=""; renderTasks();}
-    $("prevDay").onclick=()=>shiftDate("currentDate",-1,elPicker,renderTasks)
-    $("nextDay").onclick=()=>shiftDate("currentDate", 1,elPicker,renderTasks)
-    $("goToday").onclick=()=>{state.currentDate=todayISO(); elPicker.value=state.currentDate; renderTasks()}
-    elPicker.onchange=()=>{state.currentDate=elPicker.value||todayISO(); renderTasks()}
-    function shiftDate(which,delta,picker,renderer){
-      const d=fromISODate(state[which]); d.setDate(d.getDate()+delta)
-      state[which]=toISODate(d); if(picker) picker.value=state[which]; renderer()
-    }
-
-    /* Emploi du temps — semaine */
-    function renderWeekRow(){
-      elDayRow.innerHTML=""
-      const start=startOfWeek(fromISODate(state.schedDate))
-      for(let i=0;i<7;i++){
-        const d=new Date(start); d.setDate(start.getDate()+i); const iso=toISODate(d)
-        const chip=document.createElement("button"); chip.className="chip"+(iso===state.schedDate?" active":""); chip.textContent=`${DAY_NAMES[d.getDay()]} ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`
-        chip.onclick=()=>{state.schedDate=iso; if(elPicker2) elPicker2.value=state.schedDate; renderWeekRow(); renderSchedule();}
-        elDayRow.appendChild(chip)
+      const items=tasksFor(state.currentDate)
+      if(items.length===0){
+        const p=document.createElement("p");p.style.color="var(--muted)";p.textContent="Aucune tâche."; elTasklist.appendChild(p)
       }
+      items.forEach((t,i)=>{
+        const row=document.createElement("div"); row.className="task"+(t.done?" done":""); row.dataset.index=i
+        row.innerHTML=`<span class="text">${t.text}</span><button class="circle">✓</button>`
+        elTasklist.appendChild(row)
+      })
     }
+    elTasklist.addEventListener("click",e=>{
+      const c=e.target.closest(".circle"); if(!c) return
+      const idx=+c.closest(".task").dataset.index
+      const items=tasksFor(state.currentDate); if(items[idx]){items[idx].done=!items[idx].done; saveTasksFor(state.currentDate,items); renderTasks()}
+    })
+    $("addTask").addEventListener("click", addTask)
+    elNewTask.addEventListener("keydown", e=>{ if(e.key==="Enter") addTask() })
+    function addTask(){
+      const txt=(elNewTask.value||"").trim(); if(!txt) return
+      const items=tasksFor(state.currentDate); items.push({text:txt,done:false})
+      saveTasksFor(state.currentDate,items); elNewTask.value=""; renderTasks()
+    }
+    elPicker.addEventListener("change", ()=>{state.currentDate=elPicker.value||todayISO(); renderTasks()})
+    $("goToday").addEventListener("click", ()=>{state.currentDate=todayISO(); elPicker.value=state.currentDate; renderTasks()})
 
-    /* Emploi du temps — grille verticale */
-    const START_H=8, END_H=20; // 08:00 → 20:00
-    function renderSchedule(){
-      // header (date + voisins)
+    /* ===== Emploi du temps (08→19) ===== */
+    const START_H=8, END_H=20
+    function renderCalendar(){
+      // Entête (date + voisins)
       const d=fromISODate(state.schedDate)
       const dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0")
-      elBadge.textContent = `${DAY_NAMES[d.getDay()]} ${dd}/${mm}`
-      elMidName.textContent = DAY_FULL[d.getDay()]
-      elPrevName.textContent = DAY_FULL[(d.getDay()+6)%7].toLowerCase()
-      elNextName.textContent = DAY_FULL[(d.getDay()+1)%7].toLowerCase()
+      elBigDate.textContent = `${dd}/${mm}`
+      elMidName.textContent = DAY_FULL[d.getDay()].charAt(0).toUpperCase()+DAY_FULL[d.getDay()].slice(1)
+      elPrevName.textContent = DAY_FULL[(d.getDay()+6)%7]
+      elNextName.textContent = DAY_FULL[(d.getDay()+1)%7]
 
-      // colonne heures
+      // Heures à gauche
       elHours.innerHTML=""
       for(let h=START_H; h<END_H; h++){
-        const item=document.createElement("div"); item.className="h"; item.textContent=`${String(h).padStart(2,"0")}:00`
-        elHours.appendChild(item)
+        const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`
+        elHours.appendChild(div)
       }
 
-      // voie évènements
+      // Évènements datés
       elLane.innerHTML=""
-      elLane.style.setProperty('--hour-h', getComputedStyle(document.documentElement).getPropertyValue('--hour-h'))
-
-      const s=loadSchedule()
-      const dayKey=DAY_JS_2_KEY[d.getDay()]
-      const weekly=[...(s.weekly[dayKey]||[])], dated=[...(s.dated[state.schedDate]||[])]
-      const all=[...weekly, ...dated].map(e=>({...e})) // {title,start,end}
-
-      // place chaque évènement
+      const s=loadSchedule(); const arr=[...(s.dated[state.schedDate]||[])]
       const hourH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hour-h')) || 48
-      const laneTop = 0
-      for(const ev of all){
-        const pos = timeToPos(ev.start, hourH), posEnd = timeToPos(ev.end, hourH)
-        if(posEnd<=0 || pos>= (END_H-START_H)*hourH) continue
-        const top = Math.max(0, pos) + laneTop
-        const height = Math.max(22, Math.min((END_H-START_H)*hourH, posEnd) - Math.max(0,pos))
-        const block=document.createElement("div")
-        block.className="ev"+(height<34?" small":"")
-        block.style.top=top+"px"; block.style.height=height+"px"
-        block.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`
-        elLane.appendChild(block)
+      for(const ev of arr){
+        const top = timeToPos(ev.start, hourH)
+        const end = timeToPos(ev.end, hourH)
+        const h = Math.max(22, end - top)
+        const pill=document.createElement("div"); pill.className="ev"+(h<34?" small":"")
+        pill.style.top=top+"px"; pill.style.height=h+"px"
+        pill.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`
+        elLane.appendChild(pill)
       }
     }
-    function timeToPos(t, hourH){
-      // renvoie la position en px depuis 08:00
-      if(!t){return 0}
-      const [H,M]=t.split(":").map(n=>parseInt(n,10)||0)
-      return ((H-START_H)+(M/60))*hourH
+    function timeToPos(t, hourH){ if(!t){return 0} const [H,M]=t.split(":").map(n=>parseInt(n,10)||0); return ((H-START_H)+(M/60))*hourH }
+    function shiftSched(delta){ const d=fromISODate(state.schedDate); d.setDate(d.getDate()+delta); state.schedDate=toISODate(d); renderCalendar() }
+    elPrev2.addEventListener("click", ()=>shiftSched(-1))
+    elNext2.addEventListener("click", ()=>shiftSched(+1))
+
+    /* ===== Gros + → ajout d’évènement ===== */
+    const openAdd=()=>{ $("evDate").value=state.schedDate; $("evStart").value="15:00"; $("evEnd").value="16:00"; $("evTitle").value=""; addErr.style.display="none"; sheetAdd.classList.add("open") }
+    const closeAdd=()=>sheetAdd.classList.remove("open")
+    elFab.addEventListener("click", openAdd)
+    $("closeAdd").addEventListener("click", closeAdd)
+
+    $("addEvent").addEventListener("click", ()=>{
+      const date=$("evDate").value||state.schedDate
+      const start=normTime($("evStart").value||"")
+      const end  =normTime($("evEnd").value||"")
+      const title=($("evTitle").value||"Événement").trim()
+      const msg = validateEvent(date,start,end,title)
+      if(msg){ addErr.textContent=msg; addErr.style.display="block"; return }
+      const s=loadSchedule(); s.dated[date] ??= []; s.dated[date].push({title,start,end}); saveSchedule(s)
+      if(date===state.schedDate) renderCalendar()
+      closeAdd()
+    })
+    function normTime(t){ if(!/^\d{1,2}:\d{2}$/.test(t)) return ""; const [H,M]=t.split(":"); return `${String(H).padStart(2,"0")}:${M}` }
+    function t2m(t){ const [H,M]=t.split(":").map(Number); return H*60+M }
+    function overlap(a1,a2,b1,b2){ return Math.max(a1,b1) < Math.min(a2,b2) } // intervalle ouvert à droite
+    function validateEvent(date,start,end,title){
+      if(!start || !end) return "Merci d’indiquer une heure de début et une heure de fin."
+      if(t2m(end) <= t2m(start)) return "L’heure de fin doit être après l’heure de début."
+      const s=loadSchedule(); const list=s.dated[date]||[]
+      const ns=t2m(start), ne=t2m(end)
+      for(const ev of list){ const es=t2m(ev.start), ee=t2m(ev.end); if(overlap(ns,ne,es,ee)) return `Conflit : "${ev.title}" occupe déjà ce créneau.` }
+      return ""
     }
 
-    // flèches / today
-    $("prevDay2").onclick=()=>shiftDate("schedDate",-1,elPicker2,()=>{renderWeekRow();renderSchedule()})
-    $("nextDay2").onclick=()=>shiftDate("schedDate", 1,elPicker2,()=>{renderWeekRow();renderSchedule()})
-    $("goToday2").onclick=()=>{state.schedDate=todayISO(); if(elPicker2) elPicker2.value=state.schedDate; renderWeekRow(); renderSchedule()}
-    if(elPicker2){ elPicker2.onchange=()=>{state.schedDate=elPicker2.value||todayISO(); renderWeekRow(); renderSchedule()} }
-
-    /* FAB + feuille d’options (manuel / photo) */
-    const openSheet=which=>{ elSheet.classList.add("open"); elManualForm.style.display=which==="manual"?"block":"none"; elPhotoForm.style.display=which==="photo"?"block":"none"; $("manualDateLabel").textContent=state.schedDate }
-    const closeSheet=()=>elSheet.classList.remove("open")
-    elFab.onclick=()=>openSheet()
-    $("optManual").onclick=()=>openSheet("manual")
-    $("optPhoto").onclick=()=>openSheet("photo")
-    $("closeSheet").onclick=closeSheet
-    $("addEvent").onclick=()=>{const title=($("evTitle").value||"Événement").trim(), start=$("evStart").value||"08:00", end=$("evEnd").value||"09:00"; const s=loadSchedule(); s.dated[state.schedDate]??=[]; s.dated[state.schedDate].push({title,start,end}); saveSchedule(s); renderSchedule(); closeSheet();}
-
-    /* OCR local (+ option ChatGPT) */
-    let TESS_LOADING=null; function loadTesseract(){ if(TESS_LOADING) return TESS_LOADING; TESS_LOADING=new Promise((ok,ko)=>{const sc=document.createElement("script"); sc.src="https://unpkg.com/tesseract.js@5.0.4/dist/tesseract.min.js"; sc.onload=()=>ok(window.Tesseract); sc.onerror=ko; document.body.appendChild(sc)}); return TESS_LOADING }
-    $("runOCR").onclick=async()=>{const f=$("ttImage").files?.[0]; if(!f){alert("Choisis une image."); return} const T=await loadTesseract(); const {createWorker}=T; const w=await createWorker("eng",1); try{const r=await w.recognize(f); $("ocrText").value=(r?.data?.text||"").trim()}catch(e){alert("OCR indisponible."); console.error(e)}finally{await w.terminate()}}
-    window.USE_OPENAI=false; window.OPENAI_API_KEY=""
-    $("useGPT").onclick=async()=>{ if(!window.USE_OPENAI||!window.OPENAI_API_KEY){alert("Active USE_OPENAI et mets ta clé d’API."); return} const text=$("ocrText").value.trim(); if(!text){alert("Pas de texte."); return} try{const res=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${window.OPENAI_API_KEY}`},body:JSON.stringify({model:"gpt-4o-mini",temperature:0.2,messages:[{role:"system",content:"Transforme en lignes 'Jour HH:MM-HH:MM Titre' ou 'YYYY-MM-DD HH:MM-HH:MM Titre'. Jours en français."},{role:"user",content:text}]})}); const data=await res.json(); $("ocrText").value=(data.choices?.[0]?.message?.content||"").trim() }catch(e){alert("Analyse ChatGPT impossible."); console.error(e)} }
-    const normTime=t=>{const [H,M]=t.split(":").map(x=>x.padStart(2,"0")); return `${H}:${M}`}
-    $("parseOCR").onclick=()=>{const raw=$("ocrText").value||""; if(!raw.trim()){alert("Aucun texte."); return} const lines=raw.split(/\r?\n/).map(l=>l.trim()).filter(Boolean); const s=loadSchedule(); let n=0; for(const L of lines){ let m=L.match(/^([a-zA-Zéèêîûàùôç]+)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*(.*)$/i); if(m){const k=DAYS[m[1].toLowerCase()]; if(k){s.weekly[k].push({title:(m[4]||"Cours").trim()||"Cours",start:normTime(m[2]),end:normTime(m[3])}); n++; continue}} m=L.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*(.*)$/); if(m){const date=m[1],start=normTime(m[2]),end=normTime(m[3]),title=(m[4]||"Cours").trim()||"Cours"; s.dated[date]??=[]; s.dated[date].push({title,start,end}); n++; continue}} saveSchedule(s); alert(n?`${n} événement(s) ajouté(s).`:"Aucun événement reconnu."); renderSchedule(); closeSheet(); }
-
-    /* Démarrage */
-    window.addEventListener("load", ()=>{
-      const saved=loadProfile()
-      if(saved){Object.assign(state,saved);state.currentDate=todayISO();state.schedDate=todayISO();show("s7")}
-      else{show("s1")}
-      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=8").catch(console.error) }
+    /* ===== Paramètres (engrenage) ===== */
+    const openSettings=()=>{ $("resetSelect").value="non"; sheetSettings.classList.add("open") }
+    const closeSettings=()=>sheetSettings.classList.remove("open")
+    $("btnSettings").addEventListener("click", openSettings)
+    $("closeSettings").addEventListener("click", closeSettings)
+    $("applySettings").addEventListener("click", ()=>{
+      if($("resetSelect").value==="oui"){
+        clearAll(); location.reload()
+      } else {
+        closeSettings()
+      }
     })
   </script>
 </body>
