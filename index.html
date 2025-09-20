@@ -2,10 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-  />
+  <!-- évite le zoom iPhone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
   <title>Flow</title>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -21,15 +19,13 @@
       --hour-h: 48px;      /* hauteur d’1h (calendrier) */
       --lane-pad: 8px;     /* marge intérieure des évènements */
       --pill-bg:#d9d9d9;   /* fond des événements */
+      --now:#3b7cff;       /* couleur de la ligne actuelle */
     }
     *{box-sizing:border-box}
-    html{ -webkit-text-size-adjust: 100%; }
+    html{-webkit-text-size-adjust:100%}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg)}
-    body{
-      display:flex;align-items:center;justify-content:center;
-      font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial
-      /* évite double-tap zoom */
-    }
+    body{display:flex;align-items:center;justify-content:center;
+      font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial}
 
     /* Zones */
     .screen{display:none;width:min(680px,96vw);padding:24px;border-radius:var(--radius)}
@@ -41,7 +37,7 @@
     .btn:active{transform:translateY(1px)}
     input,select,textarea{
       padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit;
-      font-size:16px; /* évite le zoom iOS sur focus */
+      font-size:16px; /* évite le zoom iOS */
     }
     input:focus,select:focus,textarea:focus{border-color:#111}
 
@@ -53,23 +49,26 @@
     .taskbar{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center}
     .taskbar-row{display:flex;gap:8px;align-items:center;justify-content:center}
     .weekday{color:var(--muted);font-weight:800}
-    .tasklist{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px}
+    .tasklist{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px;min-height:30vh}
+    .empty{display:flex;align-items:center;justify-content:center;color:#9aa;min-height:32vh;font-size:clamp(18px,4.6vw,28px);font-weight:900}
     .task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #ddd;border-radius:14px}
     .task .text{font-weight:700}
     .task.done .text{text-decoration:line-through;color:#888}
     .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;color:#fff;
       cursor:pointer;display:grid;place-items:center;font-size:16px;line-height:1}
     .task.done .circle{background:#111;color:#fff}
-
     .arrowBtn{width:42px;height:42px;border-radius:12px;border:1px solid #111;background:#fff;display:grid;place-items:center;cursor:pointer;font-size:20px}
     .arrowBtn.small{width:36px;height:36px;font-size:18px;border-radius:10px}
 
-    /* ⚙️ Paramètres — position plus basse (safe-area friendly) */
     .gear{
       position:fixed; left:16px; top: calc(56px + var(--safe-top)); z-index:30;
       width:44px; height:44px; border-radius:12px; border:1px solid #111; background:#fff;
       font-size:22px; display:grid; place-items:center; cursor:pointer;
     }
+
+    /* Ajout To-Do */
+    .adder{width:100%;max-width:640px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .adder input[type="text"]{flex:1;min-width:160px}
 
     /* Emploi du temps */
     .calHead{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:4px}
@@ -90,8 +89,9 @@
       display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09)}
     .ev.small{font-weight:800}
     .ev .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .nowLine{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--now);box-shadow:0 0 0 1px rgba(59,124,255,.15)}
 
-    /* Gros + (un peu réduit) */
+    /* Gros + (légèrement réduit) */
     .fab{
       position:fixed; right:16px; bottom:calc(16px + var(--safe-bottom));
       width:72px; height:72px; border-radius:50%; border:1.5px solid #111; background:#9c9c9c;
@@ -106,17 +106,13 @@
     .sheet .x{position:absolute; right:12px; top:8px; border:0; background:transparent; font-size:22px; cursor:pointer}
     .error{color:#d22; font-weight:800}
 
-    .adder{width:100%;max-width:640px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-    .adder input[type="date"]{min-width:140px}
-    .adder input[type="text"]{flex:1;min-width:160px}
-
     @media (max-width:390px){
       :root{ --hour-h: 44px; }
     }
   </style>
 </head>
 <body>
-  <!-- ⚙️ paramètres (plus bas) -->
+  <!-- ⚙️ paramètres -->
   <button class="gear" id="btnSettings" title="Paramètres">⚙️</button>
 
   <main id="app">
@@ -150,9 +146,12 @@
       </div>
 
       <div class="tasklist" id="tasklist"></div>
+
+      <!-- Ajout : [texte]  "pour le"  [date]  [Ajouter] -->
       <div class="adder">
-        <input type="date" id="newTaskDate">
         <input id="newTask" type="text" placeholder="Nouvelle tâche…">
+        <span style="align-self:center;color:var(--muted);font-weight:800">pour le</span>
+        <input type="date" id="newTaskDate">
         <button class="btn" id="addTask">Ajouter</button>
       </div>
     </section>
@@ -249,18 +248,21 @@
     const elPicker=$("dayPicker"), elTasklist=$("tasklist"), elNewTask=$("newTask"), newTaskDate=$("newTaskDate"), weekdayTD=$("weekdayTD")
     const elPrev=$("prevDay"), elNext=$("nextDay"), goToday=$("goToday")
     const elPrev2=$("prevDay2"), elNext2=$("nextDay2"), elBigDate=$("bigDate"), elLane=$("lane"), elHours=$("hoursCol")
-    const elPrevName=$("prevName"), elNextName=$("nextName"), elMidName=$("midName")
+    const elPrevName=$("prevName"), elNextName=$("nextName"), elMidName=$("midName"), scroller=$("schedScroll")
     const elFab=$("fabAdd"), sheetAdd=$("sheetAdd"), sheetSettings=$("sheetSettings"), addErr=$("addError")
     const state={nom:"", currentDate:todayISO(), schedDate:todayISO()}
+    let nowTimer=null, nowEl=null
 
     function show(id){
+      // stop timer quand on quitte l’emploi du temps
+      if(id!=="s8" && nowTimer){ clearInterval(nowTimer); nowTimer=null }
       screens.forEach(s=>s.classList.toggle("active", s.id===id))
       elFab.style.display = (id==="s8") ? "grid" : "none"
       if(id==="s7"){
         elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks()
-        newTaskDate.value = state.currentDate; // pas d'auto-focus → pas de zoom
+        newTaskDate.value = state.currentDate
       }
-      if(id==="s8"){ renderCalendar() } // pas d'auto-focus non plus
+      if(id==="s8"){ renderCalendar() }
     }
     function goto(id){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.goto===id)); show(id) }
 
@@ -268,7 +270,7 @@
     window.addEventListener("load", ()=>{
       const prof=loadJSON(PROFILE_KEY,null)
       if(prof){ state.nom = prof.nom||""; show("s7") } else { show("s1") }
-      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=11").catch(console.error) }
+      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=12").catch(console.error) }
     })
     elStart.addEventListener("click", ()=>{
       state.nom=(elNom.value||"").trim(); saveJSON(PROFILE_KEY,{nom:state.nom}); goto("s7")
@@ -285,13 +287,16 @@
     function renderTasks(){
       elTasklist.innerHTML=""
       const items=tasksFor(state.currentDate)
-      if(items.length===0){ const p=document.createElement("p"); p.style.color="var(--muted)"; p.textContent="Aucune tâche."; elTasklist.appendChild(p) }
-      items.forEach((t,i)=>{
-        const row=document.createElement("div"); row.className="task"+(t.done?" done":""); row.dataset.index=i
-        const c=document.createElement("button"); c.className="circle"; c.textContent=t.done?"✓":""
-        const tx=document.createElement("span"); tx.className="text"; tx.textContent=t.text
-        row.append(tx,c); elTasklist.appendChild(row)
-      })
+      if(items.length===0){
+        const d=document.createElement("div"); d.className="empty"; d.textContent="Rien à faire"; elTasklist.appendChild(d)
+      } else {
+        items.forEach((t,i)=>{
+          const row=document.createElement("div"); row.className="task"+(t.done?" done":""); row.dataset.index=i
+          const c=document.createElement("button"); c.className="circle"; c.textContent=t.done?"✓":""
+          const tx=document.createElement("span"); tx.className="text"; tx.textContent=t.text
+          row.append(tx,c); elTasklist.appendChild(row)
+        })
+      }
     }
     elTasklist.addEventListener("click",e=>{
       const c=e.target.closest(".circle"); if(!c) return
@@ -318,7 +323,7 @@
       if(tgt===state.currentDate) renderTasks()
     }
 
-    /* ===== Emploi du temps (00→24 avec scroll) ===== */
+    /* ===== Emploi du temps (00→24 + ligne actuelle) ===== */
     const START_H=0, END_H=24
     function renderCalendar(){
       const d=fromISODate(state.schedDate)
@@ -328,12 +333,14 @@
       elPrevName.textContent = DAY_FULL[(d.getDay()+6)%7]
       elNextName.textContent = DAY_FULL[(d.getDay()+1)%7]
 
+      // colonnes
       elHours.innerHTML=""
       for(let h=START_H; h<END_H; h++){
         const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`; elHours.appendChild(div)
       }
-
       elLane.innerHTML=""
+
+      // événements
       const s=loadSchedule(); const arr=[...(s.dated[state.schedDate]||[])]
       const hourH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hour-h'))||48
       for(const ev of arr){
@@ -342,8 +349,28 @@
         const pill=document.createElement("div"); pill.className="ev"+(h<34?" small":""); pill.style.top=top+"px"; pill.style.height=h+"px"; pill.innerHTML=`<div class="t">${ev.title||"Événement"}</div>`
         elLane.appendChild(pill)
       }
+
+      // ligne "maintenant" si on regarde aujourd’hui
+      if(nowTimer){ clearInterval(nowTimer); nowTimer=null }
+      if(state.schedDate===todayISO()){
+        if(!nowEl){ nowEl=document.createElement("div"); nowEl.className="nowLine" }
+        elLane.appendChild(nowEl)
+        const setNow=()=>{ const n=new Date(), t=`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`; nowEl.style.top=timeToPos(t,hourH)+"px" }
+        setNow()
+        // centrage sur maintenant
+        requestAnimationFrame(()=>centerOnNow(hourH))
+        nowTimer=setInterval(setNow,60*1000)
+      } else {
+        nowEl=null
+      }
     }
     function timeToPos(t,h){ if(!t) return 0; const [H,M]=t.split(":").map(n=>parseInt(n,10)||0); return ((H-START_H)+(M/60))*h }
+    function centerOnNow(hourH){
+      const n=new Date(); const t=`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`
+      const pos=timeToPos(t,hourH)
+      const target=Math.max(0, pos - scroller.clientHeight/2)
+      scroller.scrollTop = target
+    }
     elPrev2.addEventListener("click", ()=>{shiftDate("schedDate",-1); renderCalendar()})
     elNext2.addEventListener("click", ()=>{shiftDate("schedDate", 1); renderCalendar()})
 
