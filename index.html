@@ -2,7 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  />
   <title>Flow</title>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,10 +23,12 @@
       --pill-bg:#d9d9d9;   /* fond des événements */
     }
     *{box-sizing:border-box}
+    html{ -webkit-text-size-adjust: 100%; }
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg)}
     body{
       display:flex;align-items:center;justify-content:center;
       font:600 clamp(14px,2.4vw,18px)/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial
+      /* évite double-tap zoom */
     }
 
     /* Zones */
@@ -34,8 +39,11 @@
     .btn{padding:12px 18px;border:1px solid var(--accent);border-radius:12px;background:#fff;color:#111;cursor:pointer;font-weight:800}
     .btn.small{padding:8px 12px}
     .btn:active{transform:translateY(1px)}
-    input,select{padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit}
-    input:focus,select:focus{border-color:#111}
+    input,select,textarea{
+      padding:12px 14px;border-radius:12px;border:1px solid #ccc;outline:none;font:inherit;
+      font-size:16px; /* évite le zoom iOS sur focus */
+    }
+    input:focus,select:focus,textarea:focus{border-color:#111}
 
     .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:clamp(6px, calc(var(--safe-top) + 6px), 24px)}
     .tab{padding:10px 16px;border:1px solid #ddd;border-radius:999px;background:#fff;cursor:pointer}
@@ -49,9 +57,9 @@
     .task{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #ddd;border-radius:14px}
     .task .text{font-weight:700}
     .task.done .text{text-decoration:line-through;color:#888}
-    .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;color:#fff; /* vide (blanc) */
+    .circle{width:26px;height:26px;border-radius:50%;border:2px solid #111;background:#fff;color:#fff;
       cursor:pointer;display:grid;place-items:center;font-size:16px;line-height:1}
-    .task.done .circle{background:#111;color:#fff}  /* rempli + check visible */
+    .task.done .circle{background:#111;color:#fff}
 
     .arrowBtn{width:42px;height:42px;border-radius:12px;border:1px solid #111;background:#fff;display:grid;place-items:center;cursor:pointer;font-size:20px}
     .arrowBtn.small{width:36px;height:36px;font-size:18px;border-radius:10px}
@@ -72,21 +80,22 @@
       content:""; display:inline-block; width:2px; height:28px; background:#111; opacity:.8; margin:0 10px; vertical-align:middle
     }
     .schedWrap{width:100%;max-width:640px}
+    .schedScroll{height:min(70vh,560px); overflow:auto; border-radius:12px}
     .schedGrid{display:grid;grid-template-columns:72px 1fr;gap:0 12px}
     .hours{user-select:none}
     .h{height:var(--hour-h);display:flex;align-items:flex-start;justify-content:flex-end;padding-right:6px;font-weight:900}
-    .lane{position:relative;height:calc(var(--hour-h) * 12); border-left:1px solid #e5e5e5;border-right:1px solid transparent;border-radius:12px;
+    .lane{position:relative;height:calc(var(--hour-h) * 24); border-left:1px solid #e5e5e5;border-right:1px solid transparent;border-radius:12px;
       background: linear-gradient(#eee 1px,transparent 1px) repeat-y; background-size:100% var(--hour-h);}
     .ev{position:absolute;left:var(--lane-pad);right:var(--lane-pad);border:1.5px solid #111;border-radius:999px;background:var(--pill-bg);
       display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.09)}
     .ev.small{font-weight:800}
     .ev .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    /* Gros + */
+    /* Gros + (un peu réduit) */
     .fab{
       position:fixed; right:16px; bottom:calc(16px + var(--safe-bottom));
-      width:80px; height:80px; border-radius:50%; border:1.5px solid #111; background:#9c9c9c;
-      color:#111; font-size:48px; line-height:0; display:grid; place-items:center; cursor:pointer;
+      width:72px; height:72px; border-radius:50%; border:1.5px solid #111; background:#9c9c9c;
+      color:#111; font-size:44px; line-height:0; display:grid; place-items:center; cursor:pointer;
       box-shadow:0 10px 26px rgba(0,0,0,.14); z-index:20;
     }
 
@@ -96,6 +105,10 @@
     .sheet .row{display:flex;gap:8px;flex-wrap:wrap}
     .sheet .x{position:absolute; right:12px; top:8px; border:0; background:transparent; font-size:22px; cursor:pointer}
     .error{color:#d22; font-weight:800}
+
+    .adder{width:100%;max-width:640px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .adder input[type="date"]{min-width:140px}
+    .adder input[type="text"]{flex:1;min-width:160px}
 
     @media (max-width:390px){
       :root{ --hour-h: 44px; }
@@ -138,6 +151,7 @@
 
       <div class="tasklist" id="tasklist"></div>
       <div class="adder">
+        <input type="date" id="newTaskDate">
         <input id="newTask" type="text" placeholder="Nouvelle tâche…">
         <button class="btn" id="addTask">Ajouter</button>
       </div>
@@ -163,9 +177,11 @@
       </div>
 
       <div class="schedWrap">
-        <div class="schedGrid">
-          <div class="hours" id="hoursCol"></div>
-          <div class="lane" id="lane"></div>
+        <div class="schedScroll" id="schedScroll">
+          <div class="schedGrid">
+            <div class="hours" id="hoursCol"></div>
+            <div class="lane" id="lane"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -230,7 +246,7 @@
     /* ===== State & Refs ===== */
     const screens=[...document.querySelectorAll(".screen")], $=id=>document.getElementById(id)
     const elNom=$("nom"), elStart=$("startContinue")
-    const elPicker=$("dayPicker"), elTasklist=$("tasklist"), elNewTask=$("newTask"), weekdayTD=$("weekdayTD")
+    const elPicker=$("dayPicker"), elTasklist=$("tasklist"), elNewTask=$("newTask"), newTaskDate=$("newTaskDate"), weekdayTD=$("weekdayTD")
     const elPrev=$("prevDay"), elNext=$("nextDay"), goToday=$("goToday")
     const elPrev2=$("prevDay2"), elNext2=$("nextDay2"), elBigDate=$("bigDate"), elLane=$("lane"), elHours=$("hoursCol")
     const elPrevName=$("prevName"), elNextName=$("nextName"), elMidName=$("midName")
@@ -240,8 +256,11 @@
     function show(id){
       screens.forEach(s=>s.classList.toggle("active", s.id===id))
       elFab.style.display = (id==="s8") ? "grid" : "none"
-      if(id==="s7"){ elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); elNewTask.focus() }
-      if(id==="s8"){ renderCalendar() }
+      if(id==="s7"){
+        elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks()
+        newTaskDate.value = state.currentDate; // pas d'auto-focus → pas de zoom
+      }
+      if(id==="s8"){ renderCalendar() } // pas d'auto-focus non plus
     }
     function goto(id){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.goto===id)); show(id) }
 
@@ -249,7 +268,7 @@
     window.addEventListener("load", ()=>{
       const prof=loadJSON(PROFILE_KEY,null)
       if(prof){ state.nom = prof.nom||""; show("s7") } else { show("s1") }
-      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=10").catch(console.error) }
+      if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js?v=11").catch(console.error) }
     })
     elStart.addEventListener("click", ()=>{
       state.nom=(elNom.value||"").trim(); saveJSON(PROFILE_KEY,{nom:state.nom}); goto("s7")
@@ -284,16 +303,23 @@
     function shiftDate(which,delta){
       const d=fromISODate(state[which]); d.setDate(d.getDate()+delta); state[which]=toISODate(d)
     }
-    elPicker.addEventListener("change", ()=>{state.currentDate=elPicker.value||todayISO(); updateWeekdayTD(); renderTasks()})
-    elPrev.addEventListener("click", ()=>{shiftDate("currentDate",-1); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks()})
-    elNext.addEventListener("click", ()=>{shiftDate("currentDate", 1); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks()})
-    goToday.addEventListener("click", ()=>{state.currentDate=todayISO(); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks()})
+    elPicker.addEventListener("change", ()=>{state.currentDate=elPicker.value||todayISO(); updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate })
+    elPrev.addEventListener("click", ()=>{shiftDate("currentDate",-1); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
+    elNext.addEventListener("click", ()=>{shiftDate("currentDate", 1); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
+    goToday.addEventListener("click", ()=>{state.currentDate=todayISO(); elPicker.value=state.currentDate; updateWeekdayTD(); renderTasks(); newTaskDate.value=state.currentDate})
+
     $("addTask").addEventListener("click", addTask)
     elNewTask.addEventListener("keydown", e=>{ if(e.key==="Enter") addTask() })
-    function addTask(){ const txt=(elNewTask.value||"").trim(); if(!txt) return; const items=tasksFor(state.currentDate); items.push({text:txt,done:false}); saveTasksFor(state.currentDate,items); elNewTask.value=""; renderTasks() }
+    function addTask(){
+      const txt=(elNewTask.value||"").trim(); if(!txt) return
+      const tgt=newTaskDate.value || state.currentDate
+      const items=tasksFor(tgt); items.push({text:txt,done:false}); saveTasksFor(tgt,items)
+      elNewTask.value=""
+      if(tgt===state.currentDate) renderTasks()
+    }
 
-    /* ===== Emploi du temps (08→19) ===== */
-    const START_H=8, END_H=20
+    /* ===== Emploi du temps (00→24 avec scroll) ===== */
+    const START_H=0, END_H=24
     function renderCalendar(){
       const d=fromISODate(state.schedDate)
       const dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0")
@@ -303,7 +329,9 @@
       elNextName.textContent = DAY_FULL[(d.getDay()+1)%7]
 
       elHours.innerHTML=""
-      for(let h=START_H; h<END_H; h++){ const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`; elHours.appendChild(div) }
+      for(let h=START_H; h<END_H; h++){
+        const div=document.createElement("div"); div.className="h"; div.textContent=`${String(h).padStart(2,"0")}:00`; elHours.appendChild(div)
+      }
 
       elLane.innerHTML=""
       const s=loadSchedule(); const arr=[...(s.dated[state.schedDate]||[])]
@@ -320,7 +348,7 @@
     elNext2.addEventListener("click", ()=>{shiftDate("schedDate", 1); renderCalendar()})
 
     /* ===== Gros + → ajout d’évènement ===== */
-    const openAdd=()=>{ $("evDate").value=state.schedDate; $("evStart").value="15:00"; $("evEnd").value="16:00"; $("evTitle").value=""; addErr.style.display="none"; sheetAdd.classList.add("open") }
+    const openAdd=()=>{ $("evDate").value=state.schedDate; $("evStart").value="08:00"; $("evEnd").value="09:00"; $("evTitle").value=""; addErr.style.display="none"; sheetAdd.classList.add("open") }
     const closeAdd=()=>sheetAdd.classList.remove("open")
     elFab.addEventListener("click", openAdd)
     $("closeAdd").addEventListener("click", closeAdd)
