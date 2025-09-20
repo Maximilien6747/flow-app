@@ -1,3 +1,9 @@
+<script>
+if ('serviceWorker' in navigator) {
+  // IMPORTANT : chemin relatif vers ./sw.js (scope = /flow-app/)
+  navigator.serviceWorker.register('./sw.js?kill=1', { scope: './' });
+}
+</script>
 <!doctype html><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Test</title><h1>Ça marche 🎉</h1>
