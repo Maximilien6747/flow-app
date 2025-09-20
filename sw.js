@@ -1,5 +1,5 @@
 // sw.js
-const CACHE = "flow-v8";
+const CACHE = "flow-v9";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (e) => {
