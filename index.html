@@ -26,7 +26,6 @@
       min-height: 100svh;
       position: relative;
     }
-    /* barre haute : engrenage (gauche) puis flèche retour */
     header.bar{
       position: sticky; top: calc(var(--safe-top) + 6px);
       display:flex; gap:8px; align-items:center; justify-content:flex-start;
@@ -88,21 +87,28 @@
     .left{display:flex;align-items:center;gap:10px}
     .icon{font-size:1.1em}
 
-    /* titre matière */
     .subjectTitle{ font-size: clamp(28px,8vw,38px); text-align:center; margin: 6px 0 8px }
 
     /* carrousel swipe */
     .sliderWrap{ position:relative; overflow:hidden; margin-top:6px }
     .slides{ display:flex; gap:var(--gap); transition:transform 260ms var(--ease) }
     .slide{
+      position:relative;
       border:var(--thick) solid var(--ink); border-radius:16px;
       width:120px; flex:0 0 auto; display:flex; flex-direction:column; overflow:hidden;
       background:#dcdcdc; box-shadow:0 6px 14px rgba(0,0,0,.06); cursor:pointer; touch-action:pan-y;
     }
     .imgWrap{ height:130px; background:#d0d0d0; display:grid; place-items:center }
     .slide img{ width:100%; height:100%; object-fit:cover }
-    /* .caption supprimée puisque plus de date */
-    /* .caption{ padding:6px 8px; text-align:center; background:#fff; border-top:var(--thick) solid var(--ink); font-weight:900 } */
+
+    /* bouton suppression (admin) */
+    .delBtn{
+      position:absolute; top:6px; right:6px;
+      width:30px; height:30px; border-radius:50%;
+      border:3px solid var(--ink); background:#fff; color:#000;
+      display:none; place-items:center; font-size:14px; cursor:pointer;
+    }
+    .slide.admin .delBtn{ display:grid; }
 
     /* FAB admin */
     .fab{
@@ -169,12 +175,11 @@
         <div class="sliderWrap" id="sliderWrap">
           <div id="slides" class="slides"></div>
         </div>
-        <!-- Recherche par date supprimée -->
       </section>
     </div>
 
     <!-- FAB admin -->
-    <button id="fabAdd" class="fab" title="Ajouter un cours">＋</button>
+    <button id="fabAdd" class="fab" title="Ajouter des cours">＋</button>
 
     <!-- Modal paramètres -->
     <div id="modalGear" class="modal">
@@ -201,12 +206,12 @@
       </div>
     </div>
 
-    <!-- Modal ajout cours -->
+    <!-- Modal ajout cours (multi) -->
     <div id="modalAdd" class="modal">
       <div class="box">
-        <h3 style="margin:0 0 8px">Ajouter un cours</h3>
-        <label>Image</label>
-        <input id="addImg" type="file" accept="image/*" capture="environment">
+        <h3 style="margin:0 0 8px">Ajouter des cours</h3>
+        <label>Images (une ou plusieurs)</label>
+        <input id="addImg" type="file" accept="image/*" capture="environment" multiple>
         <div class="row" style="justify-content:flex-end">
           <button class="btn secondary" id="addCancel">Annuler</button>
           <button class="btn" id="addSave">Enregistrer</button>
@@ -228,7 +233,10 @@
   <script type="module">
     /* ---------- Firebase (Firestore only) ---------- */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getFirestore, collection, addDoc, query, orderBy, onSnapshot,
+      doc, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // >>>>>>> Ta configuration Firebase
     const firebaseConfig = {
@@ -277,6 +285,7 @@
     let isAdminUI = false;
     let currentSubject = null;
     let unsubscribe = null;
+    const orderMaxBySubject = {}; // mémorise le max(order) par matière
 
     const subjects = [
       {slug:'francais', name:'francais', color:'var(--c-fr)',  icon:'📚'},
@@ -334,20 +343,35 @@
     function renderSubjectCloud(slug){
       if (unsubscribe) { unsubscribe(); unsubscribe=null; }
       slidesEl.innerHTML = '';
-      // tri par date de création (plus récents en premier)
-      const q = query(collection(db, `subjects/${slug}/courses`), orderBy("createdAt","desc"));
+      // tri par ordre d'ajout (order asc) : première ajoutée tout à gauche
+      const q = query(collection(db, `subjects/${slug}/courses`), orderBy("order","asc"));
       unsubscribe = onSnapshot(q, snap=>{
         const arr=[]; snap.forEach(d=>arr.push({id:d.id, ...d.data()}));
+        // MAJ du max(order)
+        const m = arr.reduce((acc, it)=> Math.max(acc, typeof it.order==='number'?it.order:-1), -1);
+        orderMaxBySubject[slug] = m;
+
         slidesEl.innerHTML = '';
         if(!arr.length){
           slidesEl.innerHTML = '<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>';
         }else{
           for(const it of arr){
             const card = document.createElement('div');
-            card.className='slide';
+            card.className='slide' + (isAdminUI ? ' admin':'');
             const imgWrap=document.createElement('div'); imgWrap.className='imgWrap';
             if(it.img){ const im=new Image(); im.src=it.img; imgWrap.appendChild(im); }
             card.appendChild(imgWrap);
+
+            // bouton suppression (admin)
+            const del = document.createElement('button');
+            del.className='delBtn'; del.title='Supprimer'; del.textContent='🗑️';
+            del.onclick = async (e)=>{ e.stopPropagation();
+              if(confirm('Supprimer ce cours ?')){
+                await deleteDoc(doc(db, `subjects/${slug}/courses/${it.id}`));
+              }
+            };
+            card.appendChild(del);
+
             card.onclick = ()=> openViewer(it.img);
             slidesEl.appendChild(card);
           }
@@ -407,7 +431,7 @@
       const b = document.createElement('button');
       b.className='btn'; b.textContent = isAdminUI ? 'Quitter admin' : 'Admin';
       b.onclick = ()=>{
-        if(isAdminUI){ isAdminUI=false; toggleFab(); modalGear.style.display='none'; }
+        if(isAdminUI){ isAdminUI=false; toggleFab(); modalGear.style.display='none'; renderSubjectCloud(currentSubject); }
         else{ modalGear.style.display='none'; openAdminModal(); }
       };
       adminRow.appendChild(b);
@@ -421,26 +445,43 @@
     $('#adminCancel').onclick = ()=> $('#modalAdmin').style.display='none';
     $('#adminOk').onclick = ()=>{
       if($('#adminCode').value.trim()==='2525'){
-        isAdminUI=true; $('#modalAdmin').style.display='none'; toggleFab();
+        isAdminUI=true; $('#modalAdmin').style.display='none'; toggleFab(); renderSubjectCloud(currentSubject);
       } else { $('#adminMsg').textContent='Code incorrect.'; }
     };
 
-    /* ---------- Ajout cours (image en base64 stockée dans Firestore) ---------- */
+    /* ---------- Ajout cours : multi-fichiers + ordre ---------- */
     function toggleFab(){
       const onSubject = activeId()==='scr-subject';
       $('#fabAdd').style.display = (isAdminUI && onSubject) ? 'grid' : 'none';
+      // Toggle affichage du bouton poubelle sur les slides
+      [...slidesEl.children].forEach(el=>{
+        if(isAdminUI) el.classList.add('admin'); else el.classList.remove('admin');
+      });
     }
     $('#fabAdd').onclick = ()=>{ $('#addImg').value=''; $('#addMsg').textContent=''; $('#modalAdd').style.display='flex'; };
     $('#addCancel').onclick = ()=> $('#modalAdd').style.display='none';
+
     $('#addSave').onclick = async ()=>{
-      const f = $('#addImg').files[0], out = $('#addMsg');
-      if(!f){ out.textContent='Choisis une image.'; return; }
+      const files = Array.from($('#addImg').files || []);
+      const out = $('#addMsg');
+      if(!files.length){ out.textContent='Choisis au moins une image.'; return; }
+      out.textContent = 'Compression et enregistrement...';
       try{
-        const imgURL = await compressAndUpload(f, 1280, .8, currentSubject); // retourne une dataURL
-        await addDoc(collection(db, `subjects/${currentSubject}/courses`), { img:imgURL, createdAt:Date.now() });
+        // Point de départ = max(order)+1 pour cette matière
+        let start = (orderMaxBySubject[currentSubject] ?? -1) + 1;
+
+        // On ajoute dans l'ordre de sélection : la première choisie aura l'order le plus petit
+        for(let i=0;i<files.length;i++){
+          const imgURL = await compressAndUpload(files[i], 1280, .8);
+          await addDoc(collection(db, `subjects/${currentSubject}/courses`), {
+            img: imgURL,
+            order: start + i,
+            createdAt: Date.now() + i
+          });
+        }
         $('#modalAdd').style.display='none';
       }catch(e){
-        out.textContent="Échec de l'enregistrement. Essaie avec une image plus petite.";
+        out.textContent="Échec de l'enregistrement. Essaie avec des images plus petites.";
       }
     };
 
