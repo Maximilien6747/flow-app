@@ -11,7 +11,6 @@
       --ink:#000; --bg:#fff; --fg:#111;
       --radius:18px; --thick:4px; --dur:300ms; --ease:cubic-bezier(.2,.7,.3,1);
       --gap:10px;
-      /* pastels pour matières */
       --c-fr:#fac3cf; --c-his:#ffd9b3; --c-svt:#c9f0db; --c-chi:#fff3b8;
       --c-snt:#cfeeff; --c-ses:#f1dbff; --c-ang:#ffc6e9;
     }
@@ -23,24 +22,25 @@
     }
 
     .app{
-      max-width: 400px;        /* plus compact pour iPhone */
+      max-width: 400px;
       margin: 0 auto;
       padding: calc(var(--safe-top) + var(--pad)) var(--pad) calc(var(--safe-bottom) + var(--pad));
       min-height: 100svh;
       position: relative;
     }
 
-    /* barre haute : flèche + engrenage (gauche) */
+    /* barre haute : engrenage puis flèche (tous à gauche) */
     header.bar{
       position: sticky; top: calc(var(--safe-top) + 6px);
-      display:flex; gap:8px; align-items:center; z-index:5;
+      display:flex; gap:8px; align-items:center; justify-content:flex-start;
+      z-index:5;
     }
     .iconBtn{
       width:40px;height:40px;border:3px solid var(--ink);
       border-radius:50%; display:grid; place-items:center;
       background:#fff; color:#000; cursor:pointer;
     }
-    #backBtn{ visibility:hidden; }   /* rendu seulement quand on peut revenir */
+    #backBtn{ visibility:hidden; }
 
     h1{margin:14px 0 20px; font-size:clamp(26px,7vw,36px); line-height:1.1; text-align:center}
     h2{margin:6px 0 14px; font-size:clamp(22px,6.5vw,30px); text-align:center}
@@ -49,8 +49,7 @@
     input[type="text"], input[type="date"], input[type="file"]{
       width:100%; padding:14px; border-radius:16px;
       border:var(--thick) solid var(--ink);
-      background:#ececec; font: 800 17px/1.2 system-ui;  /* ≥17px: évite le zoom iOS */
-      color:#000; outline:none;
+      background:#ececec; font: 800 17px/1.2 system-ui; color:#000; outline:none;
     }
     .btn{
       margin-top:14px; padding:12px 16px; border:3px solid var(--ink);
@@ -61,7 +60,7 @@
     .btn:active{transform:translateY(1px)}
     .hint{margin-top:8px; opacity:.65; font-weight:600}
 
-    /* pile d’écrans + transitions */
+    /* pile + transitions */
     .stack{ position:relative }
     .screen{
       position:absolute; inset:0; opacity:0; pointer-events:none; transform:translateX(40px);
@@ -77,12 +76,10 @@
     @keyframes outRight{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
     @keyframes inLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
 
-    /* centrage vertical pour accueil & menu */
-    .center{
-      flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px;
-    }
+    /* centre vertical pour les écrans d’accueil/menu */
+    .center{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px }
 
-    /* cartes menu & matières */
+    /* cartes */
     .menu{display:flex; flex-direction:column; gap:14px}
     .cardLink, .mat{
       display:flex; align-items:center; justify-content:space-between; gap:12px;
@@ -90,33 +87,28 @@
       border-radius:20px; text-decoration:none; color:#000; cursor:pointer;
       font-size:clamp(18px,5vw,22px); font-weight:900; box-shadow:0 6px 14px rgba(0,0,0,.06);
     }
-    .pillArrow{min-width:52px;height:38px;border:3px solid var(--ink);border-radius:999px;display:grid;place-items:center;background:#fff}
+    .pillArrow{min-width:52px;height:38px;border:3px solid var(--ink);border-radius:999px;display:grid;place-items:center;background:#fff;color:#000}
     .list{display:flex;flex-direction:column;gap:12px;margin-top:6px}
     .left{display:flex;align-items:center;gap:10px}
     .icon{font-size:1.1em}
 
     /* titre matière */
-    .subjectTitle{
-      font-size: clamp(28px,8vw,38px);
-      text-align:center;
-      margin: 6px 0 8px;
-    }
+    .subjectTitle{ font-size: clamp(28px,8vw,38px); text-align:center; margin: 6px 0 8px }
 
     /* carrousel swipe */
     .sliderWrap{ position:relative; overflow:hidden; margin-top:6px }
     .slides{ display:flex; gap:var(--gap); transition:transform 260ms var(--ease) }
     .slide{
-      background:#dcdcdc; border:var(--thick) solid var(--ink); border-radius:16px;
-      width:120px; min-height:140px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
-      position:relative; box-shadow:0 6px 14px rgba(0,0,0,.06); cursor:pointer;
-      touch-action:pan-y;
+      border:var(--thick) solid var(--ink); border-radius:16px;
+      width:120px; flex:0 0 auto; display:flex; flex-direction:column; overflow:hidden;
+      background:#dcdcdc; box-shadow:0 6px 14px rgba(0,0,0,.06); cursor:pointer; touch-action:pan-y;
     }
-    .slide img{ width:100%; height:100%; object-fit:cover; border-radius:12px }
-    .dateRow{ display:flex; gap:10px; justify-content:space-between; margin-top:8px }
-    .dateLabel{ font-weight:900 }
+    .imgWrap{ height:130px; background:#d0d0d0; display:grid; place-items:center }
+    .slide img{ width:100%; height:100%; object-fit:cover }
+    .caption{ padding:6px 8px; text-align:center; background:#fff; border-top:var(--thick) solid var(--ink); font-weight:900 }
 
-    /* recherche date dans la matière */
-    .searchRow{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap }
+    /* recherche dans matière */
+    .searchRow{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center }
     .searchRow span{ font-weight:900 }
 
     /* FAB admin */
@@ -141,8 +133,8 @@
 <body>
   <main class="app">
     <header class="bar">
-      <button id="backBtn" class="iconBtn" aria-label="Retour">←</button>
       <button id="gear" class="iconBtn" title="Paramètres">⚙️</button>
+      <button id="backBtn" class="iconBtn" aria-label="Retour">←</button>
     </header>
 
     <div id="stack" class="stack" aria-live="polite" aria-atomic="true">
@@ -181,19 +173,14 @@
       <!-- 4) détail matière -->
       <section id="scr-subject" class="screen" aria-hidden="true">
         <h2 id="subjectTitle" class="subjectTitle">matière</h2>
-
-        <!-- carrousel -->
         <div class="sliderWrap" id="sliderWrap">
           <div id="slides" class="slides"></div>
         </div>
 
-        <!-- dates sous les cartes -->
-        <div class="dateRow" id="dateRow"></div>
-
         <!-- recherche -->
         <div class="searchRow">
           <span>je cherche le cours du</span>
-          <input id="searchDate" type="date" style="max-width:180px">
+          <input id="searchDate" type="date" style="max-width:190px">
           <button id="searchGo" class="btn">OK</button>
         </div>
       </section>
@@ -256,12 +243,12 @@
     const stack = $('#stack');
     const backBtn = $('#backBtn');
 
-    const navStack = ['scr-welcome']; // id des écrans
+    const navStack = ['scr-welcome'];
     function activeId(){ return navStack[navStack.length-1]; }
     function activeScreen(){ return document.getElementById(activeId()); }
     function setStackHeight(h){ stack.style.height = h+'px'; }
     function canGoBack(){ return navStack.length>1; }
-    function refreshBack(){ backBtn.style.visibility = canGoBack() ? 'visible':'hidden'; }
+    function refreshBack(){ backBtn.style.visibility = canGoBack() ? 'visible' : 'hidden'; }
 
     function go(toId, dir='f'){
       const fromEl = activeScreen();
@@ -278,6 +265,7 @@
       const toEl = activeScreen();
       animate(fromEl, toEl, 'b');
       refreshBack();
+      toggleFab();
     }
     function animate(fromEl,toEl,dir){
       setStackHeight(Math.max(fromEl.scrollHeight,toEl.scrollHeight));
@@ -342,7 +330,7 @@
     }
 
     /* ====== matière : carrousel swipe ====== */
-    const slidesEl = $('#slides'), sliderWrap = $('#sliderWrap'), dateRow = $('#dateRow');
+    const slidesEl = $('#slides'), sliderWrap = $('#sliderWrap');
     let slides = [], idx=0, slideW=120;
 
     function openSubject(slug){
@@ -359,26 +347,33 @@
       const data = loadData();
       const arr = (data[currentSubject]||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
       slides = arr;
-      slidesEl.innerHTML=''; dateRow.innerHTML='';
-      if(!arr.length){ dateRow.innerHTML = '<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>'; }
-      for(const it of arr){
-        const card = document.createElement('div');
-        card.className='slide';
-        if(it.img){ const im=new Image(); im.src=it.img; card.appendChild(im); }
-        card.onclick = ()=> openViewer(it.img);
-        slidesEl.appendChild(card);
-
-        const d = document.createElement('div');
-        const [y,m,dd] = it.date.split('-');
-        d.className='dateLabel'; d.textContent = `${dd}/${m}`;
-        dateRow.appendChild(d);
+      slidesEl.innerHTML='';
+      if(!arr.length){
+        slidesEl.innerHTML = `<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>`;
+      } else {
+        for(const it of arr){
+          const card = document.createElement('div');
+          card.className='slide';
+          const imgWrap = document.createElement('div');
+          imgWrap.className='imgWrap';
+          if(it.img){ const im=new Image(); im.src=it.img; imgWrap.appendChild(im); }
+          const [y,m,dd] = it.date.split('-');
+          const caption = document.createElement('div');
+          caption.className='caption';
+          caption.textContent = `${dd}/${m}`;
+          card.appendChild(imgWrap);
+          card.appendChild(caption);
+          card.onclick = ()=> openViewer(it.img);
+          slidesEl.appendChild(card);
+        }
       }
       idx=0; layoutSlides(); moveTo(0,false);
     }
 
     function layoutSlides(){
       const w = sliderWrap.clientWidth;
-      slideW = Math.floor((w - 2*parseInt(getComputedStyle(slidesEl).gap||'10'))/3);
+      const gap = parseInt(getComputedStyle(slidesEl).gap||'10');
+      slideW = Math.floor((w - 2*gap)/3);   // 3 visibles
       [...slidesEl.children].forEach(s=> s.style.width = slideW+'px');
     }
     function moveTo(i, animate=true){
@@ -409,11 +404,8 @@
       if(!dragging) return; dragging=false; slidesEl.style.transition='transform 260ms var(--ease)';
       const dx = e.clientX - startX;
       const threshold = 40;
-      if(Math.abs(dx) > threshold){
-        moveTo(idx - Math.sign(dx)); // swipe gauche => dx<0 => +1 (vers la droite visuelle)
-      }else{
-        moveTo(idx, true);
-      }
+      if(Math.abs(dx) > threshold){ moveTo(idx - Math.sign(dx)); }
+      else { moveTo(idx, true); }
     });
     window.addEventListener('resize', ()=>{ if(document.getElementById('scr-subject').classList.contains('active')){ layoutSlides(); moveTo(idx,false); setStackHeight(activeScreen().scrollHeight);} });
 
@@ -454,7 +446,7 @@
       } else { $('#adminMsg').textContent='Code incorrect.'; }
     };
 
-    /* ajout cours (admin) */
+    /* ajout cours (admin) – compression image */
     function toggleFab(){
       const onSubject = activeId()==='scr-subject';
       $('#fabAdd').style.display = (isAdmin && onSubject) ? 'grid' : 'none';
@@ -464,14 +456,33 @@
     $('#addSave').onclick = async ()=>{
       const f = $('#addImg').files[0], d = $('#addDate').value;
       if(!f || !d){ $('#addMsg').textContent='Choisis une image et une date.'; return; }
-      const img = await fileToDataURL(f);
-      const data = loadData();
-      (data[currentSubject] ||= []).push({ id:Date.now(), img, date:d });
-      saveData(data);
-      $('#modalAdd').style.display='none';
-      renderSubject(); toggleFab();
+      try{
+        const img = await resizeImageToDataURL(f, 1280, 0.8); // compresse
+        const data = loadData();
+        (data[currentSubject] ||= []).push({ id:Date.now(), img, date:d });
+        saveData(data);
+        $('#modalAdd').style.display='none';
+        renderSubject(); toggleFab();
+      }catch(e){
+        $('#addMsg').textContent = "Impossible d'enregistrer (espace insuffisant). Essaie avec une image plus petite.";
+      }
     };
-    function fileToDataURL(file){ return new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(file); }); }
+
+    // compression client
+    async function resizeImageToDataURL(file, maxSize=1280, quality=0.8){
+      const blobURL = URL.createObjectURL(file);
+      const img = await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=blobURL; });
+      const {width:W,height:H} = img;
+      let w=W, h=H;
+      if (Math.max(W,H) > maxSize){
+        if (W > H){ w = maxSize; h = Math.round(H * (maxSize/W)); }
+        else { h = maxSize; w = Math.round(W * (maxSize/H)); }
+      }
+      const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+      const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(blobURL);
+      return canvas.toDataURL('image/jpeg', quality);
+    }
 
     /* init */
     window.addEventListener('load', ()=>{
@@ -481,7 +492,6 @@
       refreshBack(); toggleFab();
     });
     window.addEventListener('resize', ()=> setStackHeight(activeScreen().scrollHeight));
-
   </script>
 </body>
 </html>
