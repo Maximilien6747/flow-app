@@ -26,7 +26,7 @@
       min-height: 100svh;
       position: relative;
     }
-    /* barre haute : engrenage puis flèche (à gauche) */
+    /* barre haute : engrenage (gauche) puis flèche retour */
     header.bar{
       position: sticky; top: calc(var(--safe-top) + 6px);
       display:flex; gap:8px; align-items:center; justify-content:flex-start;
@@ -198,13 +198,13 @@
     <div id="modalAdmin" class="modal">
       <div class="box">
         <h3 style="margin:0 0 8px">Mode admin</h3>
-      <label for="adminCode">Code</label>
-      <input id="adminCode" type="text" inputmode="numeric" maxlength="8" placeholder="Code admin">
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn secondary" id="adminCancel">Annuler</button>
-        <button class="btn" id="adminOk">Valider</button>
-      </div>
-      <div id="adminMsg" class="hint"></div>
+        <label for="adminCode">Code</label>
+        <input id="adminCode" type="text" inputmode="numeric" maxlength="8" placeholder="Code admin">
+        <div class="row" style="justify-content:flex-end">
+          <button class="btn secondary" id="adminCancel">Annuler</button>
+          <button class="btn" id="adminOk">Valider</button>
+        </div>
+        <div id="adminMsg" class="hint"></div>
       </div>
     </div>
 
@@ -235,17 +235,16 @@
        SCRIPT (Firebase + UI)
        ========================= -->
   <script type="module">
-    /* ---------- Firebase ---------- */
+    /* ---------- Firebase (Firestore only) ---------- */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
     // >>>>>>> Ta configuration Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
       authDomain: "app-cours-94f32.firebaseapp.com",
       projectId: "app-cours-94f32",
-      storageBucket: "app-cours-94f32.appspot.com",
+      storageBucket: "app-cours-94f32.firebasestorage.app",
       messagingSenderId: "519755746540",
       appId: "1:519755746540:web:8d55f18754ce08884269c9",
       measurementId: "G-VD89GYHJWV"
@@ -254,7 +253,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
-    const stg = getStorage(app);
 
     /* ---------- helpers UI ---------- */
     const $ = s => document.querySelector(s);
@@ -451,7 +449,7 @@
       } else { $('#adminMsg').textContent='Code incorrect.'; }
     };
 
-    /* ---------- Ajout cours ---------- */
+    /* ---------- Ajout cours (image en base64 stockée dans Firestore) ---------- */
     function toggleFab(){
       const onSubject = activeId()==='scr-subject';
       $('#fabAdd').style.display = (isAdminUI && onSubject) ? 'grid' : 'none';
@@ -462,7 +460,7 @@
       const f = $('#addImg').files[0], d = $('#addDate').value, out = $('#addMsg');
       if(!f || !d){ out.textContent='Choisis une image et une date.'; return; }
       try{
-        const imgURL = await compressAndUpload(f, 1280, .8, currentSubject);
+        const imgURL = await compressAndUpload(f, 1280, .8, currentSubject); // retourne une dataURL
         await addDoc(collection(db, `subjects/${currentSubject}/courses`), { date:d, img:imgURL, createdAt:Date.now() });
         $('#modalAdd').style.display='none';
       }catch(e){
@@ -470,8 +468,8 @@
       }
     };
 
-    // compression + upload vers Storage
-    async function compressAndUpload(file, max=1280, quality=.8, slug='misc'){
+    // Compression locale -> dataURL (aucun upload Storage)
+    async function compressAndUpload(file, max=1280, quality=.8, _slugIgnored){
       const url = URL.createObjectURL(file);
       const img = await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; });
       let {width:w, height:h} = img;
@@ -481,11 +479,7 @@
       const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
       const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
       URL.revokeObjectURL(url);
-      const blob = await new Promise(res=> canvas.toBlob(res, 'image/jpeg', quality));
-      const key = `course-images/${slug}/${Date.now()}.jpg`;
-      const r = ref(stg, key);
-      await uploadBytes(r, blob);
-      return await getDownloadURL(r);
+      return canvas.toDataURL('image/jpeg', quality);
     }
 
     /* ---------- Init ---------- */
