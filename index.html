@@ -43,7 +43,7 @@
     h2{margin:6px 0 14px; font-size:clamp(22px,6.5vw,30px); text-align:center}
 
     label{display:block; margin:8px 0 6px}
-    input[type="text"], input[type="date"], input[type="file"]{
+    input[type="text"], input[type="file"]{
       width:100%; padding:14px; border-radius:16px;
       border:var(--thick) solid var(--ink);
       background:#ececec; font: 800 17px/1.2 system-ui; color:#000; outline:none;
@@ -101,11 +101,8 @@
     }
     .imgWrap{ height:130px; background:#d0d0d0; display:grid; place-items:center }
     .slide img{ width:100%; height:100%; object-fit:cover }
-    .caption{ padding:6px 8px; text-align:center; background:#fff; border-top:var(--thick) solid var(--ink); font-weight:900 }
-
-    /* recherche dans matière */
-    .searchRow{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center }
-    .searchRow span{ font-weight:900 }
+    /* .caption supprimée puisque plus de date */
+    /* .caption{ padding:6px 8px; text-align:center; background:#fff; border-top:var(--thick) solid var(--ink); font-weight:900 } */
 
     /* FAB admin */
     .fab{
@@ -172,11 +169,7 @@
         <div class="sliderWrap" id="sliderWrap">
           <div id="slides" class="slides"></div>
         </div>
-        <div class="searchRow">
-          <span>je cherche le cours du</span>
-          <input id="searchDate" type="date" style="max-width:190px">
-          <button id="searchGo" class="btn">OK</button>
-        </div>
+        <!-- Recherche par date supprimée -->
       </section>
     </div>
 
@@ -214,8 +207,6 @@
         <h3 style="margin:0 0 8px">Ajouter un cours</h3>
         <label>Image</label>
         <input id="addImg" type="file" accept="image/*" capture="environment">
-        <label style="margin-top:8px">Date</label>
-        <input id="addDate" type="date">
         <div class="row" style="justify-content:flex-end">
           <button class="btn secondary" id="addCancel">Annuler</button>
           <button class="btn" id="addSave">Enregistrer</button>
@@ -343,7 +334,8 @@
     function renderSubjectCloud(slug){
       if (unsubscribe) { unsubscribe(); unsubscribe=null; }
       slidesEl.innerHTML = '';
-      const q = query(collection(db, `subjects/${slug}/courses`), orderBy("date","asc"));
+      // tri par date de création (plus récents en premier)
+      const q = query(collection(db, `subjects/${slug}/courses`), orderBy("createdAt","desc"));
       unsubscribe = onSnapshot(q, snap=>{
         const arr=[]; snap.forEach(d=>arr.push({id:d.id, ...d.data()}));
         slidesEl.innerHTML = '';
@@ -355,9 +347,7 @@
             card.className='slide';
             const imgWrap=document.createElement('div'); imgWrap.className='imgWrap';
             if(it.img){ const im=new Image(); im.src=it.img; imgWrap.appendChild(im); }
-            const [y,m,d]=it.date.split('-');
-            const cap=document.createElement('div'); cap.className='caption'; cap.textContent=`${d}/${m}`;
-            card.appendChild(imgWrap); card.appendChild(cap);
+            card.appendChild(imgWrap);
             card.onclick = ()=> openViewer(it.img);
             slidesEl.appendChild(card);
           }
@@ -406,20 +396,6 @@
     });
     window.addEventListener('resize', ()=>{ if(document.getElementById('scr-subject').classList.contains('active')){ layoutSlides(); moveTo(idx,false); setStackHeight(activeScreen().scrollHeight);} });
 
-    // recherche
-    $('#searchGo').onclick = ()=>{
-      const d = ($('#searchDate').value||'').trim();
-      if(!d || !slidesEl.children.length) return;
-      let targetIndex = -1;
-      [...slidesEl.children].forEach((el,i)=>{
-        const cap = el.querySelector('.caption')?.textContent || '';
-        const [dd,mm] = cap.split('/');
-        const [y,m,d2] = d.split('-');
-        if(dd===d2 && mm===m) targetIndex = i;
-      });
-      if(targetIndex>=0) moveTo(targetIndex);
-    };
-
     /* ---------- viewer ---------- */
     function openViewer(src){ if(!src) return; $('#viewerImg').src=src; $('#viewer').style.display='flex'; }
     $('#viewerClose').onclick = ()=> $('#viewer').style.display='none';
@@ -454,14 +430,14 @@
       const onSubject = activeId()==='scr-subject';
       $('#fabAdd').style.display = (isAdminUI && onSubject) ? 'grid' : 'none';
     }
-    $('#fabAdd').onclick = ()=>{ $('#addImg').value=''; $('#addDate').value=''; $('#addMsg').textContent=''; $('#modalAdd').style.display='flex'; };
+    $('#fabAdd').onclick = ()=>{ $('#addImg').value=''; $('#addMsg').textContent=''; $('#modalAdd').style.display='flex'; };
     $('#addCancel').onclick = ()=> $('#modalAdd').style.display='none';
     $('#addSave').onclick = async ()=>{
-      const f = $('#addImg').files[0], d = $('#addDate').value, out = $('#addMsg');
-      if(!f || !d){ out.textContent='Choisis une image et une date.'; return; }
+      const f = $('#addImg').files[0], out = $('#addMsg');
+      if(!f){ out.textContent='Choisis une image.'; return; }
       try{
         const imgURL = await compressAndUpload(f, 1280, .8, currentSubject); // retourne une dataURL
-        await addDoc(collection(db, `subjects/${currentSubject}/courses`), { date:d, img:imgURL, createdAt:Date.now() });
+        await addDoc(collection(db, `subjects/${currentSubject}/courses`), { img:imgURL, createdAt:Date.now() });
         $('#modalAdd').style.display='none';
       }catch(e){
         out.textContent="Échec de l'enregistrement. Essaie avec une image plus petite.";
@@ -469,7 +445,7 @@
     };
 
     // Compression locale -> dataURL (aucun upload Storage)
-    async function compressAndUpload(file, max=1280, quality=.8, _slugIgnored){
+    async function compressAndUpload(file, max=1280, quality=.8){
       const url = URL.createObjectURL(file);
       const img = await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; });
       let {width:w, height:h} = img;
