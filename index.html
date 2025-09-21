@@ -6,25 +6,25 @@
 <title>Espace de cours</title>
 <style>
 :root{
-  --pad:18px; --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
+  --pad:20px; --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
   --ink:#000; --bg:#fff; --fg:#111; --radius:18px; --thick:4px; --dur:300ms; --ease:cubic-bezier(.2,.7,.3,1);
   --gap:10px;
   --c-fr:#fac3cf; --c-his:#ffd9b3; --c-svt:#c9f0db; --c-chi:#fff3b8; --c-snt:#cfeeff; --c-ses:#f1dbff; --c-ang:#ffc6e9;
 }
 *{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:700 clamp(16px,2.6vw,18px)/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-.app{max-width:400px;margin:0 auto;padding:calc(var(--safe-top)+var(--pad)) var(--pad) calc(var(--safe-bottom)+var(--pad));min-height:100svh;position:relative}
+.app{max-width:420px;margin:0 auto;padding:calc(var(--safe-top)+var(--pad)) var(--pad) calc(var(--safe-bottom)+var(--pad));min-height:100svh;position:relative}
 header.bar{position:sticky;top:calc(var(--safe-top)+6px);display:flex;gap:8px;align-items:center;justify-content:flex-start;z-index:5}
 .iconBtn{width:40px;height:40px;border:3px solid var(--ink);border-radius:50%;display:grid;place-items:center;background:#fff;color:#000;cursor:pointer}
 #backBtn{visibility:hidden}
-h1{margin:14px 0 20px;font-size:clamp(26px,7vw,36px);line-height:1.1;text-align:center}
+h1{margin:14px 0 24px;font-size:clamp(26px,7vw,36px);line-height:1.1;text-align:center}
 h2{margin:6px 0 14px;font-size:clamp(22px,6.5vw,30px);text-align:center}
 label{display:block;margin:8px 0 6px}
 input[type="text"],input[type="file"],input[type="date"],input[type="time"],select{
   width:100%;padding:14px;border-radius:16px;border:var(--thick) solid var(--ink);background:#ececec;
   font:800 17px/1.2 system-ui;color:#000;outline:none
 }
-.radioRow{display:flex;gap:12px;margin-top:6px}
+.radioRow{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap}
 .radioRow label{display:flex;gap:8px;align-items:center;border:3px solid var(--ink);padding:8px 12px;border-radius:14px;background:#fff;cursor:pointer}
 .btn{margin-top:14px;padding:12px 16px;border:3px solid var(--ink);border-radius:14px;background:#000;color:#fff;font:800 17px system-ui;cursor:pointer;width:fit-content}
 .btn.secondary{background:#fff;color:#000}.btn:active{transform:translateY(1px)}
@@ -40,7 +40,8 @@ input[type="text"],input[type="file"],input[type="date"],input[type="time"],sele
 @keyframes inRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
 @keyframes outRight{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
 @keyframes inLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
-.center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px}
+.center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:4px}
+.welcomeBox{padding:10px}
 .menu{display:flex;flex-direction:column;gap:14px}
 .cardLink,.mat{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;background:#e5e5e5;border:var(--thick) solid var(--ink);border-radius:20px;text-decoration:none;color:#000;cursor:pointer;font-size:clamp(18px,5vw,22px);font-weight:900;box-shadow:0 6px 14px rgba(0,0,0,.06)}
 .pillArrow{min-width:52px;height:38px;border:3px solid var(--ink);border-radius:999px;display:grid;place-items:center;background:#fff;color:#000}
@@ -57,14 +58,16 @@ input[type="text"],input[type="file"],input[type="date"],input[type="time"],sele
 .mat.admin .delSmall{display:grid}
 .fab{position:fixed;right:22px;bottom:calc(22px + var(--safe-bottom));width:56px;height:56px;border-radius:50%;border:3px solid var(--ink);background:#000;color:#fff;display:none;place-items:center;font-size:26px;box-shadow:0 8px 18px rgba(0,0,0,.18);cursor:pointer;z-index:7}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:8}
-.modal .box{background:#fff;color:#000;border:var(--thick) solid var(--ink);border-radius:18px;padding:16px;width:min(92vw,380px)}
+.modal .box{background:#fff;color:#000;border:var(--thick) solid var(--ink);border-radius:18px;padding:16px;width:min(92vw,400px)}
 .modal .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .viewer{position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:9}
 .viewer img{max-width:96vw;max-height:90vh;border-radius:12px}
 .viewer .close{position:fixed;top:16px;right:16px;width:42px;height:42px;border:3px solid #fff;border-radius:50%;color:#fff;display:grid;place-items:center;cursor:pointer}
 .sep{height:10px}
-.rowInline{display:flex;gap:8px;align-items:center;justify-content:center;margin:8px 0}
+.rowInline{display:flex;gap:8px;align-items:center;justify-content:center;margin:8px 0;flex-wrap:wrap}
 .badge{border:3px solid var(--ink);border-radius:12px;padding:6px 10px;background:#fff}
+.hwCard{border:3px solid var(--ink);border-radius:18px;padding:14px;background:#fff;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.tag{font-weight:900}
 </style>
 </head>
 <body>
@@ -77,7 +80,7 @@ input[type="text"],input[type="file"],input[type="date"],input[type="time"],sele
   <div id="stack" class="stack" aria-live="polite" aria-atomic="true">
     <!-- 1) accueil -->
     <section id="scr-welcome" class="screen active">
-      <div class="center">
+      <div class="center welcomeBox">
         <h1>Bienvenue dans ton espace de cours</h1>
         <div>
           <label for="prenom">Quel est ton prénom ?</label>
@@ -96,54 +99,59 @@ input[type="text"],input[type="file"],input[type="date"],input[type="time"],sele
     <!-- 2) menu -->
     <section id="scr-home" class="screen" aria-hidden="true">
       <div class="center">
-        <h2>Bonjour <span id="who">prenom</span></h2>
+        <h2>Bonjour <span id="who">Prénom</span></h2>
         <nav class="menu">
-          <button id="btn-cours"   class="cardLink" type="button">cours <span class="pillArrow">→</span></button>
-          <button id="btn-emploi"  class="cardLink" type="button">emploie du temps <span class="pillArrow">→</span></button>
-          <button id="btn-devoirs" class="cardLink" type="button">devoirs <span class="pillArrow">→</span></button>
-          <button id="btn-controle"class="cardLink" type="button">controle <span class="pillArrow">→</span></button>
+          <button id="btn-cours"    class="cardLink" type="button">COURS <span class="pillArrow">→</span></button>
+          <button id="btn-emploi"   class="cardLink" type="button">EMPLOI DU TEMPS <span class="pillArrow">→</span></button>
+          <button id="btn-devoirs"  class="cardLink" type="button">DEVOIRS <span class="pillArrow">→</span></button>
+          <button id="btn-controle" class="cardLink" type="button">CONTRÔLES <span class="pillArrow">→</span></button>
         </nav>
       </div>
     </section>
 
     <!-- 3) matières -->
     <section id="scr-cours" class="screen" aria-hidden="true">
-      <h2 style="margin-top:4px">Cours</h2>
+      <h2 style="margin-top:4px">COURS</h2>
       <div id="mat-list" class="list"></div>
     </section>
 
     <!-- 4) chapitres -->
     <section id="scr-chapters" class="screen" aria-hidden="true">
-      <h2 id="chapTitle" class="subjectTitle">chapitres</h2>
+      <h2 id="chapTitle" class="subjectTitle">CHAPITRES</h2>
       <div id="chap-list" class="list"></div>
     </section>
 
     <!-- 5) cours (grille) -->
     <section id="scr-courses" class="screen" aria-hidden="true">
-      <h2 id="courseTitle" class="subjectTitle">cours</h2>
+      <h2 id="courseTitle" class="subjectTitle">COURS</h2>
       <div id="grid" class="grid"></div>
     </section>
 
     <!-- 6) Emploi du temps -->
     <section id="scr-emploi" class="screen" aria-hidden="true">
-      <h2>Emploi du temps</h2>
+      <h2>EMPLOI DU TEMPS</h2>
       <div class="rowInline">
+        <button id="viewDay" class="btn secondary">Jour</button>
+        <button id="viewWeek" class="btn secondary">Semaine</button>
+      </div>
+      <div class="rowInline" id="dayControls">
         <button id="dayPrev" class="iconBtn">◀</button>
         <input id="dayPicker" type="date"/>
         <button id="dayNext" class="iconBtn">▶</button>
       </div>
       <div id="agendaList" class="list"></div>
+      <div id="agendaWeek" class="list" style="display:none"></div>
     </section>
 
     <!-- 7) Devoirs -->
     <section id="scr-homeworks" class="screen" aria-hidden="true">
-      <h2>Devoirs</h2>
+      <h2>DEVOIRS</h2>
       <div id="hwList" class="list"></div>
     </section>
 
     <!-- 8) Contrôles -->
     <section id="scr-exams" class="screen" aria-hidden="true">
-      <h2>Contrôles</h2>
+      <h2>CONTRÔLES</h2>
       <div class="rowInline">
         <button id="tabUp"   class="btn secondary">À venir</button>
         <button id="tabPast" class="btn secondary">Passés</button>
@@ -179,6 +187,12 @@ input[type="text"],input[type="file"],input[type="date"],input[type="time"],sele
   <div id="modalAdd" class="modal"><div class="box">
     <h3 style="margin:0 0 8px">Ajouter des cours</h3>
     <label>Images (une ou plusieurs)</label><input id="addImg" type="file" accept="image/*" capture="environment" multiple>
+    <label>Pour qui ?</label>
+    <div class="radioRow" id="audRow">
+      <label><input type="radio" name="aud" value="all" checked> Tous</label>
+      <label><input type="radio" name="aud" value="allemand"> Allemand</label>
+      <label><input type="radio" name="aud" value="espagnol"> Espagnol</label>
+    </div>
     <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="addCancel">Annuler</button><button class="btn" id="addSave">Enregistrer</button></div>
     <div id="addMsg" class="hint"></div>
   </div></div>
@@ -192,14 +206,23 @@ input[type="text"],input[type="file"],input[type="date"],input[type="time"],sele
       <label for="agEnd">À</label><input id="agEnd" type="time" value="09:00">
     </div></div>
     <label for="agTitle">Matière - salle</label><input id="agTitle" type="text" placeholder='Ex. "Math - 112"'>
+    <label>Récurrence</label>
+    <div class="radioRow" id="recRow">
+      <label><input type="radio" name="rec" value="once" checked> Une fois</label>
+      <label><input type="radio" name="rec" value="weekly"> Toutes les semaines</label>
+      <label><input type="radio" name="rec" value="biweekly"> Toutes les 2 semaines</label>
+    </div>
     <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="agCancel">Annuler</button><button class="btn" id="agSave">Enregistrer</button></div>
     <div id="agMsg" class="hint"></div>
   </div></div>
 
   <div id="modalHW" class="modal"><div class="box">
     <h3 style="margin:0 0 8px">Ajouter un devoir</h3>
-    <label for="hwTitle">Titre</label><input id="hwTitle" type="text" placeholder="Ex. Exo 3 p.27">
-    <label for="hwDue">Pour le (facultatif)</label><input id="hwDue" type="date">
+    <label for="hwSubject">Matière</label>
+    <select id="hwSubject"></select>
+    <label for="hwTitle">Devoir (texte)</label><input id="hwTitle" type="text" placeholder="Ex. Exo 3 p.27">
+    <label for="hwDue">Pour le</label><input id="hwDue" type="date">
+    <label>Correction (image/doc)</label><input id="hwCorr" type="file" accept="image/*,application/pdf">
     <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="hwCancel">Annuler</button><button class="btn" id="hwSave">Enregistrer</button></div>
     <div id="hwMsg" class="hint"></div>
   </div></div>
@@ -230,7 +253,7 @@ input[type="text"],input[type="file"],input[type="date"],input[type="time"],sele
   </div></div>
 
   <!-- viewer -->
-  <div id="viewer" class="viewer"><button class="close" id="viewerClose">✕</button><img id="viewerImg" alt="Cours"></div>
+  <div id="viewer" class="viewer"><button class="close" id="viewerClose">✕</button><img id="viewerImg" alt="Image"></div>
 </main>
 
 <script type="module">
@@ -238,7 +261,7 @@ input[type="text"],input[type="file"],input[type="date"],input[type="time"],sele
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, addDoc, query, orderBy, onSnapshot,
-  doc, deleteDoc, getDocs
+  doc, deleteDoc, getDocs, where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -255,13 +278,14 @@ const db  = getFirestore(app);
 
 /* ---------- helpers UI ---------- */
 const $ = s => document.querySelector(s);
-const stack = $('#stack'), backBtn = $('#backBtn');
+const stack = $('#stack'), backBtn = $('#backBtn'), gearBtn = $('#gear');
 function setStackHeight(h){ stack.style.height = h+'px'; }
 const navStack = ['scr-welcome'];
 function activeId(){ return navStack[navStack.length-1]; }
 function activeScreen(){ return document.getElementById(activeId()); }
 function canGoBack(){ return navStack.length>1; }
 function refreshBack(){ backBtn.style.visibility = canGoBack() ? 'visible' : 'hidden'; }
+function refreshGear(){ gearBtn.style.display = activeId()==='scr-welcome' ? 'none' : 'inline-grid'; }
 function animate(fromEl,toEl,dir){
   setStackHeight(Math.max(fromEl.scrollHeight,toEl.scrollHeight));
   fromEl.classList.remove('active'); toEl.classList.add('active');
@@ -270,8 +294,8 @@ function animate(fromEl,toEl,dir){
   fromEl.classList.add(o); toEl.classList.add(i);
   toEl.addEventListener('animationend',()=>{ fromEl.classList.remove(o); toEl.classList.remove(i); setStackHeight(toEl.scrollHeight); },{once:true});
 }
-function go(id,dir='f'){ const a=activeScreen(); const b=document.getElementById(id); if(a===b) return; navStack.push(id); animate(a,b,dir); refreshBack(); toggleFab(); }
-function back(){ if(!canGoBack()) return; const a=activeScreen(); navStack.pop(); const b=activeScreen(); animate(a,b,'b'); refreshBack(); toggleFab(); }
+function go(id,dir='f'){ const a=activeScreen(); const b=document.getElementById(id); if(a===b) return; navStack.push(id); animate(a,b,dir); refreshBack(); refreshGear(); toggleFab(); }
+function back(){ if(!canGoBack()) return; const a=activeScreen(); navStack.pop(); const b=activeScreen(); animate(a,b,'b'); refreshBack(); refreshGear(); toggleFab(); }
 backBtn.onclick = back;
 
 /* ---------- Etat ----------- */
@@ -286,8 +310,8 @@ const courseOrderMaxByChap = {};
 let hwOrderMax = -1;
 
 const subjects = [
-  {slug:'francais', name:'francais', color:'var(--c-fr)',  icon:'📚'},
-  {slug:'histoire', name:'histoire', color:'var(--c-his)', icon:'🏛️'},
+  {slug:'francais', name:'Français', color:'var(--c-fr)',  icon:'📚'},
+  {slug:'histoire', name:'Histoire', color:'var(--c-his)', icon:'🏛️'},
   {slug:'svt',      name:'SVT',      color:'var(--c-svt)', icon:'🧬'},
   {slug:'chimie',   name:'Chimie',   color:'var(--c-chi)', icon:'⚗️'},
   {slug:'snt',      name:'SNT',      color:'var(--c-snt)', icon:'💻'},
@@ -295,6 +319,8 @@ const subjects = [
   {slug:'anglais',  name:'Anglais',  color:'var(--c-ang)', icon:'🇬🇧'}
 ];
 function subjectBySlug(s){ return subjects.find(x=>x.slug===s); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function shiftDate(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
 
 /* ---------- Accueil ---------- */
 function saveAndGo(){
@@ -311,10 +337,10 @@ $('#go').onclick = saveAndGo;
 prenomInput.addEventListener('keydown', e=>{ if(e.key==='Enter') saveAndGo(); });
 
 /* ---------- Menu ---------- */
-$('#btn-cours').onclick   = ()=>{ renderMatieres(); go('scr-cours','f'); };
-$('#btn-emploi').onclick  = ()=>{ initAgenda(); go('scr-emploi','f'); };
-$('#btn-devoirs').onclick = ()=>{ openHomeworks(); go('scr-homeworks','f'); };
-$('#btn-controle').onclick= ()=>{ openExams(); go('scr-exams','f'); };
+$('#btn-cours').onclick    = ()=>{ renderMatieres(); go('scr-cours','f'); };
+$('#btn-emploi').onclick   = ()=>{ initAgenda(); go('scr-emploi','f'); };
+$('#btn-devoirs').onclick  = ()=>{ openHomeworks(); go('scr-homeworks','f'); };
+$('#btn-controle').onclick = ()=>{ openExams(); go('scr-exams','f'); };
 
 function renderMatieres(){
   const wrap = $('#mat-list'); wrap.innerHTML='';
@@ -337,12 +363,11 @@ function openSubject(slug, name){
 }
 
 async function deleteChapterCascade(chId){
-  // supprime tous les cours du chapitre puis le chapitre
   const path = `subjects/${currentSubject}/chapters/${chId}/courses`;
   const snap = await getDocs(collection(db, path));
-  const promises = [];
-  snap.forEach(d=> promises.push(deleteDoc(doc(db, path, d.id))));
-  await Promise.all(promises);
+  const tasks = [];
+  snap.forEach(d=> tasks.push(deleteDoc(doc(db, path, d.id))));
+  await Promise.all(tasks);
   await deleteDoc(doc(db, `subjects/${currentSubject}/chapters/${chId}`));
 }
 
@@ -381,8 +406,9 @@ function openChapter(chapterId, chapterName){
   setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
 }
 
-/* ---------- Cours (grille) ---------- */
+/* ---------- Cours (grille, filtrage LV2) ---------- */
 const grid = $('#grid');
+function lv2(){ return localStorage.getItem('lv2') || 'allemand'; }
 function renderCourses(){
   if (unsubscribe) { unsubscribe(); unsubscribe=null; }
   grid.innerHTML='';
@@ -393,9 +419,13 @@ function renderCourses(){
     const key = `${currentSubject}/${currentChapter.id}`;
     courseOrderMaxByChap[key] = arr.reduce((acc,it)=>Math.max(acc, typeof it.order==='number'?it.order:-1), -1);
 
+    // filtre LV2 pour les élèves
+    const myLv2 = lv2();
+    const filtered = isAdminUI ? arr : arr.filter(it => (it.aud||'all')==='all' || (it.aud===myLv2));
+
     grid.innerHTML='';
-    if(!arr.length){ grid.innerHTML = '<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>'; }
-    else for(const it of arr){
+    if(!filtered.length){ grid.innerHTML = '<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>'; }
+    else for(const it of filtered){
       const item=document.createElement('div'); item.className='gridItem'+(isAdminUI?' admin':'');
       const im = new Image(); im.src=it.img; item.appendChild(im);
       const del=document.createElement('button'); del.className='delBtn'; del.textContent='🗑️'; del.title='Supprimer';
@@ -414,18 +444,18 @@ $('#viewerClose').onclick = ()=> $('#viewer').style.display='none';
 
 /* ---------- Paramètres + Admin ---------- */
 const modalGear=$('#modalGear'), adminRow=$('#adminRow');
-function refreshGear(){
+function refreshGearModal(){
   adminRow.innerHTML='';
   const b=document.createElement('button'); b.className='btn'; b.textContent=isAdminUI?'Quitter admin':'Admin';
-  b.onclick=()=>{ if(isAdminUI){isAdminUI=false; modalGear.style.display='none'; toggleFab(); renderChapters(); renderCourses(); refreshAdminLists();} else{ modalGear.style.display='none'; openAdminModal(); } };
+  b.onclick=()=>{ if(isAdminUI){isAdminUI=false; modalGear.style.display='none'; toggleFab(); renderChapters(); renderCourses(); refreshAdminLists(); } else{ modalGear.style.display='none'; openAdminModal(); } };
   adminRow.appendChild(b);
 }
 function refreshAdminLists(){
-  [...document.querySelectorAll('.gridItem')].forEach(el=> isAdminUI?el.classList.add('admin'):el.classList.remove('admin'));
-  [...document.querySelectorAll('.mat')].forEach(el=> isAdminUI?el.classList.add('admin'):el.classList.remove('admin'));
+  document.querySelectorAll('.gridItem').forEach(el=> isAdminUI?el.classList.add('admin'):el.classList.remove('admin'));
+  document.querySelectorAll('.mat').forEach(el=> isAdminUI?el.classList.add('admin'):el.classList.remove('admin'));
 }
 function openAdminModal(){ $('#adminCode').value=''; $('#adminMsg').textContent=''; $('#modalAdmin').style.display='flex'; }
-$('#gear').onclick=()=>{ refreshGear(); modalGear.style.display='flex'; };
+gearBtn.onclick=()=>{ refreshGearModal(); modalGear.style.display='flex'; };
 $('#gearClose').onclick=()=> modalGear.style.display='none';
 $('#adminCancel').onclick=()=> $('#modalAdmin').style.display='none';
 $('#adminOk').onclick=()=>{ if($('#adminCode').value.trim()==='2525'){ isAdminUI=true; $('#modalAdmin').style.display='none'; toggleFab(); refreshAdminLists(); } else { $('#adminMsg').textContent='Code incorrect.'; } };
@@ -446,7 +476,9 @@ fab.onclick=()=>{
     case 'chapter': $('#chapName').value=''; $('#chapMsg').textContent=''; $('#modalChapter').style.display='flex'; break;
     case 'course' : $('#addImg').value=''; $('#addMsg').textContent=''; $('#modalAdd').style.display='flex'; break;
     case 'agenda' : openAgendaAdd(); break;
-    case 'homework': $('#hwTitle').value=''; $('#hwDue').value=''; $('#hwMsg').textContent=''; $('#modalHW').style.display='flex'; break;
+    case 'homework':
+      fillHWSubjects(); $('#hwTitle').value=''; $('#hwDue').value=''; $('#hwCorr').value='';
+      $('#hwMsg').textContent=''; $('#modalHW').style.display='flex'; break;
     case 'exam'   : openExamAdd(); break;
   }
 };
@@ -467,6 +499,7 @@ $('#chapSave').onclick=async()=>{
 $('#addCancel').onclick=()=> $('#modalAdd').style.display='none';
 $('#addSave').onclick=async()=>{
   const files=Array.from($('#addImg').files||[]); const out=$('#addMsg');
+  const aud=document.querySelector('input[name="aud"]:checked')?.value||'all';
   if(!files.length){ out.textContent='Choisis au moins une image.'; return; }
   if(!currentChapter){ out.textContent='Pas de chapitre sélectionné.'; return; }
   out.textContent='Compression et enregistrement...';
@@ -476,7 +509,7 @@ $('#addSave').onclick=async()=>{
     const path=`subjects/${currentSubject}/chapters/${currentChapter.id}/courses`;
     for(let i=0;i<files.length;i++){
       const imgURL=await compressAndUpload(files[i],1280,.8);
-      await addDoc(collection(db, path), {img:imgURL, order:start+i, createdAt:Date.now()+i});
+      await addDoc(collection(db, path), {img:imgURL, order:start+i, createdAt:Date.now()+i, aud});
     }
     $('#modalAdd').style.display='none';
   }catch(e){ out.textContent="Échec de l'enregistrement. Essaie avec des images plus petites."; }
@@ -489,55 +522,138 @@ async function compressAndUpload(file,max=1280,quality=.8){
   URL.revokeObjectURL(url); return canvas.toDataURL('image/jpeg',quality);
 }
 
-/* ---------- Emploi du temps ---------- */
-const dayPicker=$('#dayPicker'), agendaList=$('#agendaList');
-function todayISO(){ return new Date().toISOString().slice(0,10); }
-function shiftDate(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
-$('#dayPrev').onclick=()=>{ dayPicker.value=shiftDate(dayPicker.value,-1); listenAgenda(); };
-$('#dayNext').onclick=()=>{ dayPicker.value=shiftDate(dayPicker.value,+1); listenAgenda(); };
-dayPicker.onchange=()=> listenAgenda();
-function initAgenda(){ if(!dayPicker.value) dayPicker.value=todayISO(); listenAgenda(); }
+/* ---------- Emploi du temps : jour / semaine + récurrence ---------- */
+const dayPicker=$('#dayPicker'), agendaList=$('#agendaList'), weekWrap=$('#agendaWeek');
+const viewDayBtn=$('#viewDay'), viewWeekBtn=$('#viewWeek'), dayControls=$('#dayControls');
+let viewMode='day';
+viewDayBtn.onclick=()=>{ viewMode='day'; dayControls.style.display='flex'; agendaList.style.display='block'; weekWrap.style.display='none'; initAgenda(); };
+viewWeekBtn.onclick=()=>{ viewMode='week'; dayControls.style.display='none'; agendaList.style.display='none'; weekWrap.style.display='block'; initAgenda(); };
+
+$('#dayPrev').onclick=()=>{ dayPicker.value=shiftDate(dayPicker.value,-1); listenAgendaDay(); };
+$('#dayNext').onclick=()=>{ dayPicker.value=shiftDate(dayPicker.value,+1); listenAgendaDay(); };
+dayPicker.onchange=()=> listenAgendaDay();
+
 let unsubAgenda=null;
-function listenAgenda(){
+function initAgenda(){
+  if(!dayPicker.value) dayPicker.value=todayISO();
+  if(viewMode==='day'){ listenAgendaDay(); }
+  else { renderWeek(dayPicker.value); }
+}
+function dowISO(date){ const d=new Date(date).getDay(); return ((d+6)%7); } // 0=lundi ... 6=dim
+function mondayISO(date){
+  const d=new Date(date); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); return d.toISOString().slice(0,10);
+}
+function diffWeeks(a,b){ // nb de semaines entre a (start) et b (>=a)
+  const d1=new Date(a), d2=new Date(b);
+  const ms= (mondayISO(d2.toISOString())===mondayISO(d1.toISOString())) ? 0 : Math.round((d2 - d1)/(1000*60*60*24*7));
+  return ms;
+}
+
+async function getRecurringFor(dateISO){
+  const arr=[]; const snap=await getDocs(collection(db,'scheduleRecurring/items'));
+  snap.forEach(d=>{
+    const it=d.data();
+    const condDOW = it.dow === (new Date(dateISO).getDay());
+    const after = dateISO >= it.startDate;
+    const weeks = diffWeeks(mondayISO(it.startDate), mondayISO(dateISO));
+    const okInterval = (it.interval||1)===1 || (weeks%2===0);
+    if(condDOW && after && okInterval){ arr.push(it); }
+  });
+  return arr;
+}
+
+function listenAgendaDay(){
   if(unsubAgenda){unsubAgenda();unsubAgenda=null;}
   agendaList.innerHTML='';
   const qy=query(collection(db,`schedule/${dayPicker.value}/items`),orderBy("start","asc"));
-  unsubAgenda=onSnapshot(qy,snap=>{
-    const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+  unsubAgenda=onSnapshot(qy, async snap=>{
+    const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data(), _col:'day'}));
+    // add recurring
+    const rec=await getRecurringFor(dayPicker.value);
+    for(const r of rec){ arr.push({...r,_col:'rec'}); }
+    arr.sort((a,b)=> (a.start||'') < (b.start||'') ? -1 : 1);
     agendaList.innerHTML='';
     if(!arr.length) agendaList.innerHTML='<div class="hint" style="margin:8px auto">Aucun cours ce jour.</div>';
     for(const it of arr){
       const row=document.createElement('div'); row.className='mat'+(isAdminUI?' admin':'');
       row.innerHTML=`<span class="left"><span>${it.title}</span><span class="badge">${it.start}–${it.end}</span></span>`;
-      if(isAdminUI){ const del=document.createElement('button'); del.className='delSmall'; del.textContent='🗑️'; del.onclick=async(e)=>{e.stopPropagation(); if(confirm('Supprimer ?')) await deleteDoc(doc(db,`schedule/${dayPicker.value}/items/${it.id}`));}; row.appendChild(del); }
+      if(isAdminUI && it._col==='day'){ const del=document.createElement('button'); del.className='delSmall'; del.textContent='🗑️'; del.onclick=async(e)=>{e.stopPropagation(); if(confirm('Supprimer ?')) await deleteDoc(doc(db,`schedule/${dayPicker.value}/items/${it.id}`));}; row.appendChild(del); }
       agendaList.appendChild(row);
     }
     setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
   });
 }
+
+async function renderWeek(anchorISO){
+  const startMon=mondayISO(anchorISO); weekWrap.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=shiftDate(startMon,i);
+    const dayName=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][i];
+    const holder=document.createElement('div'); holder.className='mat'; holder.innerHTML=`<span class="left"><span>${dayName} ${d}</span></span>`;
+    weekWrap.appendChild(holder);
+
+    const snap=await getDocs(query(collection(db,`schedule/${d}/items`),orderBy("start","asc")));
+    const arr=[]; snap.forEach(x=>arr.push({...x.data(), _col:'day'}));
+    const rec=await getRecurringFor(d); rec.forEach(x=>arr.push({...x,_col:'rec'}));
+    arr.sort((a,b)=> (a.start||'') < (b.start||'') ? -1 : 1);
+    if(!arr.length){ const empty=document.createElement('div'); empty.className='hint'; empty.textContent='—'; empty.style.margin='0 0 8px 12px'; weekWrap.appendChild(empty); }
+    else{
+      for(const it of arr){
+        const row=document.createElement('div'); row.className='hwCard'; row.innerHTML=`<span>${it.title}</span><span class="badge">${it.start}–${it.end}</span>`;
+        weekWrap.appendChild(row);
+      }
+    }
+  }
+  setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
+}
+
 function openAgendaAdd(){ $('#agMsg').textContent=''; $('#agDate').value=dayPicker.value; $('#agStart').value='08:00'; $('#agEnd').value='09:00'; $('#agTitle').value=''; $('#modalAgenda').style.display='flex'; }
 $('#agCancel').onclick=()=> $('#modalAgenda').style.display='none';
 $('#agSave').onclick=async()=>{
   const d=$('#agDate').value, s=$('#agStart').value, e=$('#agEnd').value, t=($('#agTitle').value||'').trim(), out=$('#agMsg');
+  const rec=document.querySelector('input[name="rec"]:checked')?.value||'once';
   if(!d||!s||!e||!t){ out.textContent='Complète tous les champs.'; return; }
   if(s>=e){ out.textContent='L\'heure de début doit être < fin.'; return; }
-  try{ await addDoc(collection(db,`schedule/${d}/items`), {title:t,start:s,end:e,createdAt:Date.now()}); $('#modalAgenda').style.display='none'; if(dayPicker.value!==d){dayPicker.value=d; listenAgenda();} }catch(err){ out.textContent='Erreur: '+(err.message||err); }
+  try{
+    if(rec==='once'){
+      await addDoc(collection(db,`schedule/${d}/items`), {title:t,start:s,end:e,createdAt:Date.now()});
+      if(dayPicker.value!==d){dayPicker.value=d; listenAgendaDay();}
+    }else{
+      await addDoc(collection(db,'scheduleRecurring/items'), {
+        title:t,start:s,end:e,startDate:d, dow:new Date(d).getDay(), interval:(rec==='weekly'?1:2), createdAt:Date.now()
+      });
+      // rafraîchir vue
+      if(viewMode==='day') listenAgendaDay(); else renderWeek(d);
+    }
+    $('#modalAgenda').style.display='none';
+  }catch(err){ out.textContent='Erreur: '+(err.message||err); }
 };
 
-/* ---------- Devoirs ---------- */
+/* ---------- Devoirs (matière + couleur + correction + purge passés) ---------- */
 let unsubHW=null;
+function colorFor(slug){ return (subjectBySlug(slug)||{}).color || '#fff'; }
+function fillHWSubjects(){
+  const sel=$('#hwSubject'); sel.innerHTML = subjects.map(s=>`<option value="${s.slug}">${s.name}</option>`).join('');
+}
 function openHomeworks(){
   if(unsubHW){unsubHW();unsubHW=null;}
-  const qy=query(collection(db,'homeworks'),orderBy("order","asc"));
-  unsubHW=onSnapshot(qy,snap=>{
+  const qy=query(collection(db,'homeworks'),orderBy("dueDate","asc"));
+  unsubHW=onSnapshot(qy, async snap=>{
     const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()}));
-    hwOrderMax=arr.reduce((a,it)=>Math.max(a,typeof it.order==='number'?it.order:-1),-1);
+    // purge auto des passés
+    const today=todayISO();
+    for(const it of arr){ if(it.dueDate && it.dueDate<today){ try{ await deleteDoc(doc(db,`homeworks/${it.id}`)); }catch{} } }
+    const future=arr.filter(it=> !it.dueDate || it.dueDate>=today );
+    hwOrderMax=future.reduce((a,it)=>Math.max(a,typeof it.order==='number'?it.order:-1),-1);
+
     const list=$('#hwList'); list.innerHTML='';
-    if(!arr.length) list.innerHTML='<div class="hint" style="margin:8px auto">Aucun devoir.</div>';
-    for(const it of arr){
-      const card=document.createElement('div'); card.className='mat'+(isAdminUI?' admin':'');
+    if(!future.length) list.innerHTML='<div class="hint" style="margin:8px auto">Aucun devoir.</div>';
+    for(const it of future){
+      const card=document.createElement('div'); card.className='hwCard'+(isAdminUI?' admin':''); card.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue(colorFor(it.subjectSlug)?'--ink':'--ink');
+      card.style.borderColor = (subjectBySlug(it.subjectSlug)?.color) ? subjectBySlug(it.subjectSlug).color : '#000';
       const due=it.dueDate?`<span class="badge">${it.dueDate}</span>`:''; 
-      card.innerHTML=`<span class="left"><span>${it.title}</span>${due}</span>`;
+      card.innerHTML=`<div class="left"><span class="tag">${(subjectBySlug(it.subjectSlug)?.name)||'?'}</span> — ${it.title}</div>${due}`;
+      if(it.corr){ card.style.cursor='pointer'; card.title='Voir la correction'; card.onclick=()=> openViewer(it.corr); }
       if(isAdminUI){ const del=document.createElement('button'); del.className='delSmall'; del.textContent='🗑️'; del.onclick=async(e)=>{e.stopPropagation(); if(confirm('Supprimer ?')) await deleteDoc(doc(db,`homeworks/${it.id}`));}; card.appendChild(del); }
       list.appendChild(card);
     }
@@ -546,9 +662,12 @@ function openHomeworks(){
 }
 $('#hwCancel').onclick=()=> $('#modalHW').style.display='none';
 $('#hwSave').onclick=async()=>{
+  const subjectSlug=$('#hwSubject').value;
   const title=($('#hwTitle').value||'').trim(); const due=$('#hwDue').value||''; const out=$('#hwMsg');
-  if(!title){ out.textContent='Titre requis.'; return; }
-  try{ await addDoc(collection(db,'homeworks'),{title,dueDate:due,order:(hwOrderMax+1),createdAt:Date.now()}); $('#modalHW').style.display='none'; }
+  const corrFile=$('#hwCorr').files[0];
+  if(!title){ out.textContent='Entre le texte du devoir.'; return; }
+  let corr=null; if(corrFile){ corr = await compressAndUpload(corrFile,1280,.8); }
+  try{ await addDoc(collection(db,'homeworks'),{title,subjectSlug,dueDate:due,order:(hwOrderMax+1),corr,createdAt:Date.now()}); $('#modalHW').style.display='none'; }
   catch(err){ out.textContent='Erreur: '+(err.message||err); }
 };
 
@@ -557,14 +676,12 @@ let unsubUp=null, unsubPast=null; let examTab='upcoming';
 const upWrap=$('#upWrap'), pastWrap=$('#pastWrap');
 $('#tabUp').onclick=()=>{examTab='upcoming'; toggleExamTab();};
 $('#tabPast').onclick=()=>{examTab='past'; toggleExamTab();};
-function toggleExamTab(){ $('#tabUp').classList.toggle('btn',false); $('#tabUp').classList.toggle('secondary', examTab!=='upcoming'); $('#tabPast').classList.toggle('btn',false); $('#tabPast').classList.toggle('secondary', examTab!=='past'); upWrap.style.display= examTab==='upcoming'?'block':'none'; pastWrap.style.display= examTab==='past'?'grid':'none'; setStackHeight(activeScreen().scrollHeight); }
+function toggleExamTab(){ $('#tabUp').classList.toggle('secondary', examTab!=='upcoming'); $('#tabPast').classList.toggle('secondary', examTab!=='past'); upWrap.style.display= examTab==='upcoming'?'block':'none'; pastWrap.style.display= examTab==='past'?'grid':'none'; setStackHeight(activeScreen().scrollHeight); }
 function openExams(){
   toggleExamTab();
-  // upcoming
   if(unsubUp){unsubUp();unsubUp=null;}
   unsubUp=onSnapshot(query(collection(db,'exams/upcoming'),orderBy("date","asc")),snap=>{
-    upWrap.innerHTML=''; const arr=[];
-    snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+    upWrap.innerHTML=''; const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()}));
     if(!arr.length) upWrap.innerHTML='<div class="hint" style="margin:8px auto">Aucun contrôle à venir.</div>';
     for(const it of arr){
       const card=document.createElement('div'); card.className='mat'+(isAdminUI?' admin':'');
@@ -575,7 +692,6 @@ function openExams(){
     }
     setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
   });
-  // past
   if(unsubPast){unsubPast();unsubPast=null;}
   unsubPast=onSnapshot(query(collection(db,'exams/past'),orderBy("date","desc")),snap=>{
     pastWrap.innerHTML=''; const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()}));
@@ -598,11 +714,9 @@ function gotoChapter(slug, chapId, chapName){
 }
 function openExamAdd(){
   $('#exMsg').textContent='';
-  // remplir matière
   const selSub=$('#exSubject'); selSub.innerHTML = subjects.map(s=>`<option value="${s.slug}">${s.name}</option>`).join('');
   fillChaptersForSubject(selSub.value);
   selSub.onchange=()=> fillChaptersForSubject(selSub.value);
-  // type
   const typeSel=()=>document.querySelector('input[name="examType"]:checked')?.value||'upcoming';
   const toggle=()=>{ const t=typeSel(); $('#exUpcomingWrap').style.display=t==='upcoming'?'block':'none'; $('#exPastWrap').style.display=t==='past'?'block':'none'; };
   document.querySelectorAll('input[name="examType"]').forEach(r=> r.onchange=toggle); toggle();
@@ -636,11 +750,10 @@ $('#exSave').onclick=async()=>{
 /* ---------- Init ---------- */
 window.addEventListener('load', ()=>{
   const name=(localStorage.getItem('prenom')||'').trim(); if(name){ who.textContent=name; document.getElementById('scr-welcome').classList.remove('active'); document.getElementById('scr-home').classList.add('active'); navStack[0]='scr-home'; }
-  setStackHeight(activeScreen().scrollHeight); refreshBack(); toggleFab();
+  setStackHeight(activeScreen().scrollHeight); refreshBack(); refreshGear(); toggleFab();
 });
 window.addEventListener('resize', ()=> setStackHeight(activeScreen().scrollHeight));
 
-/* ---------- viewer close ---------- */
 </script>
 </body>
 </html>
