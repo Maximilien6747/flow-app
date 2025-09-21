@@ -2,113 +2,291 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Espace de cours — Pronote import</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Espace de cours</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg:#f7f7f8;
+      --bg:#f6f7fb;
       --card:#ffffff;
-      --txt:#111;
-      --muted:#666;
-      --primary:#111;
-      --radius:16px;
-      --shadow:0 6px 20px rgba(0,0,0,.08);
+      --text:#121316;
+      --muted:#6c7280;
+      --accent:#111827;
+      --line:#e9eaf0;
+      --radius:18px;
+      --shadow:0 6px 20px rgba(16,24,40,.06);
     }
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    header{
-      position:sticky;top:0;z-index:3;background:var(--bg);
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 16px;border-bottom:1px solid #e9e9ee
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      -webkit-tap-highlight-color:transparent;
     }
-    h1{font-size:18px;margin:0}
-    .gear{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid #ddd;background:#fff;box-shadow:var(--shadow);cursor:pointer}
-    .tabs{display:flex;gap:8px;padding:12px 16px}
-    .tab{padding:10px 14px;border-radius:999px;border:1px solid #ddd;background:#fff;cursor:pointer}
-    .tab.active{background:#111;color:#fff;border-color:#111}
-    main{padding:8px 16px 80px}
-    .day{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 12px 8px;margin-bottom:14px}
-    .day h3{margin:0 0 8px 0;font-size:16px}
-    .slot{padding:10px 12px;border:1px solid #eee;border-radius:12px;margin:8px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .slot .left{display:flex;flex-direction:column}
-    .muted{color:var(--muted);font-size:12px}
-    .badge{padding:2px 8px;border-radius:999px;border:1px solid #ddd;font-size:12px}
-    .empty{padding:28px 12px;text-align:center;color:#999}
-    .panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:16px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .btn{background:#111;color:#fff;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
-    .btn.secondary{background:#fff;color:#111;border:1px solid #ddd}
-    input,select{width:100%;padding:12px 12px;border:1px solid #ddd;border-radius:12px;background:#fff}
-    label{display:block;margin:8px 2px 4px;font-size:13px;color:#333}
-    /* modal */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.28);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
-    .modal .card{background:#fff;border-radius:18px;max-width:560px;width:100%;padding:16px;box-shadow:var(--shadow)}
-    .card h2{margin:0 0 12px}
-    .hint{font-size:12px;color:#666;margin-top:8px}
-    .right{margin-left:auto}
-    /* limites centrage */
-    .wrap{max-width:860px;margin:0 auto}
+    .wrap{
+      max-width:960px;
+      margin:0 auto;
+      padding:20px 16px 120px;
+    }
+    header{
+      position:sticky; top:0; z-index:3;
+      background:linear-gradient(#f6f7fb,rgba(246,247,251,.7));
+      backdrop-filter: blur(6px);
+    }
+    .bar{
+      display:flex; align-items:center; gap:10px;
+      padding:14px 16px;
+    }
+    .iconbtn{
+      height:40px; width:40px; border-radius:999px;
+      display:grid; place-items:center;
+      border:1px solid var(--line); background:var(--card);
+      box-shadow:var(--shadow); cursor:pointer;
+    }
+    .iconbtn svg{width:18px;height:18px}
+    h1,h2,h3{margin:0}
+    h1{font-size:28px; font-weight:800}
+    .section{margin-top:16px}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+    }
+    .stack{display:flex; flex-direction:column; gap:12px}
+    .grid{
+      display:grid; gap:12px;
+      grid-template-columns:repeat(1,minmax(0,1fr));
+    }
+    @media(min-width:520px){ .grid{grid-template-columns:repeat(2,1fr)} }
+    @media(min-width:840px){ .grid{grid-template-columns:repeat(3,1fr)} }
+
+    .btn{
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      padding:14px 18px; border-radius:14px; font-weight:700;
+      border:1px solid var(--line); background:var(--card); cursor:pointer;
+      box-shadow:var(--shadow);
+    }
+    .btn.primary{ background:#111827; color:#fff; border-color:#111827 }
+    .btn.ghost{ background:transparent }
+    .btn.small{ padding:10px 12px; font-weight:600 }
+    .muted{color:var(--muted)}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .pill{padding:8px 12px; border-radius:999px; background:#f2f3f7; border:1px solid var(--line)}
+    .hidden{display:none !important}
+
+    .subject{
+      display:flex; align-items:center; gap:14px;
+      padding:16px; border-radius:16px; border:1px solid var(--line);
+      background:var(--card); box-shadow:var(--shadow); cursor:pointer;
+    }
+    .subject .emoji{font-size:22px}
+    .subject h3{font-size:18px; font-weight:800}
+
+    .chip{
+      padding:10px 14px; border-radius:12px; border:1px solid var(--line);
+      background:var(--card); font-weight:700; cursor:pointer;
+      display:flex; gap:8px; align-items:center; justify-content:space-between;
+    }
+    .chip .trash{opacity:.0; transition:.2s}
+    .chip.admin .trash{opacity:1}
+
+    .thumb{
+      position:relative; overflow:hidden; border-radius:14px;
+      border:1px solid var(--line); background:#f1f2f6; min-height:140px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .thumb img{width:100%; height:100%; object-fit:cover}
+    .thumb .del{
+      position:absolute; top:8px; right:8px;
+      background:rgba(0,0,0,.6); color:#fff; border-radius:999px;
+      width:32px;height:32px; display:grid; place-items:center; cursor:pointer;
+    }
+
+    .fab{
+      position:fixed; right:18px; bottom:18px; z-index:3;
+      height:58px;width:58px;border-radius:999px; background:#111827; color:#fff;
+      display:grid; place-items:center; box-shadow:0 10px 30px rgba(16,24,40,.25);
+      cursor:pointer;
+    }
+    .modal{
+      position:fixed; inset:0; display:none; place-items:center; z-index:10;
+      background:rgba(17,24,39,.45); backdrop-filter:blur(2px);
+      padding:20px;
+    }
+    .modal.show{display:grid}
+    .panel{
+      width:min(520px,100%); background:var(--card); border:1px solid var(--line);
+      border-radius:16px; box-shadow:var(--shadow); padding:18px;
+    }
+    .field{display:flex; flex-direction:column; gap:6px; margin:10px 0}
+    .input,select{
+      padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#fff;
+      outline:none; font:inherit;
+    }
+
+    .viewer{
+      position:fixed; inset:0; display:none; z-index:20;
+      background:rgba(0,0,0,.9); backdrop-filter:blur(1px);
+      align-items:center; justify-content:center;
+    }
+    .viewer.show{display:flex}
+    .viewer img{max-width:94vw; max-height:90vh; border-radius:12px}
   </style>
 </head>
 <body>
-  <header class="wrap">
-    <h1>Espace de cours</h1>
-    <button id="gearBtn" class="gear" title="Paramètres">⚙️</button>
+
+  <!-- HEADER -->
+  <header>
+    <div class="bar">
+      <button id="btnSettings" class="iconbtn" title="Paramètres">
+        <!-- engrenage -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-width="2" d="M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          <path stroke-width="2" d="M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12M12 2v3M12 19v3"/>
+        </svg>
+      </button>
+      <button id="btnBack" class="iconbtn hidden" title="Retour">
+        <!-- flèche -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-width="2" d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <div style="flex:1"></div>
+      <div class="pill" id="hdrTrail" title="Groupe"></div>
+    </div>
   </header>
 
-  <div class="tabs wrap">
-    <button class="tab active" id="tab-edt">Emploi du temps</button>
-    <button class="tab" id="tab-hw">Devoirs</button>
-  </div>
-
   <main class="wrap">
-    <!-- Emploi du temps -->
-    <section id="view-edt">
-      <div class="panel" id="weekInfo">
+    <!-- ÉCRAN 0 : profil -->
+    <section id="screenProfile" class="section stack">
+      <div class="card" style="padding:22px">
+        <h1 style="margin-bottom:6px">Bienvenue dans ton espace de cours !</h1>
+        <p class="muted">Entre ton prénom et choisis ton groupe pour continuer.</p>
+        <div class="field">
+          <label>Quel est ton prénom ?</label>
+          <input id="inpName" class="input" placeholder="Prénom" />
+        </div>
+        <div class="field">
+          <label>Groupe</label>
+          <div class="row">
+            <label class="pill"><input type="radio" name="trail" value="allemand" checked> Allemand</label>
+            <label class="pill"><input type="radio" name="trail" value="espagnol"> Espagnol</label>
+          </div>
+        </div>
         <div class="row">
-          <strong id="weekLabel">Semaine :</strong>
-          <span class="right"></span>
-          <button class="btn secondary" id="prevWeek">◀︎ Semaine -1</button>
-          <button class="btn secondary" id="thisWeek">Aujourd’hui</button>
-          <button class="btn secondary" id="nextWeek">Semaine +1 ▶︎</button>
+          <button id="btnStart" class="btn primary" style="width:100%">Continuer</button>
         </div>
       </div>
-      <div id="edtList"></div>
     </section>
 
-    <!-- Devoirs -->
-    <section id="view-hw" style="display:none">
-      <div id="hwList"></div>
+    <!-- ÉCRAN 1 : accueil -->
+    <section id="screenHome" class="section stack hidden">
+      <h1 id="hello" style="margin:6px 6px 14px">Bonjour</h1>
+      <div class="grid">
+        <button class="subject" data-goto="courses">
+          <div class="emoji">📚</div><h3>COURS</h3>
+        </button>
+        <button class="subject" data-goto="timetable">
+          <div class="emoji">🗓️</div><h3>EMPLOI DU TEMPS</h3>
+        </button>
+        <button class="subject" data-goto="homeworks">
+          <div class="emoji">📝</div><h3>DEVOIRS</h3>
+        </button>
+        <button class="subject" data-goto="exams">
+          <div class="emoji">🧪</div><h3>CONTRÔLES</h3>
+        </button>
+      </div>
+    </section>
+
+    <!-- ÉCRAN 2 : matières -->
+    <section id="screenSubjects" class="section stack hidden">
+      <h1 style="margin-bottom:10px">Choisis une matière</h1>
+      <div id="subjectsList" class="stack"></div>
+    </section>
+
+    <!-- ÉCRAN 3 : chapitres -->
+    <section id="screenChapters" class="section stack hidden">
+      <div class="row">
+        <h1 id="chapTitle">Chapitres</h1>
+        <button id="btnAddChapter" class="btn small hidden">+ Ajouter</button>
+      </div>
+      <div id="chaptersList" class="grid"></div>
+    </section>
+
+    <!-- ÉCRAN 4 : pages d’un chapitre -->
+    <section id="screenPages" class="section stack hidden">
+      <div class="row">
+        <h1 id="pagesTitle">Cours</h1>
+        <div class="muted" id="pagesCount"></div>
+      </div>
+      <div id="pagesGrid" class="grid"></div>
+      <button id="btnAddPages" class="fab hidden" title="Ajouter des documents">+</button>
+      <input id="filePicker" type="file" accept="image/*,application/pdf" multiple class="hidden" />
+    </section>
+
+    <!-- placeholders autres sections -->
+    <section id="screenSoon" class="section stack hidden">
+      <div class="card" style="padding:22px">
+        <h2>Fonction en préparation</h2>
+        <p class="muted">Cette section sera branchée plus tard.</p>
+      </div>
     </section>
   </main>
 
-  <!-- MODAL Paramètres / Admin / Pronote -->
-  <div class="modal" id="modal">
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <h2>Paramètres</h2>
-        <button class="btn secondary" id="closeModal">Fermer</button>
-      </div>
-
-      <div class="panel" id="adminPanel">
+  <!-- MODAL paramètres -->
+  <div id="modalSettings" class="modal">
+    <div class="panel">
+      <div class="row"><h3>Paramètres</h3><button class="btn small" id="closeSettings">Fermer</button></div>
+      <div class="field">
+        <label>Mode administrateur</label>
         <div class="row">
-          <strong>Mode administrateur</strong>
-          <span class="right"></span>
-          <button class="btn" id="adminToggle">Admin</button>
+          <input id="adminCode" class="input" placeholder="Code (2525)" style="flex:1" />
+          <button id="btnAdmin" class="btn">Activer</button>
+          <button id="btnAdminOff" class="btn ghost hidden">Quitter admin</button>
         </div>
-        <div id="adminArea" style="display:none;margin-top:10px"></div>
+        <p class="muted" id="adminState">Non connecté</p>
+      </div>
+      <div class="field">
+        <label>Profil</label>
+        <div class="row">
+          <button id="btnResetProfile" class="btn">Réinitialiser le profil</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- MODAL ajout chapitre -->
+  <div id="modalChapter" class="modal">
+    <div class="panel">
+      <div class="row"><h3>Ajouter un chapitre</h3><button class="btn small" id="closeChapter">Fermer</button></div>
+      <div class="field">
+        <label>Nom du chapitre</label>
+        <input id="inpChapterName" class="input" placeholder="Chapitre" />
+      </div>
+      <div class="field">
+        <label>Pour quel groupe ?</label>
+        <select id="selChapterTrail" class="input">
+          <option value="allemand">Allemand</option>
+          <option value="espagnol">Espagnol</option>
+        </select>
+      </div>
+      <div class="row">
+        <button id="saveChapter" class="btn primary" style="width:100%">Enregistrer</button>
+      </div>
+      <p id="chapterMsg" class="muted"></p>
+    </div>
+  </div>
 
+  <!-- viewer -->
+  <div id="viewer" class="viewer"><img id="viewerImg" alt="aperçu"><div class="fab" id="closeViewer">✕</div></div>
+
+  <!-- Firebase (modulaire) -->
   <script type="module">
-    /* =========================
-       1)  CONFIG FIREBASE
-    ========================== */
+    // ======== Firebase config (la tienne) ========
     const firebaseConfig = {
       apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
       authDomain: "app-cours-94f32.firebaseapp.com",
@@ -118,255 +296,302 @@
       appId: "1:519755746540:web:8d55f18754ce08884269c9",
       measurementId: "G-VD89GYHJWV"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
-    /* =========================
-       2)  HELPERS DATES
-    ========================== */
-    const pad = n => String(n).padStart(2,'0');
-    const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    const fromISO = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
-    const shift = (date,days) => { const d = new Date(date); d.setDate(d.getDate()+days); return d; };
-    const monday = (date)=>{ const d=new Date(date); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); return d; };
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
-    /* =========================
-       3)  UI + NAV
-    ========================== */
+    import {
+      getFirestore, collection, doc, addDoc, setDoc, getDocs, getDoc,
+      query, where, orderBy, limit, serverTimestamp, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+    import {
+      getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // ========= ÉTAT =========
+    const state = {
+      profile: { name:"", trail:"allemand" },
+      admin: false,
+      current: { subject:null, subjectLabel:"", chapterId:null, chapterName:"" }
+    };
+
+    // ========= OUTILS UI =========
     const $ = sel => document.querySelector(sel);
-    const edtList = $('#edtList');
-    const hwList  = $('#hwList');
+    const $$ = sel => document.querySelectorAll(sel);
+    const show = id => $(id).classList.remove('hidden');
+    const hide = id => $(id).classList.add('hidden');
 
-    // onglets
-    const tabEdt = $('#tab-edt');
-    const tabHw  = $('#tab-hw');
-    tabEdt.onclick = ()=>{ tabEdt.classList.add('active'); tabHw.classList.remove('active'); $('#view-edt').style.display='block'; $('#view-hw').style.display='none'; };
-    tabHw.onclick  = ()=>{ tabHw.classList.add('active'); tabEdt.classList.remove('active'); $('#view-edt').style.display='none'; $('#view-hw').style.display='block'; renderHomeworks(); };
-
-    // semaine
-    let currentMonday = monday(new Date());
-    const weekLabel = $('#weekLabel');
-    const updateWeekLabel = ()=>{
-      const d1 = currentMonday;
-      const d7 = shift(currentMonday,6);
-      weekLabel.textContent = `Semaine : ${iso(d1)} → ${iso(d7)}`;
+    const screens = {
+      profile:  '#screenProfile',
+      home:     '#screenHome',
+      subjects: '#screenSubjects',
+      chapters: '#screenChapters',
+      pages:    '#screenPages',
+      soon:     '#screenSoon'
     };
-    const renderWeek = async ()=>{
-      updateWeekLabel();
-      edtList.innerHTML = '';
-      for(let i=0;i<7;i++){
-        const day = iso(shift(currentMonday,i));
-        await renderDay(day);
-      }
-    };
-    $('#prevWeek').onclick = ()=>{ currentMonday = shift(currentMonday,-7); renderWeek(); };
-    $('#nextWeek').onclick = ()=>{ currentMonday = shift(currentMonday, 7); renderWeek(); };
-    $('#thisWeek').onclick = ()=>{ currentMonday = monday(new Date()); renderWeek(); };
-
-    async function renderDay(dayISO){
-      const dayEl = document.createElement('div');
-      dayEl.className='day';
-      const label = new Date(dayISO+'T00:00');
-      const weekday = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][ (label.getDay()+6)%7 ];
-      dayEl.innerHTML = `<h3>${weekday} — ${dayISO}</h3>`;
-      const cont = document.createElement('div');
-
-      const snap = await db.collection(`schedule/${dayISO}/items`).orderBy('start').get();
-      if(snap.empty){
-        cont.innerHTML = `<div class="empty">Aucun cours.</div>`;
-      }else{
-        snap.forEach(doc=>{
-          const it = doc.data();
-          const row = document.createElement('div');
-          row.className='slot';
-          row.innerHTML = `
-            <div class="left">
-              <strong>${it.title || ''}</strong>
-              <span class="muted">${it.start || ''} — ${it.end || ''}</span>
-            </div>
-            <span class="badge">Salle</span>
-          `;
-          cont.appendChild(row);
-        });
-      }
-      dayEl.appendChild(cont);
-      edtList.appendChild(dayEl);
+    let stack = [];
+    function go(screenId){
+      Object.values(screens).forEach(s => hide(s));
+      show(screens[screenId]);
+      $('#btnBack').classList.toggle('hidden', stack.length===0);
+    }
+    function push(screenId){ stack.push(screenId); go(screenId); }
+    function back(){
+      stack.pop();
+      go(stack.at(-1) || 'home');
     }
 
-    async function renderHomeworks(){
-      hwList.innerHTML = '';
-      const snap = await db.collection('homeworks').orderBy('dueDate').get();
-      if(snap.empty){
-        hwList.innerHTML = `<div class="panel empty">Aucun devoir.</div>`;
-        return;
+    // ========= PROFIL (localStorage) =========
+    function loadProfile(){
+      const raw = localStorage.getItem('profile');
+      if(raw){ try{ state.profile = JSON.parse(raw) } catch{} }
+      $('#hdrTrail').textContent = state.profile.trail || 'allemand';
+      if(state.profile.name){
+        $('#hello').textContent = `Bonjour ${state.profile.name}`;
+        go('home'); stack=['home'];
+      }else{
+        go('profile'); stack=['profile'];
       }
-      let currentDate = '';
-      snap.forEach(doc=>{
-        const d = doc.data();
-        if(d.dueDate !== currentDate){
-          currentDate = d.dueDate;
-          const h = document.createElement('div');
-          h.className='day';
-          h.innerHTML = `<h3>Pour le ${currentDate}</h3>`;
-          hwList.appendChild(h);
-        }
-        const row = document.createElement('div');
-        row.className='slot';
-        row.innerHTML = `
-          <div class="left">
-            <strong>${(d.subjectSlug||'').toUpperCase()} — ${d.title||''}</strong>
-            <span class="muted">Ajouté le ${d.createdAt ? new Date(d.createdAt).toLocaleString() : ''}</span>
-          </div>
-        `;
-        hwList.lastElementChild.appendChild(row);
+    }
+    function saveProfile(){
+      localStorage.setItem('profile', JSON.stringify(state.profile));
+      $('#hdrTrail').textContent = state.profile.trail;
+      $('#hello').textContent = `Bonjour ${state.profile.name}`;
+    }
+
+    $('#btnStart').onclick = () => {
+      const name = $('#inpName').value.trim();
+      const trail = [...$$('input[name="trail"]')].find(r=>r.checked)?.value || 'allemand';
+      if(!name){ alert("Entre ton prénom 🙂"); return; }
+      state.profile = { name, trail };
+      saveProfile();
+      go('home'); stack=['home'];
+    };
+
+    // ========= PARAMÈTRES / ADMIN =========
+    const modalSettings = $('#modalSettings');
+    $('#btnSettings').onclick = ()=> modalSettings.classList.add('show');
+    $('#closeSettings').onclick = ()=> modalSettings.classList.remove('show');
+
+    function refreshAdminUI(){
+      $('#btnAddChapter').classList.toggle('hidden', !state.admin);
+      $('#btnAddPages').classList.toggle('hidden', !state.admin);
+      $('#adminState').textContent = state.admin ? 'Admin actif' : 'Non connecté';
+      $('#btnAdmin').classList.toggle('hidden', state.admin);
+      $('#btnAdminOff').classList.toggle('hidden', !state.admin);
+      // montrer les boutons poubelles
+      $$('.chip').forEach(ch => ch.classList.toggle('admin', state.admin));
+      $$('.thumb .del').forEach(b => b.classList.toggle('hidden', !state.admin));
+    }
+    $('#btnAdmin').onclick = ()=>{
+      const code = $('#adminCode').value.trim();
+      if(code==='2525'){ state.admin = true; refreshAdminUI(); alert('Mode admin activé'); }
+      else alert('Code incorrect');
+    };
+    $('#btnAdminOff').onclick = ()=>{ state.admin=false; refreshAdminUI(); };
+    $('#btnResetProfile').onclick = ()=>{
+      if(confirm('Réinitialiser le profil ?')){
+        localStorage.removeItem('profile'); location.reload();
+      }
+    };
+
+    // ========= NAV =========
+    $('#btnBack').onclick = back;
+    $$('#screenHome .subject').forEach(btn=>{
+      btn.onclick = ()=>{
+        const to = btn.dataset.goto;
+        if(to==='courses'){ renderSubjects(); push('subjects'); }
+        else { push('soon'); }
+      };
+    });
+
+    // ========= MATIÈRES =========
+    const SUBJECTS = [
+      {id:'francais', label:'FRANÇAIS',  emoji:'📘'},
+      {id:'histoire', label:'HISTOIRE',  emoji:'🏺'},
+      {id:'svt',      label:'SVT',       emoji:'🌿'},
+      {id:'chimie',   label:'CHIMIE',    emoji:'⚗️'},
+      {id:'snt',      label:'SNT',       emoji:'💻'},
+      {id:'ses',      label:'SES',       emoji:'📈'},
+      {id:'anglais',  label:'ANGLAIS',   emoji:'🇬🇧'}
+    ];
+
+    function renderSubjects(){
+      const box = $('#subjectsList'); box.innerHTML='';
+      SUBJECTS.forEach(s=>{
+        const el = document.createElement('div');
+        el.className='subject';
+        el.innerHTML = `<div class="emoji">${s.emoji}</div><h3>${s.label}</h3>`;
+        el.onclick = ()=> openSubject(s.id, s.label);
+        box.appendChild(el);
+      });
+    }
+    function openSubject(id,label){
+      state.current.subject=id; state.current.subjectLabel=label;
+      $('#chapTitle').textContent = `${label} — chapitres`;
+      $('#selChapterTrail').value = state.profile.trail;
+      listChapters();
+      push('chapters');
+      refreshAdminUI();
+    }
+
+    // ========= CHAPITRES =========
+    $('#btnAddChapter').onclick = ()=> $('#modalChapter').classList.add('show');
+    $('#closeChapter').onclick = ()=> $('#modalChapter').classList.remove('show');
+
+    async function listChapters(){
+      const box = $('#chaptersList'); box.innerHTML='';
+      const qy = query(
+        collection(db,'subjects',state.current.subject,'chapters'),
+        where('trail','==', state.profile.trail),
+        orderBy('name','asc')
+      );
+      const snap = await getDocs(qy);
+      if(snap.empty){
+        box.innerHTML = `<div class="card" style="padding:16px"><span class="muted">Aucun chapitre pour ${state.profile.trail}.</span></div>`;
+      }
+      snap.forEach(d=>{
+        const ch = d.data();
+        const item = document.createElement('div');
+        item.className = 'chip' + (state.admin?' admin':'');
+        item.innerHTML = `<span>${ch.name}</span>
+          <button class="iconbtn trash" title="Supprimer" style="width:34px;height:34px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" d="M3 6h18M8 6v12m8-12v12M9 6l1-2h4l1 2"/></svg></button>`;
+        item.onclick = (e)=>{
+          if(e.target.closest('.trash')) return;  // click poubelle géré plus bas
+          openChapter(d.id, ch.name);
+        };
+        item.querySelector('.trash').onclick = async (e)=>{
+          e.stopPropagation();
+          if(!state.admin) return;
+          if(confirm('Supprimer ce chapitre et tous ses documents ?')){
+            // supprimer les pages du sous-dossier
+            const pagesSnap = await getDocs(collection(db,'subjects',state.current.subject,'chapters',d.id,'pages'));
+            for (const p of pagesSnap.docs){
+              try{
+                const data=p.data();
+                if(data.path){ await deleteObject(sRef(storage, data.path)); }
+              }catch{}
+              await deleteDoc(p.ref);
+            }
+            await deleteDoc(d.ref);
+            listChapters();
+          }
+        };
+        box.appendChild(item);
       });
     }
 
-    /* =========================
-       4)  MODAL / ADMIN
-    ========================== */
-    const modal = $('#modal');
-    $('#gearBtn').onclick = ()=>{ modal.style.display='flex'; refreshAdminPanel(); };
-    $('#closeModal').onclick = ()=> modal.style.display='none';
+    $('#saveChapter').onclick = async ()=>{
+      const name = $('#inpChapterName').value.trim();
+      const trail = $('#selChapterTrail').value;
+      const msg = $('#chapterMsg');
+      if(!name){ msg.textContent="Nom obligatoire"; return; }
+      // doublon ?
+      const qy = query(
+        collection(db,'subjects',state.current.subject,'chapters'),
+        where('name','==',name), where('trail','==',trail)
+      );
+      const existing = await getDocs(qy);
+      if(!existing.empty){ msg.textContent="Ce chapitre existe déjà."; return; }
+      await addDoc(collection(db,'subjects',state.current.subject,'chapters'),{
+        name, trail, createdAt: serverTimestamp()
+      });
+      $('#modalChapter').classList.remove('show');
+      $('#inpChapterName').value=''; msg.textContent='';
+      listChapters();
+    };
 
-    let isAdmin = false;
-    $('#adminToggle').onclick = async ()=>{
-      if(isAdmin){
-        isAdmin = false;
-        refreshAdminPanel();
+    function openChapter(id,name){
+      state.current.chapterId=id; state.current.chapterName=name;
+      $('#pagesTitle').textContent = `${state.current.subjectLabel} — ${name}`;
+      listPages();
+      push('pages'); refreshAdminUI();
+    }
+
+    // ========= PAGES (cours) =========
+    async function listPages(){
+      const grid = $('#pagesGrid'); grid.innerHTML='';
+      const qy = query(
+        collection(db,'subjects',state.current.subject,'chapters',state.current.chapterId,'pages'),
+        orderBy('order','asc')
+      );
+      const snap = await getDocs(qy);
+      $('#pagesCount').textContent = `${snap.size} document(s)`;
+      if(snap.empty){
+        grid.innerHTML = `<div class="card" style="padding:16px"><span class="muted">Aucun document pour l’instant.</span></div>`;
         return;
       }
-      const code = prompt('Code admin :');
-      if(code === '2525'){ isAdmin = true; }
-      refreshAdminPanel();
-    };
-
-    function refreshAdminPanel(){
-      $('#adminToggle').textContent = isAdmin ? 'Quitter admin' : 'Admin';
-      const area = $('#adminArea');
-      area.style.display = isAdmin ? 'block' : 'none';
-      if(!isAdmin){ area.innerHTML=''; return; }
-      renderPronoteForm(area);
-    }
-
-    /* =========================
-       5)  PRONOTE: ENDPOINT + FORM + IMPORT
-    ========================== */
-    // >>>>> MET ICI TON ENDPOINT VERCEL <<<<<
-    const PRONOTE_ENDPOINT = "https://pronote-proxy-izn5mtwgb-maximilienvien-2635s-projects.vercel.app/api/pronote";
-
-    // petite mémoire locale côté admin (mdp non stocké)
-    let pnCfg = {
-      url: localStorage.getItem('pn_url') || "",
-      user: localStorage.getItem('pn_user') || "",
-      cas : localStorage.getItem('pn_cas')  || ""
-    };
-
-    function renderPronoteForm(holder){
-      holder.innerHTML = `
-        <div class="panel">
-          <h3 style="margin:0 0 8px">Pronote</h3>
-          <label>URL Pronote (eleve.html)</label>
-          <input id="pn_url" type="text" placeholder="https://.../pronote/eleve.html" value="${pnCfg.url}">
-          <label>Identifiant</label>
-          <input id="pn_user" type="text" placeholder="identifiant" value="${pnCfg.user}">
-          <label>Mot de passe</label>
-          <input id="pn_pwd" type="password" placeholder="mot de passe">
-          <label>CAS (optionnel)</label>
-          <input id="pn_cas" type="text" placeholder="ex: ac-besancon" value="${pnCfg.cas}">
-          <div class="row" style="justify-content:flex-end;margin-top:10px">
-            <button class="btn secondary" id="pn_save">Sauver</button>
-            <button class="btn" id="pn_import">Importer la semaine</button>
-          </div>
-          <div id="pn_msg" class="hint"></div>
-        </div>
-      `;
-      $('#pn_save').onclick = ()=>{
-        pnCfg.url  = $('#pn_url').value.trim();
-        pnCfg.user = $('#pn_user').value.trim();
-        pnCfg.cas  = $('#pn_cas').value.trim();
-        localStorage.setItem('pn_url', pnCfg.url);
-        localStorage.setItem('pn_user', pnCfg.user);
-        localStorage.setItem('pn_cas', pnCfg.cas);
-        $('#pn_msg').textContent = 'Enregistré localement.';
-      };
-      $('#pn_import').onclick = ()=> importFromPronote();
-    }
-
-    // mapping matières Pronote -> tes slugs (adapte librement)
-    const SUBJECT_MAP = {
-      "français":"francais","francais":"francais",
-      "histoire-géographie":"histoire","histoire":"histoire",
-      "svt":"svt",
-      "physique-chimie":"chimie","chimie":"chimie",
-      "snt":"snt","ses":"ses","anglais":"anglais","maths":"ses"
-    };
-    let hwOrderMax = 0;
-
-    const todayISO = ()=> iso(new Date());
-    const mondayISO = (sISO)=> iso(monday(fromISO(sISO)));
-    const shiftISO = (sISO,days)=> iso(shift(fromISO(sISO),days));
-
-    async function importFromPronote(){
-      const msg = $('#pn_msg'); msg.textContent = 'Import en cours…';
-      try{
-        const body = {
-          url: $('#pn_url').value.trim() || pnCfg.url,
-          username: $('#pn_user').value.trim()|| pnCfg.user,
-          password: $('#pn_pwd').value,
-          cas: $('#pn_cas').value.trim()|| pnCfg.cas,
-          from: mondayISO(todayISO()),
-          to  : shiftISO(mondayISO(todayISO()),6)
-        };
-        if(!body.url || !body.username || !body.password){
-          msg.textContent = 'Remplis URL / identifiant / mot de passe.';
-          return;
+      snap.forEach(d=>{
+        const it = d.data();
+        const card = document.createElement('div');
+        card.className='thumb';
+        const isImg = it.mime?.startsWith('image/');
+        card.innerHTML = isImg
+          ? `<img src="${it.url}" alt="cours" loading="lazy">`
+          : `<div class="muted" style="padding:24px;text-align:center">📄 Document</div>`;
+        if(state.admin){
+          const del = document.createElement('div');
+          del.className='del';
+          del.innerHTML='🗑️';
+          del.onclick = async (e)=>{
+            e.stopPropagation();
+            if(confirm('Supprimer ce document ?')){
+              try{ if(it.path) await deleteObject(sRef(storage, it.path)); }catch{}
+              await deleteDoc(d.ref);
+              listPages();
+            }
+          };
+          card.appendChild(del);
         }
+        card.onclick = ()=> {
+          if(isImg){ openViewer(it.url); }
+          else window.open(it.url,'_blank');
+        }
+        grid.appendChild(card);
+      });
+    }
 
-        const r = await fetch(PRONOTE_ENDPOINT, {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(body)
+    function openViewer(url){
+      $('#viewerImg').src=url; $('#viewer').classList.add('show');
+    }
+    $('#closeViewer').onclick = ()=> $('#viewer').classList.remove('show');
+
+    // ajout de documents
+    $('#btnAddPages').onclick = ()=> $('#filePicker').click();
+    $('#filePicker').addEventListener('change', async (e)=>{
+      const files = [...e.target.files];
+      if(!files.length) return;
+      // récupérer dernier "order"
+      let last = 0;
+      const lastSnap = await getDocs(query(
+        collection(db,'subjects',state.current.subject,'chapters',state.current.chapterId,'pages'),
+        orderBy('order','desc'), limit(1)
+      ));
+      lastSnap.forEach(d=> last = d.data().order || 0);
+
+      for (let i=0;i<files.length;i++){
+        const f = files[i];
+        const path = `subjects/${state.current.subject}/${state.current.chapterId}/${Date.now()}_${i}_${f.name}`;
+        const r = sRef(storage, path);
+        await uploadBytes(r, f);
+        const url = await getDownloadURL(r);
+        await addDoc(collection(db,'subjects',state.current.subject,'chapters',state.current.chapterId,'pages'),{
+          url, path, mime: f.type || '', order: ++last, createdAt: serverTimestamp()
         });
-        const data = await r.json();
-        if(!r.ok) throw new Error(data.error || 'Erreur inconnue');
-
-        // 1) EDT -> Firestore
-        for(const ev of data.edt){
-          if(ev.cancelled) continue;
-          await db.collection(`schedule/${ev.date}/items`).add({
-            title: `${ev.subject}${ev.room ? ' - '+ev.room : ''}`,
-            start: ev.start, end: ev.end, createdAt: Date.now()
-          });
-        }
-
-        // 2) Devoirs -> Firestore
-        for(const hw of data.homeworks){
-          const subj = (hw.subject||'').toLowerCase();
-          const slug = SUBJECT_MAP[subj] || 'francais';
-          await db.collection('homeworks').add({
-            title: hw.content || 'Devoir',
-            subjectSlug: slug,
-            dueDate: hw.date,
-            order: ++hwOrderMax,
-            createdAt: Date.now()
-          });
-        }
-
-        msg.textContent = 'Import Pronote terminé ✅';
-        alert('Import Pronote terminé ✅');
-        // refresh
-        renderWeek(); renderHomeworks();
-      }catch(e){
-        console.error(e);
-        msg.textContent = 'Erreur import : ' + (e.message||e);
-        alert('Erreur import : ' + (e.message||e));
       }
-    }
+      e.target.value='';
+      listPages();
+    });
 
-    /* =========================
-       6)  BOOT
-    ========================== */
-    renderWeek();
+    // ========= LANCEMENT =========
+    loadProfile();
+    refreshAdminUI();
   </script>
 </body>
 </html>
