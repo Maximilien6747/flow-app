@@ -89,28 +89,23 @@
 
     .subjectTitle{ font-size: clamp(28px,8vw,38px); text-align:center; margin: 6px 0 8px }
 
-    /* carrousel swipe */
-    .sliderWrap{ position:relative; overflow:hidden; margin-top:6px }
-    .slides{ display:flex; gap:var(--gap); transition:transform 260ms var(--ease) }
-    .slide{
-      position:relative;
-      border:var(--thick) solid var(--ink); border-radius:16px;
-      width:120px; flex:0 0 auto; display:flex; flex-direction:column; overflow:hidden;
-      background:#dcdcdc; box-shadow:0 6px 14px rgba(0,0,0,.06); cursor:pointer; touch-action:pan-y;
+    /* grille de cours */
+    .grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-top:6px }
+    .gridItem{
+      position:relative; overflow:hidden; background:#dcdcdc;
+      border:var(--thick) solid var(--ink); border-radius:14px; aspect-ratio:3/4; cursor:pointer;
+      box-shadow:0 6px 14px rgba(0,0,0,.06);
     }
-    .imgWrap{ height:130px; background:#d0d0d0; display:grid; place-items:center }
-    .slide img{ width:100%; height:100%; object-fit:cover }
-
-    /* bouton suppression (admin) */
+    .gridItem img{ width:100%; height:100%; object-fit:cover; display:block }
     .delBtn{
       position:absolute; top:6px; right:6px;
       width:30px; height:30px; border-radius:50%;
       border:3px solid var(--ink); background:#fff; color:#000;
       display:none; place-items:center; font-size:14px; cursor:pointer;
     }
-    .slide.admin .delBtn{ display:grid; }
+    .gridItem.admin .delBtn{ display:grid; }
 
-    /* FAB admin */
+    /* FAB */
     .fab{
       position:fixed; right:22px; bottom:calc(22px + var(--safe-bottom));
       width:56px;height:56px;border-radius:50%; border:3px solid var(--ink);
@@ -169,17 +164,21 @@
         <div id="mat-list" class="list"></div>
       </section>
 
-      <!-- 4) détail matière -->
-      <section id="scr-subject" class="screen" aria-hidden="true">
-        <h2 id="subjectTitle" class="subjectTitle">matière</h2>
-        <div class="sliderWrap" id="sliderWrap">
-          <div id="slides" class="slides"></div>
-        </div>
+      <!-- 4) chapitres d'une matière -->
+      <section id="scr-chapters" class="screen" aria-hidden="true">
+        <h2 id="chapTitle" class="subjectTitle">chapitres</h2>
+        <div id="chap-list" class="list"></div>
+      </section>
+
+      <!-- 5) cours (grille 3 colonnes) -->
+      <section id="scr-courses" class="screen" aria-hidden="true">
+        <h2 id="courseTitle" class="subjectTitle">cours</h2>
+        <div id="grid" class="grid"></div>
       </section>
     </div>
 
-    <!-- FAB admin -->
-    <button id="fabAdd" class="fab" title="Ajouter des cours">＋</button>
+    <!-- FAB (ajout chapitre OU ajout cours) -->
+    <button id="fabAdd" class="fab" title="Ajouter">＋</button>
 
     <!-- Modal paramètres -->
     <div id="modalGear" class="modal">
@@ -206,7 +205,21 @@
       </div>
     </div>
 
-    <!-- Modal ajout cours (multi) -->
+    <!-- Modal ajout CHAPITRE -->
+    <div id="modalChapter" class="modal">
+      <div class="box">
+        <h3 style="margin:0 0 8px">Ajouter un chapitre</h3>
+        <label for="chapName">Nom du chapitre</label>
+        <input id="chapName" type="text" placeholder="Ex. Chapitre 1">
+        <div class="row" style="justify-content:flex-end">
+          <button class="btn secondary" id="chapCancel">Annuler</button>
+          <button class="btn" id="chapSave">Enregistrer</button>
+        </div>
+        <div id="chapMsg" class="hint"></div>
+      </div>
+    </div>
+
+    <!-- Modal ajout COURS (multi) -->
     <div id="modalAdd" class="modal">
       <div class="box">
         <h3 style="margin:0 0 8px">Ajouter des cours</h3>
@@ -227,18 +240,14 @@
     </div>
   </main>
 
-  <!-- =========================
-       SCRIPT (Firebase + UI)
-       ========================= -->
   <script type="module">
-    /* ---------- Firebase (Firestore only) ---------- */
+    /* ---------- Firebase ---------- */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getFirestore, collection, addDoc, query, orderBy, onSnapshot,
       doc, deleteDoc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // >>>>>>> Ta configuration Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
       authDomain: "app-cours-94f32.firebaseapp.com",
@@ -248,15 +257,12 @@
       appId: "1:519755746540:web:8d55f18754ce08884269c9",
       measurementId: "G-VD89GYHJWV"
     };
-    // <<<<<<<
-
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
     /* ---------- helpers UI ---------- */
     const $ = s => document.querySelector(s);
-    const stack = $('#stack');
-    const backBtn = $('#backBtn');
+    const stack = $('#stack'), backBtn = $('#backBtn');
 
     function setStackHeight(h){ stack.style.height = h+'px'; }
     const navStack = ['scr-welcome'];
@@ -264,7 +270,6 @@
     function activeScreen(){ return document.getElementById(activeId()); }
     function canGoBack(){ return navStack.length>1; }
     function refreshBack(){ backBtn.style.visibility = canGoBack() ? 'visible' : 'hidden'; }
-
     function animate(fromEl,toEl,dir){
       setStackHeight(Math.max(fromEl.scrollHeight,toEl.scrollHeight));
       fromEl.classList.remove('active'); toEl.classList.add('active');
@@ -283,9 +288,15 @@
     /* ---------- Etat ----------- */
     const who = $('#who'), prenomInput = $('#prenom'), msg = $('#msg');
     let isAdminUI = false;
-    let currentSubject = null;
+
+    let currentSubject = null;         // slug de matière
+    let currentSubjectName = null;
+    let currentChapter = null;         // { id, name }
     let unsubscribe = null;
-    const orderMaxBySubject = {}; // mémorise le max(order) par matière
+
+    // mémoires pour order
+    const chapterOrderMaxBySubject = {};                  // key: subjectSlug => max(order) pour chapitres
+    const courseOrderMaxByChap = {};                      // key: subjectSlug/chapterId => max(order) pour cours
 
     const subjects = [
       {slug:'francais', name:'francais', color:'var(--c-fr)',  icon:'📚'},
@@ -322,119 +333,116 @@
         b.className='mat'; b.type='button'; b.style.background = s.color;
         b.innerHTML = `<span class="left"><span>${s.name}</span> <span class="icon">${s.icon}</span></span>
                        <span class="pillArrow">→</span>`;
-        b.onclick = ()=> openSubject(s.slug);
+        b.onclick = ()=> openSubject(s.slug, s.name);
         wrap.appendChild(b);
       }
     }
 
-    /* ---------- Matière : rendu + écoute Firestore ---------- */
-    const slidesEl = $('#slides'), sliderWrap = $('#sliderWrap');
-    let slideW=120, idx=0;
-
-    function openSubject(slug){
-      currentSubject = slug;
-      const s = subjects.find(x=>x.slug===slug);
-      $('#subjectTitle').textContent = s.name;
-      renderSubjectCloud(slug);
-      go('scr-subject','f');
+    /* ---------- Chapitres ---------- */
+    function openSubject(slug, name){
+      currentSubject = slug; currentSubjectName = name;
+      $('#chapTitle').textContent = `${name} — chapitres`;
+      renderChapters();
+      go('scr-chapters','f');
       setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
     }
 
-    function renderSubjectCloud(slug){
+    function renderChapters(){
       if (unsubscribe) { unsubscribe(); unsubscribe=null; }
-      slidesEl.innerHTML = '';
-      // tri par ordre d'ajout (order asc) : première ajoutée tout à gauche
-      const q = query(collection(db, `subjects/${slug}/courses`), orderBy("order","asc"));
+      const list = $('#chap-list'); list.innerHTML='';
+      const q = query(collection(db, `subjects/${currentSubject}/chapters`), orderBy("order","asc"));
       unsubscribe = onSnapshot(q, snap=>{
         const arr=[]; snap.forEach(d=>arr.push({id:d.id, ...d.data()}));
-        // MAJ du max(order)
-        const m = arr.reduce((acc, it)=> Math.max(acc, typeof it.order==='number'?it.order:-1), -1);
-        orderMaxBySubject[slug] = m;
+        // MAJ max(order)
+        chapterOrderMaxBySubject[currentSubject] =
+          arr.reduce((acc,it)=>Math.max(acc, typeof it.order==='number'?it.order:-1), -1);
 
-        slidesEl.innerHTML = '';
+        list.innerHTML='';
         if(!arr.length){
-          slidesEl.innerHTML = '<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>';
-        }else{
-          for(const it of arr){
-            const card = document.createElement('div');
-            card.className='slide' + (isAdminUI ? ' admin':'');
-            const imgWrap=document.createElement('div'); imgWrap.className='imgWrap';
-            if(it.img){ const im=new Image(); im.src=it.img; imgWrap.appendChild(im); }
-            card.appendChild(imgWrap);
-
-            // bouton suppression (admin)
-            const del = document.createElement('button');
-            del.className='delBtn'; del.title='Supprimer'; del.textContent='🗑️';
-            del.onclick = async (e)=>{ e.stopPropagation();
-              if(confirm('Supprimer ce cours ?')){
-                await deleteDoc(doc(db, `subjects/${slug}/courses/${it.id}`));
-              }
-            };
-            card.appendChild(del);
-
-            card.onclick = ()=> openViewer(it.img);
-            slidesEl.appendChild(card);
+          list.innerHTML = '<div class="hint" style="margin:8px auto">Aucun chapitre pour le moment.</div>';
+        } else {
+          for(const ch of arr){
+            const btn = document.createElement('button');
+            btn.className='mat'; btn.type='button';
+            btn.innerHTML = `<span class="left"><span>${ch.name}</span></span><span class="pillArrow">→</span>`;
+            btn.onclick = ()=> openChapter(ch.id, ch.name);
+            list.appendChild(btn);
           }
         }
-        layoutSlides(); moveTo(0,false);
         setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
       });
     }
 
-    function layoutSlides(){
-      const w = sliderWrap.clientWidth;
-      const gap = parseInt(getComputedStyle(slidesEl).gap||'10');
-      slideW = Math.floor((w - 2*gap)/3);
-      [...slidesEl.children].forEach(s=> s.style.width = slideW+'px');
-    }
-    function moveTo(i, animate=true){
-      const n = slidesEl.children.length || 1;
-      idx = Math.max(0, Math.min(n-1, i));
-      if(!animate) slidesEl.style.transition='none';
-      const offset = -(idx * (slideW + parseInt(getComputedStyle(slidesEl).gap||'10')));
-      slidesEl.style.transform = `translateX(${offset}px)`;
-      if(!animate){ void slidesEl.offsetWidth; slidesEl.style.transition='transform 260ms var(--ease)'; }
+    function openChapter(chapterId, chapterName){
+      currentChapter = { id: chapterId, name: chapterName };
+      $('#courseTitle').textContent = `${currentSubjectName} — ${chapterName}`;
+      renderCourses();
+      go('scr-courses','f');
+      setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
     }
 
-    // swipe
-    let startX=0, dragging=false, baseX=0;
-    sliderWrap.addEventListener('pointerdown', e=>{
-      if(!slidesEl.children.length) return;
-      dragging=true; startX=e.clientX; slidesEl.style.transition='none';
-      const tr = getComputedStyle(slidesEl).transform;
-      const m = tr==='none' ? [1,0,0,1,0,0] : tr.match(/matrix\(([^)]+)\)/)[1].split(',').map(Number);
-      baseX = m[4] || 0;
-      sliderWrap.setPointerCapture(e.pointerId);
-    });
-    sliderWrap.addEventListener('pointermove', e=>{
-      if(!dragging) return;
-      const dx = e.clientX - startX;
-      slidesEl.style.transform = `translateX(${baseX + dx}px)`;
-    });
-    sliderWrap.addEventListener('pointerup', e=>{
-      if(!dragging) return; dragging=false; slidesEl.style.transition='transform 260ms var(--ease)';
-      const dx = e.clientX - startX;
-      const thr = 40;
-      if(Math.abs(dx) > thr){ moveTo(idx - Math.sign(dx)); }
-      else { moveTo(idx, true); }
-    });
-    window.addEventListener('resize', ()=>{ if(document.getElementById('scr-subject').classList.contains('active')){ layoutSlides(); moveTo(idx,false); setStackHeight(activeScreen().scrollHeight);} });
+    /* ---------- Cours (grille) ---------- */
+    const grid = $('#grid');
+
+    function renderCourses(){
+      if (unsubscribe) { unsubscribe(); unsubscribe=null; }
+      grid.innerHTML='';
+      const path = `subjects/${currentSubject}/chapters/${currentChapter.id}/courses`;
+      const q = query(collection(db, path), orderBy("order","asc"));
+      unsubscribe = onSnapshot(q, snap=>{
+        const arr=[]; snap.forEach(d=>arr.push({id:d.id, ...d.data()}));
+        // MAJ max(order) pour ce chapitre
+        const key = `${currentSubject}/${currentChapter.id}`;
+        courseOrderMaxByChap[key] =
+          arr.reduce((acc,it)=>Math.max(acc, typeof it.order==='number'?it.order:-1), -1);
+
+        grid.innerHTML='';
+        if(!arr.length){
+          grid.innerHTML = '<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>';
+        } else {
+          for(const it of arr){
+            const item = document.createElement('div');
+            item.className = 'gridItem' + (isAdminUI ? ' admin' : '');
+            const im = new Image(); im.src = it.img; item.appendChild(im);
+
+            const del = document.createElement('button');
+            del.className = 'delBtn'; del.title='Supprimer'; del.textContent='🗑️';
+            del.onclick = async (e)=>{ e.stopPropagation();
+              if(confirm('Supprimer ce cours ?')){
+                await deleteDoc(doc(db, path, it.id));
+              }
+            };
+            item.appendChild(del);
+
+            item.onclick = ()=> openViewer(it.img);
+            grid.appendChild(item);
+          }
+        }
+        setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
+      });
+    }
 
     /* ---------- viewer ---------- */
     function openViewer(src){ if(!src) return; $('#viewerImg').src=src; $('#viewer').style.display='flex'; }
     $('#viewerClose').onclick = ()=> $('#viewer').style.display='none';
 
-    /* ---------- Paramètres + Admin (UI code 2525) ---------- */
+    /* ---------- Paramètres + Admin ---------- */
     const modalGear = $('#modalGear'), adminRow = $('#adminRow');
     function refreshGear(){
       adminRow.innerHTML='';
       const b = document.createElement('button');
       b.className='btn'; b.textContent = isAdminUI ? 'Quitter admin' : 'Admin';
       b.onclick = ()=>{
-        if(isAdminUI){ isAdminUI=false; toggleFab(); modalGear.style.display='none'; renderSubjectCloud(currentSubject); }
+        if(isAdminUI){ isAdminUI=false; modalGear.style.display='none'; toggleFab(); refreshAdminFlags(); }
         else{ modalGear.style.display='none'; openAdminModal(); }
       };
       adminRow.appendChild(b);
+    }
+    function refreshAdminFlags(){
+      // toggle l'affichage des poubelles quand on bascule admin
+      [...document.querySelectorAll('.gridItem')].forEach(el=>{
+        if(isAdminUI) el.classList.add('admin'); else el.classList.remove('admin');
+      });
     }
     function openAdminModal(){
       $('#adminCode').value=''; $('#adminMsg').textContent='';
@@ -445,38 +453,64 @@
     $('#adminCancel').onclick = ()=> $('#modalAdmin').style.display='none';
     $('#adminOk').onclick = ()=>{
       if($('#adminCode').value.trim()==='2525'){
-        isAdminUI=true; $('#modalAdmin').style.display='none'; toggleFab(); renderSubjectCloud(currentSubject);
+        isAdminUI=true; $('#modalAdmin').style.display='none'; toggleFab(); refreshAdminFlags();
       } else { $('#adminMsg').textContent='Code incorrect.'; }
     };
 
-    /* ---------- Ajout cours : multi-fichiers + ordre ---------- */
+    /* ---------- FAB : ajout chapitre OU cours ---------- */
+    const fab = $('#fabAdd');
     function toggleFab(){
-      const onSubject = activeId()==='scr-subject';
-      $('#fabAdd').style.display = (isAdminUI && onSubject) ? 'grid' : 'none';
-      // Toggle affichage du bouton poubelle sur les slides
-      [...slidesEl.children].forEach(el=>{
-        if(isAdminUI) el.classList.add('admin'); else el.classList.remove('admin');
-      });
+      const id = activeId();
+      let show = false, action = '';
+      if(isAdminUI && id==='scr-chapters'){ show=true; action='chapter'; }
+      if(isAdminUI && id==='scr-courses'){ show=true; action='course'; }
+      fab.style.display = show ? 'grid' : 'none';
+      fab.dataset.action = action;
     }
-    $('#fabAdd').onclick = ()=>{ $('#addImg').value=''; $('#addMsg').textContent=''; $('#modalAdd').style.display='flex'; };
-    $('#addCancel').onclick = ()=> $('#modalAdd').style.display='none';
+    fab.onclick = ()=>{
+      if(fab.dataset.action==='chapter'){
+        // ouvrir modal chapitre
+        $('#chapName').value=''; $('#chapMsg').textContent='';
+        $('#modalChapter').style.display='flex';
+      }else if(fab.dataset.action==='course'){
+        // ouvrir modal cours multi
+        $('#addImg').value=''; $('#addMsg').textContent='';
+        $('#modalAdd').style.display='flex';
+      }
+    };
 
+    // Ajout CHAPITRE
+    $('#chapCancel').onclick = ()=> $('#modalChapter').style.display='none';
+    $('#chapSave').onclick = async ()=>{
+      const name = ($('#chapName').value||'').trim();
+      const out = $('#chapMsg');
+      if(!name){ out.textContent='Entre un nom de chapitre.'; return; }
+      try{
+        const start = (chapterOrderMaxBySubject[currentSubject] ?? -1) + 1;
+        await addDoc(collection(db, `subjects/${currentSubject}/chapters`), {
+          name, order:start, createdAt: Date.now()
+        });
+        $('#modalChapter').style.display='none';
+      }catch(e){ out.textContent="Impossible d'ajouter ce chapitre."; }
+    };
+
+    // Ajout COURS (multi) dans le chapitre courant
+    $('#addCancel').onclick = ()=> $('#modalAdd').style.display='none';
     $('#addSave').onclick = async ()=>{
       const files = Array.from($('#addImg').files || []);
       const out = $('#addMsg');
       if(!files.length){ out.textContent='Choisis au moins une image.'; return; }
+      if(!currentChapter){ out.textContent='Pas de chapitre sélectionné.'; return; }
       out.textContent = 'Compression et enregistrement...';
       try{
-        // Point de départ = max(order)+1 pour cette matière
-        let start = (orderMaxBySubject[currentSubject] ?? -1) + 1;
+        const key = `${currentSubject}/${currentChapter.id}`;
+        let start = (courseOrderMaxByChap[key] ?? -1) + 1;
+        const path = `subjects/${currentSubject}/chapters/${currentChapter.id}/courses`;
 
-        // On ajoute dans l'ordre de sélection : la première choisie aura l'order le plus petit
         for(let i=0;i<files.length;i++){
           const imgURL = await compressAndUpload(files[i], 1280, .8);
-          await addDoc(collection(db, `subjects/${currentSubject}/courses`), {
-            img: imgURL,
-            order: start + i,
-            createdAt: Date.now() + i
+          await addDoc(collection(db, path), {
+            img: imgURL, order: start + i, createdAt: Date.now() + i
           });
         }
         $('#modalAdd').style.display='none';
@@ -485,7 +519,7 @@
       }
     };
 
-    // Compression locale -> dataURL (aucun upload Storage)
+    // Compression locale -> dataURL
     async function compressAndUpload(file, max=1280, quality=.8){
       const url = URL.createObjectURL(file);
       const img = await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; });
