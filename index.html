@@ -2,596 +2,472 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Espace de cours</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Espace de cours — Onboarding</title>
   <style>
     :root{
-      --bg:#f6f7fb;
-      --card:#ffffff;
-      --text:#121316;
-      --muted:#6c7280;
-      --accent:#111827;
-      --line:#e9eaf0;
-      --radius:18px;
-      --shadow:0 6px 20px rgba(16,24,40,.06);
+      /* Couleurs dynamiques (modifiées par JS pour le thème) */
+      --bg: #f0d0ff;
+      --card: #f4ddff;
+      --text: #0b0b0b;
+      --accent: #8b5cf6; /* violet par défaut */
+      --outline: color-mix(in oklab, var(--accent) 50%, transparent);
     }
+
+    /* Reset + base */
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
+      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
       background:var(--bg);
-      -webkit-tap-highlight-color:transparent;
+      color:var(--text);
+      -webkit-tap-highlight-color: transparent;
     }
-    .wrap{
-      max-width:960px;
+
+    /* Contrainte mobile type iPhone */
+    .frame{
+      min-height:100dvh;
+      max-width: 430px;   /* format iPhone */
       margin:0 auto;
-      padding:20px 16px 120px;
+      padding:24px 18px 28px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
     }
-    header{
-      position:sticky; top:0; z-index:3;
-      background:linear-gradient(#f6f7fb,rgba(246,247,251,.7));
-      backdrop-filter: blur(6px);
+
+    /* Bulle générique */
+    .bubble{
+      background:var(--card);
+      border-radius:20px;
+      padding:18px 20px;
+      box-shadow: 0 2px 0 0 rgba(0,0,0,.08) inset, 0 1px 10px rgba(0,0,0,.06);
+      border: 3px solid color-mix(in oklab, var(--card) 80%, #000 20%);
     }
-    .bar{
-      display:flex; align-items:center; gap:10px;
-      padding:14px 16px;
+
+    .title{
+      font-weight:900;
+      font-size: clamp(22px, 5.8vw, 34px);
+      line-height:1.15;
+      text-align:center;
     }
-    .iconbtn{
-      height:40px; width:40px; border-radius:999px;
-      display:grid; place-items:center;
-      border:1px solid var(--line); background:var(--card);
-      box-shadow:var(--shadow); cursor:pointer;
+
+    .big-title{
+      font-weight:900;
+      font-size: clamp(28px, 7vw, 42px);
+      text-align:center;
+      margin: 8px 0 2px;
     }
-    .iconbtn svg{width:18px;height:18px}
-    h1,h2,h3{margin:0}
-    h1{font-size:28px; font-weight:800}
-    .section{margin-top:16px}
+
+    .center{ text-align:center }
+
+    /* Carte fonction (cours / edt / devoirs / contrôles) */
     .card{
-      background:var(--card); border:1px solid var(--line);
-      border-radius:var(--radius); box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:18px 20px;
+      border-radius:16px;
+      background:var(--card);
+      border:2.5px solid var(--outline);
     }
-    .stack{display:flex; flex-direction:column; gap:12px}
-    .grid{
-      display:grid; gap:12px;
-      grid-template-columns:repeat(1,minmax(0,1fr));
+    .card .label{
+      font-size: clamp(20px,5.4vw,28px);
+      font-weight:900;
     }
-    @media(min-width:520px){ .grid{grid-template-columns:repeat(2,1fr)} }
-    @media(min-width:840px){ .grid{grid-template-columns:repeat(3,1fr)} }
-
-    .btn{
-      display:flex; align-items:center; justify-content:center; gap:10px;
-      padding:14px 18px; border-radius:14px; font-weight:700;
-      border:1px solid var(--line); background:var(--card); cursor:pointer;
-      box-shadow:var(--shadow);
-    }
-    .btn.primary{ background:#111827; color:#fff; border-color:#111827 }
-    .btn.ghost{ background:transparent }
-    .btn.small{ padding:10px 12px; font-weight:600 }
-    .muted{color:var(--muted)}
-    .row{display:flex; align-items:center; justify-content:space-between; gap:12px}
-    .pill{padding:8px 12px; border-radius:999px; background:#f2f3f7; border:1px solid var(--line)}
-    .hidden{display:none !important}
-
-    .subject{
-      display:flex; align-items:center; gap:14px;
-      padding:16px; border-radius:16px; border:1px solid var(--line);
-      background:var(--card); box-shadow:var(--shadow); cursor:pointer;
-    }
-    .subject .emoji{font-size:22px}
-    .subject h3{font-size:18px; font-weight:800}
-
-    .chip{
-      padding:10px 14px; border-radius:12px; border:1px solid var(--line);
-      background:var(--card); font-weight:700; cursor:pointer;
-      display:flex; gap:8px; align-items:center; justify-content:space-between;
-    }
-    .chip .trash{opacity:.0; transition:.2s}
-    .chip.admin .trash{opacity:1}
-
-    .thumb{
-      position:relative; overflow:hidden; border-radius:14px;
-      border:1px solid var(--line); background:#f1f2f6; min-height:140px;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .thumb img{width:100%; height:100%; object-fit:cover}
-    .thumb .del{
-      position:absolute; top:8px; right:8px;
-      background:rgba(0,0,0,.6); color:#fff; border-radius:999px;
-      width:32px;height:32px; display:grid; place-items:center; cursor:pointer;
+    .card .emoji{
+      font-size:32px;
+      filter: drop-shadow(0 1px 0 rgba(0,0,0,.2));
     }
 
-    .fab{
-      position:fixed; right:18px; bottom:18px; z-index:3;
-      height:58px;width:58px;border-radius:999px; background:#111827; color:#fff;
-      display:grid; place-items:center; box-shadow:0 10px 30px rgba(16,24,40,.25);
+    /* Bouton continuer */
+    .cta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:16px 20px;
+      border-radius:16px;
+      background:var(--card);
+      border:3px solid var(--outline);
+      font-weight:900;
+      font-size: clamp(20px,5vw,26px);
+      cursor:pointer;
+      user-select:none;
+    }
+    .cta .arrow{
+      width:48px;height:40px;
+      border-radius:999px;
+      border:3px solid var(--text);
+      display:grid;place-items:center;
+    }
+    .cta:active{ transform: translateY(1px) }
+
+    /* Choix Allemand / Espagnol */
+    .choice{
+      display:grid; gap:14px;
+    }
+    .choice button{
+      border-radius:16px;
+      padding:16px 20px;
+      font-weight:900;
+      font-size: clamp(20px,5.4vw,28px);
+      background:var(--card);
+      border:3px solid var(--outline);
       cursor:pointer;
     }
-    .modal{
-      position:fixed; inset:0; display:none; place-items:center; z-index:10;
-      background:rgba(17,24,39,.45); backdrop-filter:blur(2px);
-      padding:20px;
-    }
-    .modal.show{display:grid}
-    .panel{
-      width:min(520px,100%); background:var(--card); border:1px solid var(--line);
-      border-radius:16px; box-shadow:var(--shadow); padding:18px;
-    }
-    .field{display:flex; flex-direction:column; gap:6px; margin:10px 0}
-    .input,select{
-      padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#fff;
-      outline:none; font:inherit;
+    .choice button.active{
+      outline:4px solid #55c34a;
+      outline-offset:2px;
     }
 
-    .viewer{
-      position:fixed; inset:0; display:none; z-index:20;
-      background:rgba(0,0,0,.9); backdrop-filter:blur(1px);
-      align-items:center; justify-content:center;
+    /* Input prénom */
+    .input{
+      width:100%;
+      border-radius:14px;
+      padding:16px 16px;
+      border:2.5px solid color-mix(in oklab, var(--card) 60%, #000 40%);
+      background: color-mix(in oklab, var(--card) 82%, #fff 18%);
+      font-size:20px;
+      font-weight:700;
     }
-    .viewer.show{display:flex}
-    .viewer img{max-width:94vw; max-height:90vh; border-radius:12px}
+
+    /* Palette thème */
+    .palette{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:14px;
+      padding:8px 0 2px;
+    }
+    .swatch{
+      height:60px;border-radius:50%;
+      border:3px solid rgba(0,0,0,.22);
+      cursor:pointer;
+    }
+    .mode-row{
+      display:flex; gap:10px; justify-content:center; margin:8px 0 2px;
+    }
+    .mode{
+      padding:8px 14px; border-radius:999px; font-weight:800; cursor:pointer;
+      border:3px solid var(--outline); background:var(--card)
+    }
+    .mode.active{ outline:4px solid var(--text); outline-offset:2px }
+
+    /* Étapes & animations */
+    #stage{ position:relative; min-height:100dvh }
+    .step{
+      position:absolute; inset:0;
+      display:flex; flex-direction:column; gap:18px;
+      padding:24px 18px 28px;
+      overflow:hidden;
+      max-width:430px; margin:0 auto;
+    }
+    .step-enter{
+      opacity:0; transform: translateY(40px);
+    }
+    .step-enter-active{
+      transition:.45s cubic-bezier(.2,.8,.2,1);
+      opacity:1; transform: translateY(0);
+    }
+    .step-exit{
+      opacity:1; transform: translateY(0);
+    }
+    .step-exit-active{
+      transition:.45s cubic-bezier(.2,.8,.2,1);
+      opacity:0; transform: translateY(-38px);
+    }
+
+    /* Helpers de spacing pour “bulles” */
+    .sp-xxl{ height:2px } /* fine */
+
+    /* Accessibilité simple */
+    button, .cta{ color:var(--text) }
   </style>
 </head>
 <body>
+  <main id="stage" aria-live="polite"></main>
 
-  <!-- HEADER -->
-  <header>
-    <div class="bar">
-      <button id="btnSettings" class="iconbtn" title="Paramètres">
-        <!-- engrenage -->
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-width="2" d="M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-          <path stroke-width="2" d="M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12M12 2v3M12 19v3"/>
-        </svg>
-      </button>
-      <button id="btnBack" class="iconbtn hidden" title="Retour">
-        <!-- flèche -->
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-width="2" d="M15 18l-6-6 6-6"/>
-        </svg>
-      </button>
-      <div style="flex:1"></div>
-      <div class="pill" id="hdrTrail" title="Groupe"></div>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <!-- ÉCRAN 0 : profil -->
-    <section id="screenProfile" class="section stack">
-      <div class="card" style="padding:22px">
-        <h1 style="margin-bottom:6px">Bienvenue dans ton espace de cours !</h1>
-        <p class="muted">Entre ton prénom et choisis ton groupe pour continuer.</p>
-        <div class="field">
-          <label>Quel est ton prénom ?</label>
-          <input id="inpName" class="input" placeholder="Prénom" />
-        </div>
-        <div class="field">
-          <label>Groupe</label>
-          <div class="row">
-            <label class="pill"><input type="radio" name="trail" value="allemand" checked> Allemand</label>
-            <label class="pill"><input type="radio" name="trail" value="espagnol"> Espagnol</label>
-          </div>
-        </div>
-        <div class="row">
-          <button id="btnStart" class="btn primary" style="width:100%">Continuer</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ÉCRAN 1 : accueil -->
-    <section id="screenHome" class="section stack hidden">
-      <h1 id="hello" style="margin:6px 6px 14px">Bonjour</h1>
-      <div class="grid">
-        <button class="subject" data-goto="courses">
-          <div class="emoji">📚</div><h3>COURS</h3>
-        </button>
-        <button class="subject" data-goto="timetable">
-          <div class="emoji">🗓️</div><h3>EMPLOI DU TEMPS</h3>
-        </button>
-        <button class="subject" data-goto="homeworks">
-          <div class="emoji">📝</div><h3>DEVOIRS</h3>
-        </button>
-        <button class="subject" data-goto="exams">
-          <div class="emoji">🧪</div><h3>CONTRÔLES</h3>
-        </button>
-      </div>
-    </section>
-
-    <!-- ÉCRAN 2 : matières -->
-    <section id="screenSubjects" class="section stack hidden">
-      <h1 style="margin-bottom:10px">Choisis une matière</h1>
-      <div id="subjectsList" class="stack"></div>
-    </section>
-
-    <!-- ÉCRAN 3 : chapitres -->
-    <section id="screenChapters" class="section stack hidden">
-      <div class="row">
-        <h1 id="chapTitle">Chapitres</h1>
-        <button id="btnAddChapter" class="btn small hidden">+ Ajouter</button>
-      </div>
-      <div id="chaptersList" class="grid"></div>
-    </section>
-
-    <!-- ÉCRAN 4 : pages d’un chapitre -->
-    <section id="screenPages" class="section stack hidden">
-      <div class="row">
-        <h1 id="pagesTitle">Cours</h1>
-        <div class="muted" id="pagesCount"></div>
-      </div>
-      <div id="pagesGrid" class="grid"></div>
-      <button id="btnAddPages" class="fab hidden" title="Ajouter des documents">+</button>
-      <input id="filePicker" type="file" accept="image/*,application/pdf" multiple class="hidden" />
-    </section>
-
-    <!-- placeholders autres sections -->
-    <section id="screenSoon" class="section stack hidden">
-      <div class="card" style="padding:22px">
-        <h2>Fonction en préparation</h2>
-        <p class="muted">Cette section sera branchée plus tard.</p>
-      </div>
-    </section>
-  </main>
-
-  <!-- MODAL paramètres -->
-  <div id="modalSettings" class="modal">
-    <div class="panel">
-      <div class="row"><h3>Paramètres</h3><button class="btn small" id="closeSettings">Fermer</button></div>
-      <div class="field">
-        <label>Mode administrateur</label>
-        <div class="row">
-          <input id="adminCode" class="input" placeholder="Code (2525)" style="flex:1" />
-          <button id="btnAdmin" class="btn">Activer</button>
-          <button id="btnAdminOff" class="btn ghost hidden">Quitter admin</button>
-        </div>
-        <p class="muted" id="adminState">Non connecté</p>
-      </div>
-      <div class="field">
-        <label>Profil</label>
-        <div class="row">
-          <button id="btnResetProfile" class="btn">Réinitialiser le profil</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL ajout chapitre -->
-  <div id="modalChapter" class="modal">
-    <div class="panel">
-      <div class="row"><h3>Ajouter un chapitre</h3><button class="btn small" id="closeChapter">Fermer</button></div>
-      <div class="field">
-        <label>Nom du chapitre</label>
-        <input id="inpChapterName" class="input" placeholder="Chapitre" />
-      </div>
-      <div class="field">
-        <label>Pour quel groupe ?</label>
-        <select id="selChapterTrail" class="input">
-          <option value="allemand">Allemand</option>
-          <option value="espagnol">Espagnol</option>
-        </select>
-      </div>
-      <div class="row">
-        <button id="saveChapter" class="btn primary" style="width:100%">Enregistrer</button>
-      </div>
-      <p id="chapterMsg" class="muted"></p>
-    </div>
-  </div>
-
-  <!-- viewer -->
-  <div id="viewer" class="viewer"><img id="viewerImg" alt="aperçu"><div class="fab" id="closeViewer">✕</div></div>
-
-  <!-- Firebase (modulaire) -->
-  <script type="module">
-    // ======== Firebase config (la tienne) ========
-    const firebaseConfig = {
-      apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
-      authDomain: "app-cours-94f32.firebaseapp.com",
-      projectId: "app-cours-94f32",
-      storageBucket: "app-cours-94f32.firebasestorage.app",
-      messagingSenderId: "519755746540",
-      appId: "1:519755746540:web:8d55f18754ce08884269c9",
-      measurementId: "G-VD89GYHJWV"
-    };
-
-    import {
-      initializeApp
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-
-    import {
-      getFirestore, collection, doc, addDoc, setDoc, getDocs, getDoc,
-      query, where, orderBy, limit, serverTimestamp, deleteDoc
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-    import {
-      getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    // ========= ÉTAT =========
+  <script>
+    /* --------- Thème dynamique (Light / Dark + couleur accent) --------- */
     const state = {
-      profile: { name:"", trail:"allemand" },
-      admin: false,
-      current: { subject:null, subjectLabel:"", chapterId:null, chapterName:"" }
+      prenom: localStorage.getItem('prenom') || '',
+      langue: localStorage.getItem('langue') || '',  // "allemand" | "espagnol"
+      theme: JSON.parse(localStorage.getItem('theme') || '{"mode":"light","accent":"#8b5cf6"}')
     };
 
-    // ========= OUTILS UI =========
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => document.querySelectorAll(sel);
-    const show = id => $(id).classList.remove('hidden');
-    const hide = id => $(id).classList.add('hidden');
+    function clamp01(x){ return Math.max(0,Math.min(1,x)) }
 
-    const screens = {
-      profile:  '#screenProfile',
-      home:     '#screenHome',
-      subjects: '#screenSubjects',
-      chapters: '#screenChapters',
-      pages:    '#screenPages',
-      soon:     '#screenSoon'
-    };
-    let stack = [];
-    function go(screenId){
-      Object.values(screens).forEach(s => hide(s));
-      show(screens[screenId]);
-      $('#btnBack').classList.toggle('hidden', stack.length===0);
-    }
-    function push(screenId){ stack.push(screenId); go(screenId); }
-    function back(){
-      stack.pop();
-      go(stack.at(-1) || 'home');
-    }
-
-    // ========= PROFIL (localStorage) =========
-    function loadProfile(){
-      const raw = localStorage.getItem('profile');
-      if(raw){ try{ state.profile = JSON.parse(raw) } catch{} }
-      $('#hdrTrail').textContent = state.profile.trail || 'allemand';
-      if(state.profile.name){
-        $('#hello').textContent = `Bonjour ${state.profile.name}`;
-        go('home'); stack=['home'];
-      }else{
-        go('profile'); stack=['profile'];
+    // Convert hex -> hsl et l'inverse pour éclaircir/assombrir simplement
+    function hexToHsl(hex){
+      hex = hex.replace('#','');
+      if (hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+      const r = parseInt(hex.slice(0,2),16)/255;
+      const g = parseInt(hex.slice(2,4),16)/255;
+      const b = parseInt(hex.slice(4,6),16)/255;
+      const max = Math.max(r,g,b), min=Math.min(r,g,b);
+      let h,s,l=(max+min)/2;
+      if (max===min){ h=s=0; }
+      else{
+        const d = max-min;
+        s = l>0.5 ? d/(2-max-min) : d/(max+min);
+        switch(max){
+          case r: h=(g-b)/d+(g<b?6:0); break;
+          case g: h=(b-r)/d+2; break;
+          case b: h=(r-g)/d+4; break;
+        }
+        h/=6;
       }
+      return {h,s,l}
     }
-    function saveProfile(){
-      localStorage.setItem('profile', JSON.stringify(state.profile));
-      $('#hdrTrail').textContent = state.profile.trail;
-      $('#hello').textContent = `Bonjour ${state.profile.name}`;
-    }
-
-    $('#btnStart').onclick = () => {
-      const name = $('#inpName').value.trim();
-      const trail = [...$$('input[name="trail"]')].find(r=>r.checked)?.value || 'allemand';
-      if(!name){ alert("Entre ton prénom 🙂"); return; }
-      state.profile = { name, trail };
-      saveProfile();
-      go('home'); stack=['home'];
-    };
-
-    // ========= PARAMÈTRES / ADMIN =========
-    const modalSettings = $('#modalSettings');
-    $('#btnSettings').onclick = ()=> modalSettings.classList.add('show');
-    $('#closeSettings').onclick = ()=> modalSettings.classList.remove('show');
-
-    function refreshAdminUI(){
-      $('#btnAddChapter').classList.toggle('hidden', !state.admin);
-      $('#btnAddPages').classList.toggle('hidden', !state.admin);
-      $('#adminState').textContent = state.admin ? 'Admin actif' : 'Non connecté';
-      $('#btnAdmin').classList.toggle('hidden', state.admin);
-      $('#btnAdminOff').classList.toggle('hidden', !state.admin);
-      // montrer les boutons poubelles
-      $$('.chip').forEach(ch => ch.classList.toggle('admin', state.admin));
-      $$('.thumb .del').forEach(b => b.classList.toggle('hidden', !state.admin));
-    }
-    $('#btnAdmin').onclick = ()=>{
-      const code = $('#adminCode').value.trim();
-      if(code==='2525'){ state.admin = true; refreshAdminUI(); alert('Mode admin activé'); }
-      else alert('Code incorrect');
-    };
-    $('#btnAdminOff').onclick = ()=>{ state.admin=false; refreshAdminUI(); };
-    $('#btnResetProfile').onclick = ()=>{
-      if(confirm('Réinitialiser le profil ?')){
-        localStorage.removeItem('profile'); location.reload();
+    function hslToHex(h,s,l){
+      function hue2rgb(p, q, t){
+        if (t<0) t+=1; if (t>1) t-=1;
+        if (t<1/6) return p+(q-p)*6*t;
+        if (t<1/2) return q;
+        if (t<2/3) return p+(q-p)*(2/3 - t)*6;
+        return p;
       }
-    };
+      let r,g,b;
+      if (s===0){ r=g=b=l; }
+      else{
+        const q = l < .5 ? l*(1+s) : l+s - l*s;
+        const p = 2*l - q;
+        r = hue2rgb(p, q, h+1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h-1/3);
+      }
+      const toHex = x => ('0'+Math.round(x*255).toString(16)).slice(-2);
+      return '#'+toHex(r)+toHex(g)+toHex(b);
+    }
 
-    // ========= NAV =========
-    $('#btnBack').onclick = back;
-    $$('#screenHome .subject').forEach(btn=>{
-      btn.onclick = ()=>{
-        const to = btn.dataset.goto;
-        if(to==='courses'){ renderSubjects(); push('subjects'); }
-        else { push('soon'); }
-      };
-    });
+    function applyTheme(mode, accentHex){
+      const a = hexToHsl(accentHex);
+      // Couleurs calculées
+      let bg, card, text;
+      if (mode === 'dark'){
+        text = '#ffffff';
+        const base = {h:a.h, s: clamp01(a.s*0.65), l: 0.18};
+        bg   = hslToHex(base.h, base.s, base.l);
+        card = hslToHex(base.h, clamp01(base.s*0.55), 0.34);
+      } else {
+        text = '#0b0b0b';
+        bg   = hslToHex(a.h, clamp01(a.s*0.35), 0.88);
+        card = hslToHex(a.h, clamp01(a.s*0.30), 0.92);
+      }
+      document.documentElement.style.setProperty('--bg', bg);
+      document.documentElement.style.setProperty('--card', card);
+      document.documentElement.style.setProperty('--text', text);
+      document.documentElement.style.setProperty('--accent', accentHex);
+      document.documentElement.style.setProperty('--outline', accentHex+'55');
+      state.theme = {mode, accent: accentHex};
+      localStorage.setItem('theme', JSON.stringify(state.theme));
+    }
 
-    // ========= MATIÈRES =========
-    const SUBJECTS = [
-      {id:'francais', label:'FRANÇAIS',  emoji:'📘'},
-      {id:'histoire', label:'HISTOIRE',  emoji:'🏺'},
-      {id:'svt',      label:'SVT',       emoji:'🌿'},
-      {id:'chimie',   label:'CHIMIE',    emoji:'⚗️'},
-      {id:'snt',      label:'SNT',       emoji:'💻'},
-      {id:'ses',      label:'SES',       emoji:'📈'},
-      {id:'anglais',  label:'ANGLAIS',   emoji:'🇬🇧'}
+    // Appliquer le thème au chargement
+    applyTheme(state.theme.mode, state.theme.accent);
+
+    /* --------------------- Gestion du flux / étapes --------------------- */
+    const stage = document.getElementById('stage');
+    let stepIndex = 0;
+
+    // Utilitaires anim
+    function mountStep(el){
+      el.classList.add('step','step-enter');
+      stage.appendChild(el);
+      requestAnimationFrame(()=> el.classList.add('step-enter-active'));
+    }
+    function replaceStep(nextEl){
+      const current = stage.querySelector('.step');
+      if (!current){ mountStep(nextEl); return; }
+      current.classList.remove('step-enter','step-enter-active');
+      current.classList.add('step-exit');
+      requestAnimationFrame(()=> current.classList.add('step-exit-active'));
+      current.addEventListener('transitionend', ()=> current.remove(), {once:true});
+      mountStep(nextEl);
+    }
+
+    function bubble(titleText){
+      const d = document.createElement('div');
+      d.className = 'bubble';
+      d.innerHTML = `<div class="title">${titleText}</div>`;
+      return d;
+    }
+    function cta(label, onClick){
+      const d = document.createElement('div');
+      d.className = 'cta';
+      d.role = 'button';
+      d.tabIndex = 0;
+      d.innerHTML = `<div>${label}</div><div class="arrow">➜</div>`;
+      d.addEventListener('click', onClick);
+      d.addEventListener('keypress', (e)=>{ if(e.key==='Enter' || e.key===' ') onClick(); });
+      return d;
+    }
+    function card(label, emoji){
+      const d = document.createElement('div');
+      d.className = 'card';
+      d.innerHTML = `<div class="label">${label}</div><div class="emoji">${emoji}</div>`;
+      return d;
+    }
+
+    /* --------------------------- Les étapes ---------------------------- */
+    const steps = [
+      /* 0 — Accueil */
+      () => {
+        const el = document.createElement('section');
+        el.innerHTML = '';
+        el.append(
+          (()=>{ const b=bubble(`Bienvenu dans ton espace de cours.`); b.querySelector('.title').classList.add('big-title'); return b; })(),
+          card('continuer',''),
+        );
+        el.querySelector('.card').replaceWith(
+          (()=>{ const d = document.createElement('div'); d.appendChild(cta('continuer', next)); return d; })()
+        );
+        return el;
+      },
+
+      /* 1 — Prénom */
+      () => {
+        const el = document.createElement('section');
+        const b = bubble(`quel est ton prénom ?`);
+        const input = document.createElement('input');
+        input.className = 'input';
+        input.placeholder = 'Ton prénom';
+        input.value = state.prenom;
+        input.autocapitalize = 'words';
+        input.autocomplete = 'given-name';
+        const wrap = document.createElement('div'); wrap.className='bubble'; wrap.appendChild(input);
+        el.append(b, wrap, cta('continuer', ()=> {
+          const v = input.value.trim();
+          if(!v){ input.focus(); input.style.outline='3px solid #ff7272'; setTimeout(()=>input.style.outline='',600); return; }
+          state.prenom = v;
+          localStorage.setItem('prenom', v);
+          next();
+        }));
+        setTimeout(()=>input.focus(), 100);
+        return el;
+      },
+
+      /* 2 — Allemand ou Espagnol */
+      () => {
+        const el = document.createElement('section');
+        const b = document.createElement('div'); b.className='bubble';
+        b.innerHTML = `<div class="big-title">bienvenu ${state.prenom||'à toi'}</div>
+                       <div class="title" style="margin-top:8px">tu fais ?</div>`;
+        const ch = document.createElement('div'); ch.className='choice';
+        const btnA = document.createElement('button'); btnA.textContent='Allemand';
+        const btnE = document.createElement('button'); btnE.textContent='Espagnol';
+        if(state.langue==='allemand') btnA.classList.add('active');
+        if(state.langue==='espagnol') btnE.classList.add('active');
+        btnA.onclick = ()=>{ state.langue='allemand'; btnA.classList.add('active'); btnE.classList.remove('active'); };
+        btnE.onclick = ()=>{ state.langue='espagnol'; btnE.classList.add('active'); btnA.classList.remove('active'); };
+        ch.append(btnA, btnE);
+        const go = cta('continuer', ()=>{
+          if(!state.langue){ btnA.focus(); return;}
+          localStorage.setItem('langue', state.langue);
+          next();
+        });
+        el.append(b, ch, go);
+        return el;
+      },
+
+      /* 3 — Présentation : cours */
+      () => {
+        const el = document.createElement('section');
+        el.append(
+          bubble(`tu trouvera ici tout tes cours depuis le debut de l’année`),
+          card('cours','📘'),
+          cta('continuer', next)
+        );
+        return el;
+      },
+
+      /* 4 — Présentation : emploi du temps */
+      () => {
+        const el = document.createElement('section');
+        el.append(
+          bubble(`tu trouvera aussi ton emploie du temps`),
+          card('emploie du temps','🗓️'),
+          cta('continuer', next)
+        );
+        return el;
+      },
+
+      /* 5 — Présentation : devoirs */
+      () => {
+        const el = document.createElement('section');
+        el.append(
+          bubble(`tout tes devoirs deja fais et expliquée`),
+          card('devoirs','✏️'),
+          cta('continuer', next)
+        );
+        return el;
+      },
+
+      /* 6 — Présentation : contrôles */
+      () => {
+        const el = document.createElement('section');
+        el.append(
+          bubble(`ainsi que tout tes controles a venir avec des fiches de  revisions`),
+          card('controle','📝'),
+          cta('continuer', next)
+        );
+        return el;
+      },
+
+      /* 7 — Choix du thème (aperçu immédiat) */
+      () => {
+        const el = document.createElement('section');
+        const b = bubble(`choisi des maintenant le theme de ton application`);
+        const box = document.createElement('div'); box.className='bubble';
+        // Modes
+        const modes = document.createElement('div'); modes.className='mode-row';
+        const mLight = document.createElement('button'); mLight.className='mode'; mLight.textContent='Clair';
+        const mDark  = document.createElement('button'); mDark.className='mode';  mDark.textContent='Sombre';
+        const setModeBtn = ()=>{
+          mLight.classList.toggle('active', state.theme.mode==='light');
+          mDark .classList.toggle('active', state.theme.mode==='dark');
+        }
+        mLight.onclick=()=>{ applyTheme('light', state.theme.accent); setModeBtn(); };
+        mDark .onclick=()=>{ applyTheme('dark',  state.theme.accent); setModeBtn(); };
+        setModeBtn();
+        modes.append(mLight,mDark);
+
+        // Palette
+        const palette = document.createElement('div'); palette.className='palette';
+        const colors = ['#ffffff','#111111','#23a6ff','#ff3b30','#c084fc','#a3e635','#ff7a18','#ff59c7'];
+        colors.forEach(hex=>{
+          const s = document.createElement('button'); s.className='swatch'; s.style.background=hex;
+          s.title = hex;
+          s.onclick=()=>{ applyTheme(state.theme.mode, hex); };
+          palette.appendChild(s);
+        });
+
+        box.append(modes, palette);
+        el.append(b, box, cta('continuer', ()=> {
+          // Fin de l’onboarding : ici tu pourras rediriger vers l’app principale
+          // Pour l’instant on repart au début.
+          stepIndex = -1; // sera ++ dans next()
+          next();
+        }));
+        return el;
+      },
     ];
 
-    function renderSubjects(){
-      const box = $('#subjectsList'); box.innerHTML='';
-      SUBJECTS.forEach(s=>{
-        const el = document.createElement('div');
-        el.className='subject';
-        el.innerHTML = `<div class="emoji">${s.emoji}</div><h3>${s.label}</h3>`;
-        el.onclick = ()=> openSubject(s.id, s.label);
-        box.appendChild(el);
-      });
-    }
-    function openSubject(id,label){
-      state.current.subject=id; state.current.subjectLabel=label;
-      $('#chapTitle').textContent = `${label} — chapitres`;
-      $('#selChapterTrail').value = state.profile.trail;
-      listChapters();
-      push('chapters');
-      refreshAdminUI();
+    function next(){
+      stepIndex++;
+      if (stepIndex >= steps.length) stepIndex = 0;
+      const node = steps[stepIndex]();
+      replaceStep(node);
+      // Focus léger sur le premier élément interactif
+      setTimeout(()=>{
+        const first = stage.querySelector('.step').querySelector('input,button,.cta');
+        if (first && first.focus) first.focus();
+      }, 50);
     }
 
-    // ========= CHAPITRES =========
-    $('#btnAddChapter').onclick = ()=> $('#modalChapter').classList.add('show');
-    $('#closeChapter').onclick = ()=> $('#modalChapter').classList.remove('show');
-
-    async function listChapters(){
-      const box = $('#chaptersList'); box.innerHTML='';
-      const qy = query(
-        collection(db,'subjects',state.current.subject,'chapters'),
-        where('trail','==', state.profile.trail),
-        orderBy('name','asc')
-      );
-      const snap = await getDocs(qy);
-      if(snap.empty){
-        box.innerHTML = `<div class="card" style="padding:16px"><span class="muted">Aucun chapitre pour ${state.profile.trail}.</span></div>`;
-      }
-      snap.forEach(d=>{
-        const ch = d.data();
-        const item = document.createElement('div');
-        item.className = 'chip' + (state.admin?' admin':'');
-        item.innerHTML = `<span>${ch.name}</span>
-          <button class="iconbtn trash" title="Supprimer" style="width:34px;height:34px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" d="M3 6h18M8 6v12m8-12v12M9 6l1-2h4l1 2"/></svg></button>`;
-        item.onclick = (e)=>{
-          if(e.target.closest('.trash')) return;  // click poubelle géré plus bas
-          openChapter(d.id, ch.name);
-        };
-        item.querySelector('.trash').onclick = async (e)=>{
-          e.stopPropagation();
-          if(!state.admin) return;
-          if(confirm('Supprimer ce chapitre et tous ses documents ?')){
-            // supprimer les pages du sous-dossier
-            const pagesSnap = await getDocs(collection(db,'subjects',state.current.subject,'chapters',d.id,'pages'));
-            for (const p of pagesSnap.docs){
-              try{
-                const data=p.data();
-                if(data.path){ await deleteObject(sRef(storage, data.path)); }
-              }catch{}
-              await deleteDoc(p.ref);
-            }
-            await deleteDoc(d.ref);
-            listChapters();
-          }
-        };
-        box.appendChild(item);
-      });
-    }
-
-    $('#saveChapter').onclick = async ()=>{
-      const name = $('#inpChapterName').value.trim();
-      const trail = $('#selChapterTrail').value;
-      const msg = $('#chapterMsg');
-      if(!name){ msg.textContent="Nom obligatoire"; return; }
-      // doublon ?
-      const qy = query(
-        collection(db,'subjects',state.current.subject,'chapters'),
-        where('name','==',name), where('trail','==',trail)
-      );
-      const existing = await getDocs(qy);
-      if(!existing.empty){ msg.textContent="Ce chapitre existe déjà."; return; }
-      await addDoc(collection(db,'subjects',state.current.subject,'chapters'),{
-        name, trail, createdAt: serverTimestamp()
-      });
-      $('#modalChapter').classList.remove('show');
-      $('#inpChapterName').value=''; msg.textContent='';
-      listChapters();
-    };
-
-    function openChapter(id,name){
-      state.current.chapterId=id; state.current.chapterName=name;
-      $('#pagesTitle').textContent = `${state.current.subjectLabel} — ${name}`;
-      listPages();
-      push('pages'); refreshAdminUI();
-    }
-
-    // ========= PAGES (cours) =========
-    async function listPages(){
-      const grid = $('#pagesGrid'); grid.innerHTML='';
-      const qy = query(
-        collection(db,'subjects',state.current.subject,'chapters',state.current.chapterId,'pages'),
-        orderBy('order','asc')
-      );
-      const snap = await getDocs(qy);
-      $('#pagesCount').textContent = `${snap.size} document(s)`;
-      if(snap.empty){
-        grid.innerHTML = `<div class="card" style="padding:16px"><span class="muted">Aucun document pour l’instant.</span></div>`;
-        return;
-      }
-      snap.forEach(d=>{
-        const it = d.data();
-        const card = document.createElement('div');
-        card.className='thumb';
-        const isImg = it.mime?.startsWith('image/');
-        card.innerHTML = isImg
-          ? `<img src="${it.url}" alt="cours" loading="lazy">`
-          : `<div class="muted" style="padding:24px;text-align:center">📄 Document</div>`;
-        if(state.admin){
-          const del = document.createElement('div');
-          del.className='del';
-          del.innerHTML='🗑️';
-          del.onclick = async (e)=>{
-            e.stopPropagation();
-            if(confirm('Supprimer ce document ?')){
-              try{ if(it.path) await deleteObject(sRef(storage, it.path)); }catch{}
-              await deleteDoc(d.ref);
-              listPages();
-            }
-          };
-          card.appendChild(del);
-        }
-        card.onclick = ()=> {
-          if(isImg){ openViewer(it.url); }
-          else window.open(it.url,'_blank');
-        }
-        grid.appendChild(card);
-      });
-    }
-
-    function openViewer(url){
-      $('#viewerImg').src=url; $('#viewer').classList.add('show');
-    }
-    $('#closeViewer').onclick = ()=> $('#viewer').classList.remove('show');
-
-    // ajout de documents
-    $('#btnAddPages').onclick = ()=> $('#filePicker').click();
-    $('#filePicker').addEventListener('change', async (e)=>{
-      const files = [...e.target.files];
-      if(!files.length) return;
-      // récupérer dernier "order"
-      let last = 0;
-      const lastSnap = await getDocs(query(
-        collection(db,'subjects',state.current.subject,'chapters',state.current.chapterId,'pages'),
-        orderBy('order','desc'), limit(1)
-      ));
-      lastSnap.forEach(d=> last = d.data().order || 0);
-
-      for (let i=0;i<files.length;i++){
-        const f = files[i];
-        const path = `subjects/${state.current.subject}/${state.current.chapterId}/${Date.now()}_${i}_${f.name}`;
-        const r = sRef(storage, path);
-        await uploadBytes(r, f);
-        const url = await getDownloadURL(r);
-        await addDoc(collection(db,'subjects',state.current.subject,'chapters',state.current.chapterId,'pages'),{
-          url, path, mime: f.type || '', order: ++last, createdAt: serverTimestamp()
-        });
-      }
-      e.target.value='';
-      listPages();
-    });
-
-    // ========= LANCEMENT =========
-    loadProfile();
-    refreshAdminUI();
+    // Lancement
+    next();
   </script>
 </body>
 </html>
