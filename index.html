@@ -1,277 +1,311 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>Espace de cours</title>
+
+<!-- Fonts & Icons -->
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fraunces:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg:#F1C6FF;      /* fond app */
-    --bubble:#F3D8FF;  /* bulles/panels */
-    --card:#F1DFFF;    /* cartes */
-    --text:#120914;    /* textes */
-    --accent:#7A28FF;  /* accents/boutons */
-  }
-  /* Thèmes clair (couleur = var(--bg) modifiable à chaud) */
-  [data-theme="orange"] { --bg:#FF761E; --bubble:#FFB27E; --card:#FFC59F; --text:#1a0d00; --accent:#7A28FF; }
-  [data-theme="noir"]   { --bg:#000;    --bubble:#5b5b5b; --card:#777;     --text:#fff;    --accent:#7A28FF; }
-  [data-theme="bleu"]   { --bg:#5CC2FF; --bubble:#AEE2FF; --card:#D2F0FF; --text:#052033; --accent:#7A28FF; }
-  [data-theme="rose"]   { --bg:#F1C6FF; --bubble:#F3D8FF; --card:#F1DFFF; --text:#120914; --accent:#7A28FF; }
-  [data-theme="vert"]   { --bg:#84E77B; --bubble:#C5F3C1; --card:#E4F9E2; --text:#0b2509; --accent:#7A28FF; }
-  [data-theme="rouge"]  { --bg:#FF5C5C; --bubble:#FF9A9A; --card:#FFC1C1; --text:#2b0000; --accent:#7A28FF; }
+/* ------------------ DESIGN TOKENS (thèmes) ------------------ */
+:root{
+  --bg: #F4E6FF;
+  --surface: #FAF3FF;
+  --card: #FFFFFF;
+  --ink: #1A0B2E;
+  --muted:#5f5470;
+  --ring: #7A3BFF;
+  --shadow: 0 8px 30px rgba(15,15,30,.08);
+  --radius: 18px;
+  --pad: 18px;
+}
 
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; color:var(--text);}
-  body{background:var(--bg); transition:background .25s ease,color .25s ease;}
-  #app{max-width:420px;margin:0 auto;min-height:100%;position:relative;overflow-x:hidden}
+/* thèmes */
+[data-theme="rose"]  { --bg:#F4E6FF; --surface:#FAF1FF; --card:#FFFFFF; --ink:#1B0F2C; --ring:#7A3BFF; }
+[data-theme="orange"]{ --bg:#FFF0E3; --surface:#FFE7D3; --card:#FFFFFF; --ink:#271203; --ring:#FF7A1E; }
+[data-theme="noir"]  { --bg:#0D0D0D; --surface:#161616; --card:#1E1E1E; --ink:#FFFFFF; --ring:#7A3BFF; --shadow:0 10px 30px rgba(0,0,0,.6);}
+[data-theme="bleu"]  { --bg:#E8F5FF; --surface:#E0F0FF; --card:#FFFFFF; --ink:#062033; --ring:#2B8CFF; }
+[data-theme="vert"]  { --bg:#EAFCE9; --surface:#E1F8DE; --card:#FFFFFF; --ink:#07240D; --ring:#16B24F; }
+[data-theme="rouge"] { --bg:#FFE8EA; --surface:#FFE0E3; --card:#FFFFFF; --ink:#2B0306; --ring:#FF5261; }
 
-  .screen{min-height:100dvh;padding:20px 16px;display:none}
-  .screen.active{display:block}
-  .bubble{background:var(--bubble);border-radius:18px;padding:18px;box-shadow:0 6px 0 rgba(0,0,0,.08);margin:12px 4px}
-  .title{font-family:Fraunces,serif;font-weight:700;text-align:center;font-size:30px;margin:4px 0 8px}
-  .subtitle{font-family:Fraunces,serif;font-size:21px;margin:0 0 8px;text-align:center}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
-       background:#fff;border:2px solid #0002;border-radius:16px;padding:14px 18px;font-weight:700;cursor:pointer}
-  .btn.full{width:100%}
-  .btn.accent{background:var(--accent);color:#fff;border-color:#0000}
-  .row{display:flex;gap:12px;align-items:center}
-  .col{display:flex;flex-direction:column;gap:12px}
-  .chip{display:inline-flex;align-items:center;gap:.5rem;padding:8px 12px;border-radius:999px;background:var(--card);font-weight:700}
-  .list{display:flex;flex-direction:column;gap:10px;max-height:62dvh;overflow:auto;padding-right:2px}
-  .card{background:var(--card);border-radius:14px;padding:14px 16px;font-weight:800;display:flex;align-items:center;justify-content:space-between}
-  .tiny{opacity:.7;font-size:.9rem}
-  .topbar{display:flex;align-items:center;gap:10px}
-  .iconbtn{width:40px;height:40px;border-radius:999px;border:2px solid #0003;background:var(--card);display:grid;place-items:center;cursor:pointer}
-  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .imgcell{aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#fff5; position:relative}
-  .imgcell img{width:100%;height:100%;object-fit:cover}
-  .x{position:absolute;top:6px;right:6px;background:#000a;color:#fff;border-radius:999px;font-size:.8rem;padding:2px 8px;cursor:pointer}
-  .hint{font-size:.9rem;opacity:.7}
-  .danger{background:#ff3b3b;color:#fff}
-  .ok{background:#14b885;color:#fff}
-  .fadeUp{animation:fadeUp .38s both}
-  .slideUp{animation:slideUp .38s both}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes slideUp{from{transform:translateY(30px)}to{transform:translateY(0)}}
+/* ------------- Base ------------- */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Arial; -webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.container{max-width:430px;margin:0 auto;min-height:100%;position:relative;overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom)}
 
-  /* Inputs */
-  input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:2px solid #0002;background:#fff;outline:none;font-size:16px}
-  label{font-weight:700;margin:10px 2px 6px;display:block}
+.screen{min-height:100svh;padding:24px 16px;display:none}
+.screen.active{display:block}
 
-  /* Fab */
-  .fab{position:fixed;right:18px;bottom:18px;width:56px;height:56px;border-radius:999px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:26px;border:none;cursor:pointer;box-shadow:0 8px 22px #0004}
-  dialog{border:none;border-radius:16px;padding:0;max-width:420px;width:92%}
-  dialog .panel{padding:16px}
+/* ------------- Components ------------- */
+.surface{background:var(--surface);border-radius:calc(var(--radius)+4px);padding:var(--pad);box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04)}
+.panel{background:var(--card);border-radius:var(--radius);padding:var(--pad);box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.06)}
+.title{font-family:Fraunces,serif;font-weight:700;font-size:30px;letter-spacing:.2px;text-align:center;margin:4px 0 12px}
+.subtitle{font-weight:700;opacity:.8;margin:0 0 10px}
+.muted{color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;gap:.65rem;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:13px 18px;font-weight:700;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.btn.secondary{background:var(--card);color:var(--ink);border:1.5px solid rgba(0,0,0,.1)}
+.btn.full{width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid rgba(0,0,0,.12)}
+.btn .i{font:inherit}
+.row{display:flex;align-items:center;gap:12px}
+.col{display:flex;flex-direction:column;gap:12px}
+
+.topbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.iconbtn{width:42px;height:42px;border-radius:14px;background:var(--card);border:1px solid rgba(0,0,0,.08);display:grid;place-items:center;box-shadow:var(--shadow);cursor:pointer}
+.icon{font-family:"Material Symbols Rounded";font-weight:600;font-size:24px;line-height:1}
+.h1{font-family:Fraunces,serif;font-size:26px;font-weight:700}
+
+.card{display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:16px;background:var(--card);border:1px solid rgba(0,0,0,.06);box-shadow:var(--shadow)}
+.cardTitle{font-weight:800;letter-spacing:.2px}
+.right{display:flex;align-items:center;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:.45rem;padding:8px 12px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:var(--card)}
+.badge{font-weight:700;padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid rgba(0,0,0,.07)}
+.list{display:flex;flex-direction:column;gap:12px;max-height:64svh;overflow:auto;padding:2px}
+
+/* subject item */
+.subject{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:var(--card);border:1px solid rgba(0,0,0,.06);box-shadow:var(--shadow);cursor:pointer}
+.subject .leftIcon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:26px}
+.subject .label{font-weight:900;font-size:18px}
+
+/* grid pages */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.thumb{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#f1f1f3;border:1px solid rgba(0,0,0,.05)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .x{position:absolute;inset:auto 6px 6px auto;background:#000b;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;cursor:pointer}
+
+/* fab */
+.fab{position:fixed;right:20px;bottom:20px;width:58px;height:58px;border-radius:18px;background:var(--ring);color:#fff;border:none;display:grid;place-items:center;box-shadow:0 16px 34px rgba(0,0,0,.22);cursor:pointer}
+
+/* inputs */
+label{font-weight:700;margin:10px 2px 6px;display:block}
+input,select,textarea{width:100%;background:var(--card);border:1.6px solid rgba(0,0,0,.1);border-radius:14px;padding:12px 14px;font-size:16px;outline:none}
+dialog{border:none;border-radius:20px;max-width:430px;width:92%}
+dialog::backdrop{background:rgba(0,0,0,.35);backdrop-filter:blur(3px)}
+.modal{padding:16px}
+
+/* animations */
+.fadeIn{animation:.35s fadeIn both}
+.slideUp{animation:.35s slideUp both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* safe area */
+.spacer{height:calc(env(safe-area-inset-bottom) + 16px)}
 </style>
 </head>
 <body>
-<div id="app" data-theme="rose">
+<div class="container" id="app" data-theme="rose">
 
-  <!-- 0. Accueil -->
+  <!-- ACCUEIL -->
   <section id="welcome" class="screen active">
-    <div class="bubble fadeUp">
+    <div class="surface fadeIn">
       <div class="title">Bienvenu dans ton espace de cours.</div>
-      <p class="hint" style="text-align:center">Fais défiler ou appuie pour continuer.</p>
+      <p class="muted" style="text-align:center;margin:0">Fais défiler ou appuie pour continuer.</p>
     </div>
-    <div class="bubble">
-      <button class="btn full accent" id="goName">Continuer</button>
+    <div class="panel slideUp">
+      <button class="btn full"><span class="icon i">arrow_forward</span> Continuer</button>
     </div>
   </section>
 
-  <!-- 1. Prénom -->
+  <!-- PRENOM -->
   <section id="askName" class="screen">
-    <div class="bubble fadeUp">
+    <div class="surface fadeIn">
       <div class="title">Quel est ton prénom ?</div>
-      <input id="nameInput" placeholder="Prénom" autocomplete="given-name"/>
+      <input id="nameInput" placeholder="Prénom" autocomplete="given-name">
     </div>
-    <div class="bubble">
-      <button class="btn full accent" id="saveName">Continuer</button>
+    <div class="panel slideUp">
+      <button id="saveName" class="btn full"><span class="icon i">check_small</span> Continuer</button>
     </div>
   </section>
 
-  <!-- 2. Langue (Allemand/Espagnol) -->
+  <!-- TRACK -->
   <section id="track" class="screen">
-    <div class="bubble fadeUp">
+    <div class="surface fadeIn">
       <div class="title" id="helloName">Bienvenue</div>
-      <div class="subtitle">Tu fais ?</div>
       <div class="col">
-        <button class="btn full" data-track="allemand">Allemand</button>
-        <button class="btn full" data-track="espagnol">Espagnol</button>
+        <button class="btn full secondary" data-track="allemand"><span class="icon i">flag</span> Allemand</button>
+        <button class="btn full secondary" data-track="espagnol"><span class="icon i">translate</span> Espagnol</button>
       </div>
     </div>
   </section>
 
-  <!-- 3. Présentation des fonctionnalités (4 bulles + continuer) -->
+  <!-- TOUR -->
   <section id="tour" class="screen">
-    <div class="bubble fadeUp"><div class="subtitle">Tu trouveras ici <b>tous tes cours</b> depuis le début de l’année.</div>
-      <div class="card">cours <span>📕</span></div>
+    <div class="surface fadeIn">
+      <div class="subtitle">Ici tu trouveras <b>tous tes cours</b> depuis le début de l’année.</div>
+      <div class="card"><span class="cardTitle">Cours</span> <span class="icon">menu_book</span></div>
     </div>
-    <div class="bubble slideUp"><div class="subtitle">Tu auras aussi ton <b>emploi du temps</b>.</div>
-      <div class="card">emploi du temps <span>📅</span></div>
+    <div class="surface slideUp">
+      <div class="subtitle">Ton <b>emploi du temps</b> à jour.</div>
+      <div class="card"><span class="cardTitle">Emploi du temps</span> <span class="icon">calendar_month</span></div>
     </div>
-    <div class="bubble slideUp"><div class="subtitle">Tous tes <b>devoirs</b> déjà faits et expliqués.</div>
-      <div class="card">devoirs <span>✏️</span></div>
+    <div class="surface slideUp">
+      <div class="subtitle"><b>Devoirs</b> corrigés et expliqués.</div>
+      <div class="card"><span class="cardTitle">Devoirs</span> <span class="icon">edit</span></div>
     </div>
-    <div class="bubble slideUp"><div class="subtitle">Et tes <b>contrôles</b> avec fiches de révisions.</div>
-      <div class="card">contrôle <span>📝</span></div>
+    <div class="surface slideUp">
+      <div class="subtitle"><b>Contrôles</b> + fiches & quiz auto.</div>
+      <div class="card"><span class="cardTitle">Contrôle</span> <span class="icon">assignment</span></div>
     </div>
-    <div class="bubble">
-      <button class="btn full accent" id="goTheme">Continuer</button>
+    <div class="panel">
+      <button id="goTheme" class="btn full"><span class="icon i">arrow_forward</span> Continuer</button>
     </div>
   </section>
 
-  <!-- 4. Choix du thème (live) -->
+  <!-- THEME -->
   <section id="theme" class="screen">
-    <div class="bubble fadeUp">
-      <div class="title">Choisis le thème</div>
-      <div class="row" style="flex-wrap:wrap;gap:12px">
-        <button class="chip" data-theme="rose" style="background:#F1DFFF">Rose</button>
-        <button class="chip" data-theme="orange" style="background:#FFC59F">Orange</button>
-        <button class="chip" data-theme="noir" style="background:#333;color:#fff">Noir</button>
-        <button class="chip" data-theme="bleu" style="background:#D2F0FF">Bleu</button>
-        <button class="chip" data-theme="vert" style="background:#E4F9E2">Vert</button>
-        <button class="chip" data-theme="rouge" style="background:#FFC1C1">Rouge</button>
+    <div class="surface">
+      <div class="title">Choisis un thème</div>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="pill" data-theme="rose">Rose</button>
+        <button class="pill" data-theme="orange">Orange</button>
+        <button class="pill" data-theme="bleu">Bleu</button>
+        <button class="pill" data-theme="vert">Vert</button>
+        <button class="pill" data-theme="rouge">Rouge</button>
+        <button class="pill" data-theme="noir">Noir</button>
       </div>
     </div>
-    <div class="bubble">
-      <button class="btn full accent" id="goHome">Entrer</button>
+    <div class="panel">
+      <button id="goHome" class="btn full"><span class="icon i">login</span> Entrer</button>
     </div>
   </section>
 
-  <!-- 5. Accueil principal -->
+  <!-- HOME -->
   <section id="home" class="screen">
     <div class="topbar">
-      <button id="openSettings" class="iconbtn" title="Paramètres">⚙️</button>
-      <div class="bubble" style="flex:1"><div class="title" id="hi"></div></div>
+      <button id="openSettings" class="iconbtn"><span class="icon">settings</span></button>
+      <div class="panel" style="flex:1"><div class="h1" id="hi">Bonjour</div></div>
     </div>
     <div class="col">
-      <div class="card" id="navCourses">cours <span>➡️</span></div>
-      <div class="card" id="navSchedule">emploi du temps <span>➡️</span></div>
-      <div class="card" id="navHw">devoirs <span>➡️</span></div>
-      <div class="card" id="navExams">contrôle <span>➡️</span></div>
+      <div class="card" id="navCourses"><span class="cardTitle">Cours</span><span class="icon">chevron_right</span></div>
+      <div class="card" id="navSchedule"><span class="cardTitle">Emploi du temps</span><span class="icon">chevron_right</span></div>
+      <div class="card" id="navHw"><span class="cardTitle">Devoirs</span><span class="icon">chevron_right</span></div>
+      <div class="card" id="navExams"><span class="cardTitle">Contrôle</span><span class="icon">chevron_right</span></div>
     </div>
+    <div class="spacer"></div>
   </section>
 
-  <!-- COURS : matières -->
+  <!-- COURS : MATIERES -->
   <section id="subjects" class="screen">
     <div class="topbar">
-      <button class="iconbtn" data-back="home">⬅️</button>
-      <div class="bubble" style="flex:1"><div class="title">cours</div></div>
+      <button class="iconbtn" data-back="home"><span class="icon">arrow_back</span></button>
+      <div class="panel" style="flex:1"><div class="h1">Cours</div></div>
     </div>
-
     <div class="list" id="subjectList"></div>
   </section>
 
-  <!-- COURS : chapitres d’une matière -->
+  <!-- COURS : CHAPITRES -->
   <section id="chapters" class="screen">
     <div class="topbar">
-      <button class="iconbtn" data-back="subjects">⬅️</button>
-      <div class="bubble" style="flex:1"><div class="title" id="subjectTitle">matière</div></div>
-      <button class="iconbtn" id="addChapterBtn" title="Ajouter chapitre">➕</button>
+      <button class="iconbtn" data-back="subjects"><span class="icon">arrow_back</span></button>
+      <div class="panel" style="flex:1"><div class="h1" id="subjectTitle">Matière</div></div>
+      <button class="iconbtn" id="addChapterBtn" title="Ajouter chapitre"><span class="icon">add</span></button>
     </div>
     <div class="list" id="chapterList"></div>
   </section>
 
-  <!-- COURS : pages d’un chapitre (3 colonnes, scroll vertical) -->
+  <!-- COURS : FEUILLES -->
   <section id="chapterView" class="screen">
     <div class="topbar">
-      <button class="iconbtn" data-back="chapters">⬅️</button>
-      <div class="bubble" style="flex:1"><div class="title" id="chapterTitle">chapitre</div></div>
-      <button class="iconbtn" id="addPagesBtn" title="Ajouter des feuilles">📤</button>
+      <button class="iconbtn" data-back="chapters"><span class="icon">arrow_back</span></button>
+      <div class="panel" style="flex:1"><div class="h1" id="chapterTitle">Chapitre</div></div>
+      <button class="iconbtn" id="addPagesBtn" title="Ajouter des feuilles"><span class="icon">upload</span></button>
     </div>
-    <div class="bubble">
-      <div class="grid3" id="pageGrid"></div>
-      <p class="tiny">Astuce : balaye l’écran vers le bas/haut pour défiler.</p>
+    <div class="panel">
+      <div id="pageGrid" class="grid3"></div>
     </div>
-    <button class="fab" id="deleteChapterFab" title="Supprimer le chapitre">🗑️</button>
+    <button class="fab danger" id="deleteChapterFab" title="Supprimer chapitre"><span class="icon">delete</span></button>
   </section>
 
   <!-- EMPLOI DU TEMPS -->
   <section id="schedule" class="screen">
     <div class="topbar">
-      <button class="iconbtn" data-back="home">⬅️</button>
-      <div class="bubble" style="flex:1"><div class="title">emploi du temps</div></div>
-      <button class="iconbtn" id="toggleWeek" title="Jour/Semaine">📆</button>
+      <button class="iconbtn" data-back="home"><span class="icon">arrow_back</span></button>
+      <div class="panel" style="flex:1"><div class="h1">Emploi du temps</div></div>
+      <button class="iconbtn" id="toggleWeek" title="Jour/Semaine"><span class="icon">calendar_view_week</span></button>
     </div>
-    <div class="bubble row" style="justify-content:center">
-      <button class="iconbtn" id="prevDay">◀️</button>
-      <div style="min-width:180px;text-align:center;font-weight:800" id="dayLabel"></div>
-      <button class="iconbtn" id="nextDay">▶️</button>
+    <div class="panel row" style="justify-content:center;gap:12px">
+      <button class="iconbtn" id="prevDay"><span class="icon">chevron_left</span></button>
+      <div id="dayLabel" class="h1" style="font-family:Inter;font-weight:800"></div>
+      <button class="iconbtn" id="nextDay"><span class="icon">chevron_right</span></button>
     </div>
-    <div class="bubble" id="daySlots"></div>
-    <button class="fab" id="addLessonFab" title="Ajouter un cours">＋</button>
+    <div class="surface" id="daySlots"></div>
+    <button class="fab" id="addLessonFab" title="Ajouter un cours"><span class="icon">add</span></button>
   </section>
 
   <!-- DEVOIRS -->
   <section id="homework" class="screen">
     <div class="topbar">
-      <button class="iconbtn" data-back="home">⬅️</button>
-      <div class="bubble" style="flex:1"><div class="title">devoirs</div></div>
-      <button class="iconbtn" id="addHw" title="Ajouter devoir">➕</button>
+      <button class="iconbtn" data-back="home"><span class="icon">arrow_back</span></button>
+      <div class="panel" style="flex:1"><div class="h1">Devoirs</div></div>
+      <button class="iconbtn" id="addHw" title="Ajouter devoir"><span class="icon">add</span></button>
     </div>
     <div id="hwList" class="list"></div>
   </section>
 
-  <!-- DEVOIR détail (énoncé / corrections) -->
+  <!-- DEVOIR DETAIL -->
   <section id="hwDetail" class="screen">
     <div class="topbar">
-      <button class="iconbtn" data-back="homework">⬅️</button>
-      <div class="bubble" style="flex:1"><div class="title" id="hwTitle">devoir</div></div>
+      <button class="iconbtn" data-back="homework"><span class="icon">arrow_back</span></button>
+      <div class="panel" style="flex:1"><div class="h1" id="hwTitle">Devoir</div></div>
     </div>
     <div class="col">
-      <div class="card" id="openEnonce">énoncé du devoir <span>➡️</span></div>
-      <div class="card" id="openCorrSimple">correction simple <span>➡️</span></div>
-      <div class="card" id="openCorrExp">correction avec explications <span>➡️</span></div>
-      <div class="bubble tiny" id="hwStatus"></div>
+      <div class="card" id="openEnonce"><span class="cardTitle">Énoncé du devoir</span><span class="icon">chevron_right</span></div>
+      <div class="card" id="openCorrSimple"><span class="cardTitle">Correction simple</span><span class="icon">chevron_right</span></div>
+      <div class="card" id="openCorrExp"><span class="cardTitle">Correction avec explications</span><span class="icon">chevron_right</span></div>
+      <div class="panel muted" id="hwStatus"></div>
     </div>
   </section>
 
   <!-- CONTROLES -->
   <section id="exams" class="screen">
     <div class="topbar">
-      <button class="iconbtn" data-back="home">⬅️</button>
-      <div class="bubble" style="flex:1"><div class="title">contrôle</div></div>
-      <button class="iconbtn" id="addExam" title="Ajouter contrôle">➕</button>
+      <button class="iconbtn" data-back="home"><span class="icon">arrow_back</span></button>
+      <div class="panel" style="flex:1"><div class="h1">Contrôle</div></div>
+      <button class="iconbtn" id="addExam" title="Ajouter contrôle"><span class="icon">add</span></button>
     </div>
     <div id="examList" class="list"></div>
   </section>
 
-  <!-- Détail contrôle -->
+  <!-- CONTROLE DETAIL -->
   <section id="examDetail" class="screen">
     <div class="topbar">
-      <button class="iconbtn" data-back="exams">⬅️</button>
-      <div class="bubble" style="flex:1"><div class="title" id="examHeader">contrôle</div></div>
+      <button class="iconbtn" data-back="exams"><span class="icon">arrow_back</span></button>
+      <div class="panel" style="flex:1"><div class="h1" id="examHeader">Contrôle</div></div>
     </div>
     <div class="col">
-      <div class="card" id="gotoCourse">le cours à apprendre <span>➡️</span></div>
-      <div class="card" id="openRev">fiche de révision <span>➡️</span></div>
-      <div class="card" id="genQuiz">petit quiz (auto) <span>➡️</span></div>
-      <div class="card" id="genMock">test blanc (auto) <span>➡️</span></div>
+      <div class="card" id="gotoCourse"><span class="cardTitle">Le cours à apprendre</span><span class="icon">chevron_right</span></div>
+      <div class="card" id="openRev"><span class="cardTitle">Fiche de révision</span><span class="icon">chevron_right</span></div>
+      <div class="card" id="genQuiz"><span class="cardTitle">Petit quiz (auto)</span><span class="icon">chevron_right</span></div>
+      <div class="card" id="genMock"><span class="cardTitle">Test blanc (auto)</span><span class="icon">chevron_right</span></div>
     </div>
   </section>
 
-  <!-- Modales / Paramètres -->
+  <!-- PARAMETRES -->
   <dialog id="settings">
-    <div class="panel">
-      <div class="title">Paramètres</div>
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <div class="chip">Mode administrateur</div>
-        <button id="adminToggle" class="btn">Se connecter</button>
+    <div class="modal">
+      <div class="title" style="margin-bottom:8px">Paramètres</div>
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <div class="pill"><span class="icon">admin_panel_settings</span> Mode administrateur</div>
+        <button id="adminToggle" class="btn ghost">Se connecter</button>
       </div>
-      <div style="height:12px"></div>
       <div class="subtitle">Thème</div>
-      <div class="row" style="flex-wrap:wrap;gap:12px">
-        <button class="chip" data-theme="rose"   style="background:#F1DFFF">Rose</button>
-        <button class="chip" data-theme="orange" style="background:#FFC59F">Orange</button>
-        <button class="chip" data-theme="noir"   style="background:#333;color:#fff">Noir</button>
-        <button class="chip" data-theme="bleu"   style="background:#D2F0FF">Bleu</button>
-        <button class="chip" data-theme="vert"   style="background:#E4F9E2">Vert</button>
-        <button class="chip" data-theme="rouge"  style="background:#FFC1C1">Rouge</button>
+      <div class="row" style="flex-wrap:wrap;gap:10px">
+        <button class="pill" data-theme="rose">Rose</button>
+        <button class="pill" data-theme="orange">Orange</button>
+        <button class="pill" data-theme="bleu">Bleu</button>
+        <button class="pill" data-theme="vert">Vert</button>
+        <button class="pill" data-theme="rouge">Rouge</button>
+        <button class="pill" data-theme="noir">Noir</button>
       </div>
-      <div style="height:16px"></div>
-      <button class="btn full accent" onclick="document.getElementById('settings').close()">Fermer</button>
+      <div style="height:14px"></div>
+      <button class="btn full" onclick="document.getElementById('settings').close()"><span class="icon i">check_small</span> Fermer</button>
     </div>
   </dialog>
 
@@ -281,13 +315,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
-<!-- OCR pour Quiz auto -->
+<!-- OCR (quiz auto) -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <script>
-/*** =========================
- *  CONFIG FIREBASE (tes clés)
- *  ========================= */
+/* ======================= FIREBASE CONFIG ======================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
   authDomain: "app-cours-94f32.firebaseapp.com",
@@ -301,17 +333,17 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-/*** Utils ***/
-const $ = s=>document.querySelector(s);
+/* ======================= HELPERS ======================= */
+const $ = s => document.querySelector(s);
 const app = $('#app');
-const screens = id => document.querySelectorAll('.screen').forEach(e=>e.classList.toggle('active', e.id===id));
-function toast(msg){ alert(msg); }
-function todayYMD(d=new Date()){ return d.toISOString().slice(0,10); }
-function dayLabel(d=new Date()){
-  return d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'2-digit'});
-}
-function uid(){ return Math.random().toString(36).slice(2); }
+const goto = id => document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active', x.id===id));
+const uid = () => Math.random().toString(36).slice(2);
+const YMD = (d=new Date()) => d.toISOString().slice(0,10);
+const dayHuman = d => d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'2-digit'});
 
+function toast(t){ alert(t); }
+
+/* State */
 let state = {
   user:{
     name: localStorage.getItem('name')||'',
@@ -319,423 +351,323 @@ let state = {
     theme: localStorage.getItem('theme')||'rose',
     isAdmin: localStorage.getItem('isAdmin')==='1'
   },
-  subject:null, chapter:null, date:new Date(), weekMode:false,
-  hw:null, exam:null
+  subject:null, chapter:null, viewDate:new Date(), weekMode:false, hw:null, exam:null
 };
 app.dataset.theme = state.user.theme;
 
-/*** Onboarding flow ***/
-$('#goName').onclick = ()=> screens('askName');
+/* ======================= ONBOARDING ======================= */
+$('#welcome .btn').onclick = ()=> goto('askName');
 $('#saveName').onclick = ()=>{
   const v = $('#nameInput').value.trim();
-  if(!v) return toast('Écris ton prénom 😊');
+  if(!v) return toast('Écris ton prénom.');
   state.user.name=v; localStorage.setItem('name',v);
-  $('#helloName').textContent = `bienvenu ${v}`;
-  screens('track');
+  $('#helloName').textContent = `Bienvenu ${v}`;
+  goto('track');
 };
-$('#track').addEventListener('click',(e)=>{
+$('#track').addEventListener('click', e=>{
   const b = e.target.closest('[data-track]'); if(!b) return;
   state.user.track = b.dataset.track; localStorage.setItem('track', state.user.track);
-  screens('tour');
+  goto('tour');
 });
-$('#goTheme').onclick = ()=> screens('theme');
-document.querySelectorAll('[data-theme]').forEach(btn=>{
-  btn.onclick = ()=>{
-    const th = btn.dataset.theme;
-    app.dataset.theme = th;
-    state.user.theme = th;
-    localStorage.setItem('theme', th);
-  };
-});
-$('#goHome').onclick = ()=>{
-  if(!state.user.name) return toast('Prénom manquant.');
-  buildHome();
-  screens('home');
-};
+$('#goTheme').onclick = ()=> goto('theme');
+document.querySelectorAll('[data-theme]').forEach(b=> b.onclick = ()=>{ app.dataset.theme=b.dataset.theme; localStorage.setItem('theme',b.dataset.theme); });
+$('#goHome').onclick = ()=> { buildHome(); goto('home'); };
 
-/*** Home ***/
-function buildHome(){
-  $('#hi').textContent = `Bonjour ${state.user.name}`;
-}
-$('#navCourses').onclick = loadSubjects;
-$('#navSchedule').onclick = ()=>{ buildSchedule(); screens('schedule'); };
-$('#navHw').onclick = ()=>{ loadHomework(); screens('homework'); };
-$('#navExams').onclick = ()=>{ loadExams(); screens('exams'); };
-
+/* ======================= HOME + PARAMS ======================= */
+function buildHome(){ $('#hi').textContent = `Bonjour ${state.user.name}`; }
 $('#openSettings').onclick = ()=> $('#settings').showModal();
-document.querySelectorAll('#settings [data-theme]').forEach(b=>b.onclick=()=>{ app.dataset.theme=b.dataset.theme; localStorage.setItem('theme',b.dataset.theme) });
+document.querySelectorAll('#settings [data-theme]').forEach(b=> b.onclick=()=>{ app.dataset.theme=b.dataset.theme; localStorage.setItem('theme',b.dataset.theme); });
 
-/*** Admin ***/
-$('#adminToggle').onclick = async ()=>{
-  if(state.user.isAdmin){ state.user.isAdmin=false; localStorage.removeItem('isAdmin'); $('#adminToggle').textContent='Se connecter'; toast('Mode admin désactivé'); return; }
+$('#adminToggle').onclick = ()=>{
+  if(state.user.isAdmin){ state.user.isAdmin=false; localStorage.removeItem('isAdmin'); $('#adminToggle').textContent='Se connecter'; toast('Admin désactivé'); return; }
   const code = prompt('Code admin ?');
-  if(code==='2525'){ state.user.isAdmin=true; localStorage.setItem('isAdmin','1'); $('#adminToggle').textContent='Déconnexion'; toast('Mode admin ON'); }
+  if(code==='2525'){ state.user.isAdmin=true; localStorage.setItem('isAdmin','1'); $('#adminToggle').textContent='Déconnexion'; toast('Admin activé'); }
   else toast('Mauvais code.');
 };
 
-/*** ======================
- *   COURSES / SUBJECTS
- *  ====================== */
+/* Nav */
+$('#navCourses').onclick = loadSubjects;
+$('#navSchedule').onclick = ()=>{ state.viewDate=new Date(); renderSchedule(); goto('schedule'); };
+$('#navHw').onclick = ()=>{ loadHomework(); goto('homework'); };
+$('#navExams').onclick = ()=>{ loadExams(); goto('exams'); };
+
+/* ======================= COURS / MATIÈRES ======================= */
 const SUBJECTS = [
-  {id:'math',label:'math',color:'#ff8a9b'},
-  {id:'francais',label:'francais',color:'#96B5FF'},
-  {id:'histoire',label:'histoire',color:'#ffa0a0'},
-  {id:'svt',label:'SVT',color:'#b5c7a3'},
-  {id:'physique',label:'Physique',color:'#F4CC8C'},
-  {id:'ses',label:'SES',color:'#DDAAFF'},
-  {id:'snt',label:'SNT',color:'#BAD7EA'},
-  {id:'anglais',label:'anglais',color:'#F7A6D0'},
-  {id:'allemand',label:'allemend',color:'#8AA0D9'},
-  {id:'espagnol',label:'espagnol',color:'#F2B39C'},
+  {id:'math',label:'Math',icon:'calculate', color:'#FF8A9B'},
+  {id:'francais',label:'Français',icon:'menu_book', color:'#8FB1FF'},
+  {id:'histoire',label:'Histoire',icon:'history_edu', color:'#FFB0A6'},
+  {id:'svt',label:'SVT',icon:'eco', color:'#A7C49A'},
+  {id:'physique',label:'Physique',icon:'science', color:'#F3C37E'},
+  {id:'ses',label:'SES',icon:'account_balance', color:'#D5A8FF'},
+  {id:'snt',label:'SNT',icon:'memory', color:'#B7D8EA'},
+  {id:'anglais',label:'Anglais',icon:'translate', color:'#F7A6D0'},
+  {id:'allemand',label:'Allemand',icon:'flag', color:'#8AA0D9'},
+  {id:'espagnol',label:'Espagnol',icon:'g_translate', color:'#F2B39C'},
 ];
 
 async function ensureSubjects(){
-  // crée la liste des matières si vide (une fois)
   const root = db.collection('classes').doc(state.user.track).collection('subjects');
   const snap = await root.get();
   if(snap.empty){
-    let batch = db.batch();
-    SUBJECTS.forEach(s=>{
-      batch.set(root.doc(s.id), {label:s.label,color:s.color,order:SUBJECTS.indexOf(s)})
-    });
+    const batch = db.batch();
+    SUBJECTS.forEach((s,i)=> batch.set(root.doc(s.id), {label:s.label,icon:s.icon,color:s.color,order:i}) );
     await batch.commit();
   }
 }
-
 async function loadSubjects(){
   await ensureSubjects();
-  const root = db.collection('classes').doc(state.user.track).collection('subjects').orderBy('order');
-  const snap = await root.get();
   const list = $('#subjectList'); list.innerHTML='';
+  const snap = await db.collection('classes').doc(state.user.track).collection('subjects').orderBy('order').get();
   snap.forEach(doc=>{
     const s = doc.data();
-    const div = document.createElement('div');
-    div.className='card'; div.style.background=s.color;
-    div.innerHTML = `<span style="font-size:1.2rem;font-weight:900">${s.label}</span><span>➡️</span>`;
-    div.onclick = ()=> openSubject(doc.id,s.label);
-    list.append(div);
+    const row = document.createElement('div');
+    row.className = 'subject fadeIn';
+    row.innerHTML = `
+      <div class="leftIcon" style="background:${s.color}"><span class="icon" style="color:#fff">${s.icon||'book'}</span></div>
+      <div class="label">${s.label}</div>
+      <div class="right" style="margin-left:auto"><span class="icon">chevron_right</span></div>`;
+    row.onclick = ()=> openSubject(doc.id, s.label);
+    list.append(row);
   });
-  screens('subjects');
+  goto('subjects');
 }
+function openSubject(id,label){ state.subject={id,label}; $('#subjectTitle').textContent=label; loadChapters(); goto('chapters'); }
 
-function openSubject(subjectId,label){
-  state.subject={id:subjectId,label};
-  $('#subjectTitle').textContent = label;
-  loadChapters();
-  screens('chapters');
-}
-
-/*** Chapitres ***/
+/* Chapitres */
 async function loadChapters(){
-  const ref = db.collection('classes').doc(state.user.track)
-    .collection('subjects').doc(state.subject.id).collection('chapters').orderBy('createdAt','asc');
+  const ref = db.collection('classes').doc(state.user.track).collection('subjects').doc(state.subject.id).collection('chapters').orderBy('createdAt','asc');
   const snap = await ref.get();
   const list = $('#chapterList'); list.innerHTML='';
   snap.forEach(d=>{
     const c = d.data();
     const row = document.createElement('div');
     row.className='card';
-    row.innerHTML = `<div style="font-weight:900">${c.title}</div><span>➡️</span>`;
-    row.onclick = ()=> openChapter(d.id,c.title);
+    row.innerHTML = `<span class="cardTitle">${c.title}</span><span class="icon">chevron_right</span>`;
+    row.onclick = ()=> openChapter(d.id, c.title);
     list.append(row);
   });
-  if(state.user.isAdmin){
-    $('#addChapterBtn').style.display='inline-flex';
-    $('#addChapterBtn').onclick = async ()=>{
-      const t = prompt('Nom du chapitre ?'); if(!t) return;
-      await ref.doc(uid()).set({title:t, createdAt:Date.now()});
-      loadChapters();
-    };
-  }else $('#addChapterBtn').style.display='none';
+  $('#addChapterBtn').style.display = state.user.isAdmin?'grid':'none';
+  $('#addChapterBtn').onclick = async ()=>{
+    const t = prompt('Nom du chapitre ?'); if(!t) return;
+    await ref.doc(uid()).set({title:t,createdAt:Date.now()});
+    loadChapters();
+  };
 }
+function openChapter(id,title){ state.chapter={id,title}; $('#chapterTitle').textContent=title; loadPages(); goto('chapterView'); }
 
-function openChapter(chapterId,title){
-  state.chapter={id:chapterId,title};
-  $('#chapterTitle').textContent = title;
-  loadPages();
-  screens('chapterView');
-}
-
-/*** Pages d’un chapitre (images) ***/
+/* Feuilles */
 async function loadPages(){
-  const grid = $('#pageGrid'); grid.innerHTML='';
-  const ref = db.collection('classes').doc(state.user.track).collection('subjects').doc(state.subject.id)
-        .collection('chapters').doc(state.chapter.id).collection('pages').orderBy('order','asc');
-  const snap = await ref.get();
+  const ref = db.collection('classes').doc(state.user.track).collection('subjects').doc(state.subject.id).collection('chapters').doc(state.chapter.id).collection('pages').orderBy('order','asc');
+  const snap = await ref.get(); const grid = $('#pageGrid'); grid.innerHTML='';
   snap.forEach(p=>{
-    const it = p.data();
-    const cell = document.createElement('div');
-    cell.className='imgcell';
-    cell.innerHTML = `<img src="${it.url}" alt=""> ${state.user.isAdmin?'<span class="x">x</span>':''}`;
+    const it = p.data(); const cell=document.createElement('div'); cell.className='thumb';
+    cell.innerHTML=`<img src="${it.url}"/>${state.user.isAdmin?'<div class="x">suppr</div>':''}`;
     if(state.user.isAdmin) cell.querySelector('.x').onclick = async ()=>{
-      await ref.doc(p.id).delete();
-      try{ await storage.refFromURL(it.url).delete(); }catch(e){}
+      await ref.doc(p.id).delete(); try{ await storage.refFromURL(it.url).delete() }catch(e){}
       loadPages();
     };
     grid.append(cell);
   });
 
-  // ajout images
-  if(state.user.isAdmin){
-    $('#addPagesBtn').style.display='inline-flex';
-    $('#addPagesBtn').onclick = async ()=>{
-      const input = document.createElement('input');
-      input.type='file'; input.accept='image/*'; input.multiple=true;
-      input.onchange = async ()=>{
-        const files = Array.from(input.files);
-        const basePath = `classes/${state.user.track}/subjects/${state.subject.id}/chapters/${state.chapter.id}`;
-        // ordre = nb actuel + index
-        const cur = (await ref.get()).size;
-        for(let i=0;i<files.length;i++){
-          const f = files[i];
-          const path = `${basePath}/${Date.now()}-${i}-${f.name}`;
-          const snap = await storage.ref(path).put(f);
-          const url = await snap.ref.getDownloadURL();
-          await ref.doc(uid()).set({url,order:cur+i,createdAt:Date.now()});
-        }
-        loadPages();
-      };
-      input.click();
+  $('#addPagesBtn').style.display = state.user.isAdmin?'grid':'none';
+  $('#deleteChapterFab').style.display = state.user.isAdmin?'grid':'none';
+
+  $('#addPagesBtn').onclick = ()=>{
+    const input = document.createElement('input'); input.type='file'; input.multiple=true; input.accept='image/*';
+    input.onchange = async ()=>{
+      const files = Array.from(input.files);
+      const basePath = `classes/${state.user.track}/subjects/${state.subject.id}/chapters/${state.chapter.id}`;
+      const cur = (await ref.get()).size;
+      for(let i=0;i<files.length;i++){
+        const f = files[i];
+        const snap = await storage.ref(`${basePath}/${Date.now()}-${i}-${f.name}`).put(f);
+        const url = await snap.ref.getDownloadURL();
+        await ref.doc(uid()).set({url,order:cur+i,createdAt:Date.now()});
+      }
+      loadPages();
     };
-    $('#deleteChapterFab').style.display='grid';
-    $('#deleteChapterFab').onclick = async ()=>{
-      if(!confirm('Supprimer ce chapitre et toutes ses feuilles ?')) return;
-      // suppr pages
-      const ps = await ref.get();
-      for(const p of ps.docs){ try{ await storage.refFromURL(p.data().url).delete() }catch(e){} await p.ref.delete(); }
-      await db.collection('classes').doc(state.user.track).collection('subjects').doc(state.subject.id)
-        .collection('chapters').doc(state.chapter.id).delete();
-      screens('chapters'); loadChapters();
-    };
-  }else{
-    $('#addPagesBtn').style.display='none';
-    $('#deleteChapterFab').style.display='none';
-  }
+    input.click();
+  };
+
+  $('#deleteChapterFab').onclick = async ()=>{
+    if(!confirm('Supprimer ce chapitre et toutes ses feuilles ?')) return;
+    const pages = await ref.get();
+    for(const p of pages.docs){ try{ await storage.refFromURL(p.data().url).delete() }catch(e){} await p.ref.delete(); }
+    await db.collection('classes').doc(state.user.track).collection('subjects').doc(state.subject.id).collection('chapters').doc(state.chapter.id).delete();
+    goto('chapters'); loadChapters();
+  };
 }
 
-/*** ======================
- *   EMPLOI DU TEMPS
- *  ====================== */
-let viewDate = new Date();
-function buildSchedule(){
-  viewDate = new Date();
-  $('#dayLabel').textContent = dayLabel(viewDate);
+/* ======================= EMPLOI DU TEMPS ======================= */
+function renderSchedule(){
+  $('#dayLabel').textContent = dayHuman(state.viewDate);
   renderDay();
 }
-function moveDay(delta){ viewDate.setDate(viewDate.getDate()+delta); $('#dayLabel').textContent = dayLabel(viewDate); renderDay(); }
+function moveDay(n){ state.viewDate.setDate(state.viewDate.getDate()+n); renderSchedule(); }
 $('#prevDay').onclick = ()=> moveDay(-1);
-$('#nextDay').onclick = ()=> moveDay(+1);
-$('#toggleWeek').onclick = ()=>{ state.weekMode=!state.weekMode; renderDay(); };
+$('#nextDay').onclick = ()=> moveDay(1);
+$('#toggleWeek').onclick = ()=>{ state.weekMode=!state.weekMode; toast(state.weekMode?'Vue semaine (visuelle)':'Vue jour'); };
 
-function slotLine(t){ return `<div class="row" style="align-items:center;margin:8px 0"><div style="width:64px;font-weight:900">${t}</div><div style="flex:1;height:42px;border-radius:12px;background:var(--card)"></div></div>` }
-
+function slotRow(t){
+  return `<div class="row" style="align-items:center;margin:12px 0">
+    <div style="width:70px;font-weight:900">${t}</div>
+    <div style="flex:1;height:46px;border-radius:14px;border:1px dashed rgba(0,0,0,.12);background:var(--card);display:flex;align-items:center;padding:4px 6px"></div>
+  </div>`;
+}
 async function renderDay(){
-  const box = $('#daySlots'); box.innerHTML='';
-  // lignes heure “visuelles”
-  const hours = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
-  box.innerHTML = hours.map(slotLine).join('');
-  // events du jour
-  const dow = viewDate.getDay(); // 0..6
-  const weekNum = Math.floor((viewDate - new Date(new Date().getFullYear(),0,1)) / 604800000);
+  const box = $('#daySlots'); const hours = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00']; 
+  box.innerHTML = hours.map(slotRow).join('');
+  const dow = state.viewDate.getDay();
+  const weekNum = Math.floor((state.viewDate - new Date(new Date().getFullYear(),0,1))/604800000);
   const ref = db.collection('classes').doc(state.user.track).collection('schedule');
   const snap = await ref.where('dow','==',dow).get();
   snap.forEach(d=>{
     const ev = d.data();
-    // récurrence: NONE / WEEKLY / BIWEEKLY
-    if(ev.recur==='WEEKLY' || (ev.recur==='BIWEEKLY' && (weekNum %2)=== (ev.weekParity||0))){
-      // rendu simple: un “pavé” dans la bonne rangée
-      const idx = hours.findIndex(h=>h===ev.start);
-      const row = $('#daySlots').children[idx];
-      if(row){
-        const pill = document.createElement('div');
-        pill.className='btn';
-        pill.style.marginLeft='12px';
-        pill.textContent = `${ev.title} - ${ev.room||''}`;
-        if(state.user.isAdmin){
-          pill.onclick = async ()=>{
-            if(confirm('Supprimer ce cours ?')){ await d.ref.delete(); renderDay(); }
-          };
-        }
-        row.lastElementChild.innerHTML='';
-        row.lastElementChild.append(pill);
-      }
+    if(ev.recur==='WEEKLY' || (ev.recur==='BIWEEKLY' && (weekNum%2)===(ev.weekParity||0))){
+      const idx = hours.indexOf(ev.start); if(idx<0) return;
+      const cell = $('#daySlots').children[idx].lastElementChild;
+      const pill = document.createElement('div');
+      pill.className='btn secondary'; pill.style.margin='0 6px'; pill.innerHTML = `<span class="icon">menu_book</span> ${ev.title} <span class="badge">${ev.room||''}</span>`;
+      if(state.user.isAdmin){ pill.onclick = async ()=>{ if(confirm('Supprimer ce cours ?')){ await d.ref.delete(); renderDay(); } }; }
+      cell.innerHTML=''; cell.append(pill);
     }
   });
 }
-
 $('#addLessonFab').onclick = async ()=>{
-  if(!state.user.isAdmin){ toast('Admin uniquement.'); return; }
-  const title = prompt('Ex: Math'); if(!title) return;
-  const room  = prompt('Salle (ex: 208)')||'';
-  const start = prompt('Heure début (ex: 08:00)','08:00')||'08:00';
-  const recur = prompt('Récurrence? NONE / WEEKLY / BIWEEKLY','WEEKLY')||'WEEKLY';
-  const parity = recur==='BIWEEKLY' ? Number(prompt('Parité (0 ou 1)', '0')||'0') : 0;
-  const doc = {title, room, start, dow:viewDate.getDay(), recur, weekParity:parity, createdAt:Date.now()};
-  await db.collection('classes').doc(state.user.track).collection('schedule').add(doc);
+  if(!state.user.isAdmin) return toast('Admin uniquement');
+  const title = prompt('Matière (ex: Math)'); if(!title) return;
+  const room = prompt('Salle (ex: 208)')||'';
+  const start = prompt('Début (HH:MM)','08:00')||'08:00';
+  const recur = prompt('Récurrence: NONE / WEEKLY / BIWEEKLY','WEEKLY')||'WEEKLY';
+  const parity = recur==='BIWEEKLY'? Number(prompt('Parité (0 ou 1)','0')||'0') : 0;
+  await db.collection('classes').doc(state.user.track).collection('schedule').add({title,room,start,dow:state.viewDate.getDay(),recur,weekParity:parity,createdAt:Date.now()});
   renderDay();
 };
 
-/*** ======================
- *   DEVOIRS
- *  ====================== */
+/* ======================= DEVOIRS ======================= */
 async function loadHomework(){
-  const root = db.collection('classes').doc(state.user.track).collection('homework').orderBy('due','asc');
-  const snap = await root.get();
   const list = $('#hwList'); list.innerHTML='';
-  const n = new Date(); n.setHours(0,0,0,0);
+  const snap = await db.collection('classes').doc(state.user.track).collection('homework').orderBy('due','asc').get();
   snap.forEach(d=>{
-    const hw = d.data();
-    const due = new Date(hw.due);
-    const card = document.createElement('div');
-    card.className='card';
-    card.innerHTML = `<div><div style="font-weight:900">${hw.subject} — ${due.toLocaleDateString('fr-FR',{weekday:'long'})}</div>
-                      <div class="tiny">${due.toLocaleDateString()}</div></div><span>➡️</span>`;
-    card.onclick = ()=> openHomework(d.id, hw);
-    list.append(card);
+    const hw = d.data(); const due = new Date(hw.due);
+    const row = document.createElement('div'); row.className='card';
+    row.innerHTML = `<div><div class="cardTitle">${hw.subject}</div><div class="muted">${due.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'2-digit'})}</div></div><span class="icon">chevron_right</span>`;
+    row.onclick = ()=> openHomework(d.id, hw); list.append(row);
   });
-  if(state.user.isAdmin) $('#addHw').style.display='inline-flex'; else $('#addHw').style.display='none';
+  $('#addHw').style.display = state.user.isAdmin?'grid':'none';
 }
 $('#addHw').onclick = async ()=>{
-  if(!state.user.isAdmin) return;
+  if(!state.user.isAdmin) return; 
   const subject = prompt('Matière ?'); if(!subject) return;
-  const due = prompt('Date (YYYY-MM-DD)', todayYMD()) || todayYMD();
-  const root = db.collection('classes').doc(state.user.track).collection('homework');
-  await root.add({subject, due, createdAt:Date.now()});
+  const due = prompt('Date (YYYY-MM-DD)', YMD()) || YMD();
+  await db.collection('classes').doc(state.user.track).collection('homework').add({subject,due,createdAt:Date.now()});
   loadHomework();
 };
-
 function openHomework(id, hw){
-  state.hw={id, ...hw};
+  state.hw={id,...hw};
   $('#hwTitle').textContent = `${hw.subject} — ${new Date(hw.due).toLocaleDateString()}`;
-  const status = [];
+  const status=[];
   if(!hw.enonce) status.push('Énoncé : pas encore publié');
-  if(!hw.corrSimple) status.push('Correction simple : pas encore publié');
-  if(!hw.corrExp) status.push('Correction détaillée : pas encore publié');
-  $('#hwStatus').textContent = status.length? status.join(' | ') : 'Complet ✅';
+  if(!hw.corrSimple) status.push('Correction simple : pas encore publiée');
+  if(!hw.corrExp) status.push('Correction détaillée : pas encore publiée');
+  $('#hwStatus').textContent = status.length? status.join(' | ') : 'Tout est publié ✅';
   $('#openEnonce').onclick = ()=> openFile('homework', id, 'enonce');
   $('#openCorrSimple').onclick = ()=> openFile('homework', id, 'corrSimple');
-  $('#openCorrExp').onclick = ()=> openFile('homework', id, 'corrExp');
-  screens('hwDetail');
+  $('#openCorrExp').onclick   = ()=> openFile('homework', id, 'corrExp');
+  goto('hwDetail');
 }
 async function openFile(scope, id, field){
-  const doc = await db.collection('classes').doc(state.user.track).collection(scope).doc(id).get();
-  const data = doc.data();
+  const ref = db.collection('classes').doc(state.user.track).collection(scope).doc(id);
+  const snap = await ref.get(); const data = snap.data();
   if(!data[field]){
     if(!state.user.isAdmin) return toast('Pas encore publié.');
-    const input = document.createElement('input'); input.type='file'; input.accept='image/*,application/pdf';
+    const input=document.createElement('input'); input.type='file'; input.accept='image/*,application/pdf';
     input.onchange = async ()=>{
-      const f = input.files[0]; const path = `${scope}/${id}/${field}-${Date.now()}-${f.name}`;
-      const snap = await storage.ref(path).put(f); const url = await snap.ref.getDownloadURL();
-      await doc.ref.set({[field]:url},{merge:true}); toast('Publié ✅');
+      const f=input.files[0]; const path=`${scope}/${id}/${field}-${Date.now()}-${f.name}`;
+      const up = await storage.ref(path).put(f); const url=await up.ref.getDownloadURL();
+      await ref.set({[field]:url},{merge:true}); toast('Publié ✅');
     }; input.click();
     return;
   }
-  window.open(data[field], '_blank');
+  window.open(data[field],'_blank');
 }
 
-/*** ======================
- *   CONTROLES
- *  ====================== */
+/* ======================= CONTROLES ======================= */
 async function loadExams(){
-  const list = $('#examList'); list.innerHTML='';
-  const snap = await db.collection('classes').doc(state.user.track).collection('exams').orderBy('date','asc').get();
+  const list=$('#examList'); list.innerHTML='';
+  const snap=await db.collection('classes').doc(state.user.track).collection('exams').orderBy('date','asc').get();
   snap.forEach(d=>{
-    const ex = d.data();
-    const card = document.createElement('div');
-    card.className='card';
-    card.innerHTML = `<div><div style="font-weight:900">${ex.subject}</div><div class="tiny">${new Date(ex.date).toLocaleDateString()}</div></div><span>➡️</span>`;
-    card.onclick = ()=> openExam(d.id, ex);
-    list.append(card);
+    const ex=d.data();
+    const row=document.createElement('div'); row.className='card';
+    row.innerHTML=`<div><div class="cardTitle">${ex.subject}</div><div class="muted">${new Date(ex.date).toLocaleDateString()}</div></div><span class="icon">chevron_right</span>`;
+    row.onclick=()=> openExam(d.id, ex); list.append(row);
   });
 }
 $('#addExam').onclick = async ()=>{
   if(!state.user.isAdmin) return;
-  const subject = prompt('Matière ?'); if(!subject) return;
-  const date = prompt('Date (YYYY-MM-DD)', todayYMD()); if(!date) return;
-  const chapterPath = prompt('Lien chapitre (matiereId/chapterId) ou vide'); // ex: "math/chap-1"
-  await db.collection('classes').doc(state.user.track).collection('exams').add({subject,date,chapterPath:chapterPath||'', createdAt:Date.now()});
+  const subject=prompt('Matière ?'); if(!subject) return;
+  const date=prompt('Date (YYYY-MM-DD)', YMD()); if(!date) return;
+  const chapterPath = prompt('Lien chapitre (matiereId/chapterId) ou vide')||'';
+  await db.collection('classes').doc(state.user.track).collection('exams').add({subject,date,chapterPath,createdAt:Date.now()});
   loadExams();
 };
-
-function openExam(id, ex){
+function openExam(id,ex){
   state.exam={id,...ex};
-  $('#examHeader').textContent = `${ex.subject} ${new Date(ex.date).toLocaleDateString()}`;
+  $('#examHeader').textContent = `${ex.subject} — ${new Date(ex.date).toLocaleDateString()}`;
   $('#gotoCourse').onclick = ()=>{
-    if(!ex.chapterPath) return toast('Pas de chapitre lié.');
-    const [sub, chap] = ex.chapterPath.split('/');
-    openSubject(sub, sub); // label naïf
-    state.subject.id=sub;
-    openChapter(chap, chap);
+    if(!ex.chapterPath) return toast('Pas de chapitre lié');
+    const [s,c]=ex.chapterPath.split('/');
+    openSubject(s,s); state.subject.id=s; openChapter(c,c);
   };
   $('#openRev').onclick = ()=> openExamFolder('revisions');
-  $('#genQuiz').onclick = ()=> autoQuizOrMock('quiz');
-  $('#genMock').onclick = ()=> autoQuizOrMock('mock');
-  screens('examDetail');
+  $('#genQuiz').onclick = ()=> autoQA('quiz');
+  $('#genMock').onclick = ()=> autoQA('mock');
+  goto('examDetail');
 }
-
 async function openExamFolder(kind){
-  const base = `exams/${state.exam.id}/${kind}`;
-  // si admin -> uploader si vide
-  const ref = storage.ref(base);
-  try{
-    const list = await ref.listAll();
-    if(list.items.length===0 && state.user.isAdmin){
-      const input = document.createElement('input'); input.type='file'; input.accept='image/*,application/pdf'; input.multiple=true;
-      input.onchange = async ()=>{
-        for(const f of input.files){
-          await storage.ref(`${base}/${Date.now()}-${f.name}`).put(f);
-        }
-        toast('Ajouté ✅'); 
-      }; input.click();
-      return;
-    }
-    // sinon ouvrir 1ère image/ensemble
-    const urls = await Promise.all(list.items.map(x=>x.getDownloadURL()));
-    if(urls.length===1) window.open(urls[0], '_blank');
-    else {
-      // affichage simple en popup
-      const w = window.open('','_blank');
-      w.document.write('<title>Fiches</title>');
-      urls.forEach(u=> w.document.write(`<div style="margin:8px 0"><img src="${u}" style="max-width:100%"/></div>`));
-    }
-  }catch(e){ toast('Aucune fiche.'); }
+  const base=`exams/${state.exam.id}/${kind}`;
+  const ref=storage.ref(base); const list=await ref.listAll();
+  if(list.items.length===0 && state.user.isAdmin){
+    const input=document.createElement('input'); input.type='file'; input.multiple=true; input.accept='image/*,application/pdf';
+    input.onchange=async()=>{ for(const f of input.files){ await storage.ref(`${base}/${Date.now()}-${f.name}`).put(f) } toast('Ajouté ✅'); };
+    input.click(); return;
+  }
+  const urls=await Promise.all(list.items.map(x=>x.getDownloadURL()));
+  if(urls.length===0) return toast('Aucune fiche');
+  const w=window.open('','_blank'); w.document.write('<title>Fiches</title>');
+  urls.forEach(u=> w.document.write(`<div style="margin:10px 0"><img src="${u}" style="max-width:100%"/></div>`));
 }
 
-/*** GÉNÉRATION QUIZ / TEST (BETA) à partir des fiches (OCR simple) ***/
-async function autoQuizOrMock(mode='quiz'){
-  const base = `exams/${state.exam.id}/revisions`;
-  const list = await storage.ref(base).listAll();
-  if(list.items.length===0) return toast('Ajoute d’abord des fiches de révision.');
-  const urls = await Promise.all(list.items.map(x=>x.getDownloadURL()));
-  const textChunks=[];
+/* Quiz/Test auto (OCR simple) */
+async function autoQA(mode){
+  const base=`exams/${state.exam.id}/revisions`;
+  const list=await storage.ref(base).listAll();
+  if(list.items.length===0) return toast('Ajoute d’abord des fiches.');
+  const urls=await Promise.all(list.items.map(i=>i.getDownloadURL()));
+  const texts=[];
   for(const u of urls){
-    try{
-      const res = await Tesseract.recognize(u,'fra',{logger:()=>{}});
-      textChunks.push(res.data.text.replace(/\s+/g,' ').trim());
-    }catch(e){}
+    try{ const r=await Tesseract.recognize(u,'fra',{logger:()=>{}}); texts.push(r.data.text.replace(/\s+/g,' ')) }catch(e){}
   }
-  const corpus = textChunks.join(' ').slice(0,8000);
-  if(!corpus) return toast('OCR illisible. Essaie avec des scans nets.');
-  // génération naïve : 6 questions à trous sur mots longs
-  const words = corpus.split(' ').filter(w=>w.length>7);
-  const qs = [];
-  for(let i=0;i<Math.min(6, words.length);i++){
-    const w = words[Math.floor(Math.random()*words.length)];
-    const sentence = `Complète : ${corpus.slice( Math.max(0, corpus.indexOf(w)-40), Math.min(corpus.length, corpus.indexOf(w)+40) ).replace(w,'_____')}`;
-    qs.push({q:sentence, a:w});
+  const corpus=texts.join(' ').slice(0,8000);
+  if(!corpus) return toast('OCR illisible');
+  const words=corpus.split(' ').filter(w=>w.length>7); const qs=[];
+  for(let i=0;i<Math.min(6,words.length);i++){
+    const w=words[Math.floor(Math.random()*words.length)], pos=corpus.indexOf(w);
+    const ctx=corpus.slice(Math.max(0,pos-40), Math.min(corpus.length,pos+40)).replace(w,'_____');
+    qs.push({q:`Complète : ${ctx}`, a:w});
   }
-  // rendu simple
-  const w = window.open('','_blank');
-  w.document.write(`<title>${mode==='quiz'?'Petit quiz':'Test blanc'}</title><style>body{font-family:Inter;padding:16px} .q{margin:12px 0;padding:10px;border:1px solid #ddd;border-radius:12px}</style>`);
+  const w=window.open('','_blank');
+  w.document.write(`<title>${mode==='quiz'?'Petit quiz':'Test blanc'}</title>
+    <style>body{font-family:Inter;padding:16px} .q{padding:12px;border:1px solid #ddd;border-radius:12px;margin:10px 0}</style>`);
   qs.forEach((x,i)=> w.document.write(`<div class="q"><b>Q${i+1}.</b> ${x.q}<br><small style="opacity:.6">Réponse : ${x.a}</small></div>`));
 }
 
-/*** Navigation générique (boutons retour) ***/
-document.querySelectorAll('[data-back]').forEach(b=> b.onclick=()=> screens(b.dataset.back));
+/* back buttons */
+document.querySelectorAll('[data-back]').forEach(b=> b.onclick=()=> goto(b.dataset.back));
 
-/*** Démarrage ***/
+/* Start */
 (function init(){
-  if(state.user.name){ buildHome(); screens('home'); }
+  if(state.user.name){ buildHome(); goto('home'); }
 })();
 </script>
 </body>
