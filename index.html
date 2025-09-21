@@ -1,215 +1,407 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Espace de cours</title>
-  <style>
-    :root{
-      --pad:22px; --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
-      --ink:#000; --bg:#fff; --fg:#111;
-      --radius:22px; --thick:4px; --dur:300ms; --ease:cubic-bezier(.2,.7,.3,1);
-      /* couleurs pastels pour les matières */
-      --c-fr: #fac3cf; --c-his:#ffd9b3; --c-svt:#c9f0db; --c-chi:#fff3b8;
-      --c-snt:#cfeeff; --c-ses:#f1dbff; --c-ang:#ffc6e9;
-    }
-    *{box-sizing:border-box}
-    html{-webkit-text-size-adjust:100%}
-    body{
-      margin:0;background:var(--bg);color:var(--fg);
-      font:700 clamp(16px,2.6vw,18px)/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    }
-    .app{
-      max-width:520px;margin:0 auto;position:relative;
-      padding:calc(var(--safe-top)+var(--pad)) var(--pad) calc(var(--safe-bottom)+var(--pad));
-      min-height:100svh;
-    }
-    h1{margin:0 0 42px;font-size:clamp(28px,8vw,40px);line-height:1.15}
-    h2{margin:0 0 12px;font-size:clamp(24px,7vw,32px)}
-    label{display:block;margin:8px 0 10px}
-    input{
-      width:100%;padding:16px 18px;border-radius:18px;background:#e0e0e0;
-      border:var(--thick) solid var(--ink);font:inherit;font-weight:800;outline:none;
-    }
-    .btn{
-      margin-top:18px;padding:14px 18px;border:3px solid var(--ink);border-radius:14px;
-      background:var(--ink);color:#fff;font:inherit;font-weight:900;cursor:pointer;width:fit-content;
-    }
-    .btn:active{transform:translateY(1px)}
-    .link{background:none;border:0;padding:8px 0;color:var(--fg);text-decoration:underline;font:inherit;font-weight:800;cursor:pointer}
-    .hint{margin-top:10px;opacity:.6;font-weight:600}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Espace de cours</title>
+<style>
+:root{
+  --pad:18px; --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
+  --ink:#000; --bg:#fff; --fg:#111;
+  --radius:18px; --thick:4px; --dur:300ms; --ease:cubic-bezier(.2,.7,.3,1);
+  /* pastels */
+  --c-fr:#fac3cf; --c-his:#ffd9b3; --c-svt:#c9f0db; --c-chi:#fff3b8;
+  --c-snt:#cfeeff; --c-ses:#f1dbff; --c-ang:#ffc6e9;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font:700 clamp(15px,2.5vw,18px)/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+}
+.app{
+  max-width:420px; /* compact iPhone */
+  margin:0 auto; position:relative;
+  padding:calc(var(--safe-top)+var(--pad)) var(--pad) calc(var(--safe-bottom)+var(--pad));
+  min-height:100svh;
+}
+header.bar{
+  position:sticky; top:calc(var(--safe-top) + 8px); z-index:5; display:flex; justify-content:flex-end;
+}
+.iconBtn{
+  width:40px;height:40px;border:3px solid var(--ink);border-radius:50%;display:grid;place-items:center;
+  background:#fff; cursor:pointer;
+}
+h1{margin:14px 0 24px; font-size:clamp(26px,7vw,36px); line-height:1.1}
+h2{margin:0 0 10px; font-size:clamp(22px,6.5vw,30px)}
+label{display:block; margin:8px 0 8px}
+input[type="text"],input[type="date"],input[type="file"]{
+  width:100%; padding:14px; border-radius:16px; border:var(--thick) solid var(--ink);
+  background:#e9e9e9; font:inherit; font-weight:800; outline:none;
+}
+.btn{
+  margin-top:14px; padding:12px 16px; border:3px solid var(--ink); border-radius:14px;
+  background:#000; color:#fff; font:inherit; font-weight:900; cursor:pointer; width:fit-content;
+}
+.btn.secondary{background:#fff; color:#000}
+.btn:active{transform:translateY(1px)}
+.hint{margin-top:8px; opacity:.65; font-weight:600}
 
-    /* --- navigation/animations --- */
-    .stack{position:relative}
-    .screen{
-      position:absolute; inset:0; opacity:0; pointer-events:none;
-      transform:translateX(40px);
-    }
-    .screen.active{opacity:1; pointer-events:auto; transform:none}
-    .anim-out-left{animation:outLeft var(--dur) var(--ease) both}
-    .anim-in-right{animation:inRight var(--dur) var(--ease) both}
-    .anim-out-right{animation:outRight var(--dur) var(--ease) both}
-    .anim-in-left{animation:inLeft var(--dur) var(--ease) both}
-    @keyframes outLeft  {from{opacity:1;transform:translateX(0)}   to{opacity:0;transform:translateX(-40px)}}
-    @keyframes inRight  {from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)}}
-    @keyframes outRight {from{opacity:1;transform:translateX(0)}   to{opacity:0;transform:translateX(40px)}}
-    @keyframes inLeft   {from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+/* stack + transitions */
+.stack{position:relative}
+.screen{position:absolute; inset:0; opacity:0; pointer-events:none; transform:translateX(40px)}
+.screen.active{opacity:1; pointer-events:auto; transform:none}
+.anim-out-left{animation:outLeft var(--dur) var(--ease) both}
+.anim-in-right{animation:inRight var(--dur) var(--ease) both}
+.anim-out-right{animation:outRight var(--dur) var(--ease) both}
+.anim-in-left{animation:inLeft var(--dur) var(--ease) both}
+@keyframes outLeft{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-40px)}}
+@keyframes inRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes outRight{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
+@keyframes inLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
 
-    /* --- cartes menu & matières --- */
-    .menu{display:flex;flex-direction:column;gap:22px;margin-top:10px}
-    .cardLink{
-      display:flex;align-items:center;justify-content:space-between;gap:14px;
-      padding:20px 18px;background:#bdbdbd;border:var(--thick) solid var(--ink);
-      border-radius:var(--radius); text-decoration:none; color:inherit; cursor:pointer;
-      box-shadow:0 6px 14px rgba(0,0,0,.06);
-      font-size:clamp(18px,5.2vw,24px); font-weight:900;
-    }
-    .pillArrow{min-width:56px;height:40px;border:3px solid var(--ink);border-radius:999px;display:grid;place-items:center;font-weight:900;background:#fff}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .back{
-      width:42px;height:42px;border:3px solid var(--ink);border-radius:50%;display:grid;place-items:center;
-      background:#fff;cursor:pointer
-    }
-    .list{display:flex;flex-direction:column;gap:18px;margin-top:12px}
-    .mat{display:flex;align-items:center;justify-content:space-between;gap:12px;
-      padding:18px;border-radius:var(--radius);border:var(--thick) solid var(--ink);
-      box-shadow:0 6px 14px rgba(0,0,0,.06);font-size:clamp(18px,5.2vw,24px);font-weight:900}
-    .left{display:flex;align-items:center;gap:12px}
-    .icon{font-size:1.2em}
-  </style>
+/* cartes menu & matières */
+.menu{display:flex;flex-direction:column;gap:16px;margin-top:10px}
+.cardLink{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:16px; background:#d7d7d7; border:var(--thick) solid var(--ink);
+  border-radius:20px; text-decoration:none; color:inherit; cursor:pointer;
+  font-size:clamp(18px,5vw,22px); font-weight:900; box-shadow:0 6px 14px rgba(0,0,0,.06);
+}
+.pillArrow{min-width:52px;height:38px;border:3px solid var(--ink);border-radius:999px;display:grid;place-items:center;background:#fff}
+.list{display:flex;flex-direction:column;gap:14px;margin-top:8px}
+.mat{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;border-radius:18px;border:var(--thick) solid var(--ink);box-shadow:0 6px 14px rgba(0,0,0,.06);font-size:clamp(18px,5vw,22px);font-weight:900}
+.left{display:flex;align-items:center;gap:10px}
+.icon{font-size:1.15em}
+
+/* sujet (carrousel) */
+.carousel{margin-top:6px}
+.carouselHead{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px}
+.sliderWrap{position:relative; overflow:hidden}
+.slides{display:flex; gap:10px; transition:transform 260ms var(--ease)}
+.slide{
+  background:#dcdcdc; border:var(--thick) solid var(--ink); border-radius:16px;
+  width:120px; min-height:140px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  position:relative; box-shadow:0 6px 14px rgba(0,0,0,.06); cursor:pointer;
+}
+.slide img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.dateLabel{font-weight:900; margin-top:6px}
+.navs{display:flex; gap:8px}
+.navBtn{width:38px;height:38px;border:3px solid var(--ink);border-radius:50%;display:grid;place-items:center;background:#fff;cursor:pointer}
+
+.fab{position:fixed; right:22px; bottom:calc(22px + var(--safe-bottom)); width:56px;height:56px;border-radius:50%;
+     border:3px solid var(--ink); background:#000; color:#fff; display:none; place-items:center; font-size:26px;
+     box-shadow:0 8px 18px rgba(0,0,0,.18); cursor:pointer; z-index:7}
+
+/* modales */
+.modal{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:8}
+.modal .box{background:#fff; color:#000; border:var(--thick) solid var(--ink); border-radius:18px; padding:16px; width:min(92vw,380px)}
+.modal .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+
+/* image viewer */
+.viewer{position:fixed; inset:0; background:#000; display:none; align-items:center; justify-content:center; z-index:9}
+.viewer img{max-width:96vw; max-height:90vh; border-radius:12px}
+.viewer .close{position:fixed; top:16px; right:16px; width:42px;height:42px;border:3px solid #fff;border-radius:50%;color:#fff;display:grid;place-items:center;cursor:pointer}
+</style>
 </head>
 <body>
   <main class="app">
-    <div id="stack" class="stack" aria-live="polite" aria-atomic="true">
+    <header class="bar">
+      <button id="gear" class="iconBtn" title="Paramètres">⚙️</button>
+    </header>
 
-      <!-- Écran 1 : prénom -->
+    <div id="stack" class="stack" aria-live="polite" aria-atomic="true">
+      <!-- 1) prénom -->
       <section id="scr-welcome" class="screen active">
-        <h1>Bienvenue dans ton espace de cours&nbsp;!</h1>
-        <label for="prenom">Quel est ton prénom&nbsp;?</label>
-        <input id="prenom" placeholder="Ton prénom" autocomplete="given-name" />
+        <h1>Bienvenue dans ton espace de cours</h1>
+        <label for="prenom">Quel est ton prénom ?</label>
+        <input id="prenom" type="text" placeholder="Ton prénom" autocomplete="given-name">
         <button id="go" class="btn">Continuer</button>
         <div id="msg" class="hint"></div>
       </section>
 
-      <!-- Écran 2 : menu -->
+      <!-- 2) menu -->
       <section id="scr-home" class="screen" aria-hidden="true">
-        <h2>Bonjour "<span id="who">prenom</span>"</h2>
+        <h2>Bonjour <span id="who">prenom</span></h2>
         <nav class="menu">
-          <a id="btn-cours"   class="cardLink">cours        <span class="pillArrow">→</span></a>
-          <a id="btn-emploi"  class="cardLink">emploie du temps <span class="pillArrow">→</span></a>
-          <a id="btn-devoirs" class="cardLink">devoirs      <span class="pillArrow">→</span></a>
-          <a id="btn-controle"class="cardLink">controle     <span class="pillArrow">→</span></a>
+          <a id="btn-cours" class="cardLink">cours <span class="pillArrow">→</span></a>
+          <a id="btn-emploi" class="cardLink">emploie du temps <span class="pillArrow">→</span></a>
+          <a id="btn-devoirs" class="cardLink">devoirs <span class="pillArrow">→</span></a>
+          <a id="btn-controle" class="cardLink">controle <span class="pillArrow">→</span></a>
         </nav>
-        <button id="change" class="link" style="margin-top:8px">changer de prénom</button>
       </section>
 
-      <!-- Écran 3 : cours (liste matières) -->
+      <!-- 3) liste des matières -->
       <section id="scr-cours" class="screen" aria-hidden="true">
-        <div class="row" style="margin-bottom:6px">
-          <button id="back-home" class="back" aria-label="Retour">←</button>
-          <h2 style="margin:0">Cours</h2>
-        </div>
-
-        <div class="list" id="mat-list">
-          <!-- rempli par JS -->
-        </div>
+        <div class="list" id="mat-list"></div>
       </section>
 
+      <!-- 4) détail matière -->
+      <section id="scr-subject" class="screen" aria-hidden="true">
+        <div class="carousel">
+          <div class="carouselHead">
+            <h2 id="subjectTitle" style="margin:0">matière</h2>
+            <div class="navs">
+              <button id="navPrev" class="navBtn" aria-label="Précédent">◀</button>
+              <button id="navNext" class="navBtn" aria-label="Suivant">▶</button>
+            </div>
+          </div>
+          <div class="sliderWrap">
+            <div id="slides" class="slides"></div>
+          </div>
+          <div id="dates" class="list" style="gap:6px;margin-top:10px"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- FAB admin -->
+    <button id="fabAdd" class="fab" title="Ajouter un cours">＋</button>
+
+    <!-- Modal engrenage -->
+    <div id="modalGear" class="modal">
+      <div class="box">
+        <h3 style="margin:0 0 8px">Paramètres</h3>
+        <div id="adminRow"></div>
+        <div class="row" style="justify-content:flex-end">
+          <button class="btn secondary" id="gearClose">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal admin login -->
+    <div id="modalAdmin" class="modal">
+      <div class="box">
+        <h3 style="margin:0 0 8px">Mode admin</h3>
+        <label for="adminCode">Code</label>
+        <input id="adminCode" type="text" inputmode="numeric" maxlength="8" placeholder="2525">
+        <div class="row" style="justify-content:flex-end">
+          <button class="btn secondary" id="adminCancel">Annuler</button>
+          <button class="btn" id="adminOk">Valider</button>
+        </div>
+        <div id="adminMsg" class="hint"></div>
+      </div>
+    </div>
+
+    <!-- Modal ajout cours -->
+    <div id="modalAdd" class="modal">
+      <div class="box">
+        <h3 style="margin:0 0 8px">Ajouter un cours</h3>
+        <label>Image</label>
+        <input id="addImg" type="file" accept="image/*" capture="environment">
+        <label style="margin-top:8px">Date</label>
+        <input id="addDate" type="date">
+        <div class="row" style="justify-content:flex-end">
+          <button class="btn secondary" id="addCancel">Annuler</button>
+          <button class="btn" id="addSave">Enregistrer</button>
+        </div>
+        <div id="addMsg" class="hint"></div>
+      </div>
+    </div>
+
+    <!-- Viewer image -->
+    <div id="viewer" class="viewer">
+      <button class="close" id="viewerClose">✕</button>
+      <img id="viewerImg" alt="Cours">
     </div>
   </main>
 
-  <script>
-    // helpers
-    const $ = sel => document.querySelector(sel);
-    const stack = $('#stack');
-    function setStackHeight(h){ stack.style.height = h + 'px'; }
-    function activeScreen(){ return $('.screen.active'); }
+<script>
+/* ====== helpers ====== */
+const $ = s => document.querySelector(s);
+const stack = $('#stack');
+function activeScreen(){ return $('.screen.active'); }
+function setStackHeight(h){ stack.style.height = h + 'px'; }
+function nav(from,to,dir='f'){
+  if(from===to) return;
+  setStackHeight(Math.max(from.scrollHeight,to.scrollHeight));
+  from.classList.remove('active'); to.classList.add('active');
+  const o = dir==='f' ? 'anim-out-left':'anim-out-right';
+  const i = dir==='f' ? 'anim-in-right' :'anim-in-left';
+  from.classList.add(o); to.classList.add(i);
+  to.addEventListener('animationend',()=>{from.classList.remove(o);to.classList.remove(i);setStackHeight(to.scrollHeight)},{once:true});
+}
 
-    // animation de navigation
-    function navigate(fromEl, toEl, dir='forward'){
-      if (fromEl===toEl) return;
-      // fixer la hauteur pour éviter le "saut"
-      setStackHeight(Math.max(fromEl.scrollHeight, toEl.scrollHeight));
-      // classes d'animation
-      fromEl.classList.remove('active');
-      toEl.classList.add('active');
-      const outClass = dir==='forward' ? 'anim-out-left' : 'anim-out-right';
-      const inClass  = dir==='forward' ? 'anim-in-right' : 'anim-in-left';
-      fromEl.classList.add(outClass);
-      toEl.classList.add(inClass);
-      // nettoyage à la fin
-      const done = () => {
-        fromEl.classList.remove(outClass);
-        toEl.classList.remove(inClass);
-        setStackHeight(toEl.scrollHeight);
-      };
-      toEl.addEventListener('animationend', done, {once:true});
-    }
+/* ====== state ====== */
+const who = $('#who'), prenomInput = $('#prenom'), msg = $('#msg');
+let isAdmin = localStorage.getItem('isAdmin') === '1';
+let currentSubject = null;
 
-    // état prénom
-    const who = $('#who'), prenomInput = $('#prenom'), msg = $('#msg');
-    function showHome(){
-      const name = (localStorage.getItem('prenom')||'').trim();
-      if (!name){ navigate($('#scr-home'), $('#scr-welcome'), 'back'); prenomInput.focus(); return; }
-      who.textContent = name;
-      navigate(activeScreen(), $('#scr-home'), 'forward');
-    }
-    function saveAndGo(){
-      const name = (prenomInput.value||'').trim();
-      if (!name){ msg.textContent = "Entre ton prénom pour continuer."; return; }
-      localStorage.setItem('prenom', name);
-      who.textContent = name;
-      navigate($('#scr-welcome'), $('#scr-home'), 'forward');
-    }
+/* ====== data ====== */
+const subjects = [
+  {slug:'francais', name:'francais', color:'var(--c-fr)',  icon:'📚'},
+  {slug:'histoire', name:'histoire', color:'var(--c-his)', icon:'🏛️'},
+  {slug:'svt',      name:'SVT',      color:'var(--c-svt)', icon:'🧬'},
+  {slug:'chimie',   name:'Chimie',   color:'var(--c-chi)', icon:'⚗️'},
+  {slug:'snt',      name:'SNT',      color:'var(--c-snt)', icon:'💻'},
+  {slug:'ses',      name:'SES',      color:'var(--c-ses)', icon:'📈'},
+  {slug:'anglais',  name:'Anglais',  color:'var(--c-ang)', icon:'🇬🇧'}
+];
 
-    // évènements
-    $('#go').onclick = saveAndGo;
-    prenomInput.addEventListener('keydown', e=>{ if(e.key==='Enter') saveAndGo(); });
-    $('#change').onclick = ()=>{ localStorage.removeItem('prenom'); prenomInput.value=''; msg.textContent=''; navigate($('#scr-home'), $('#scr-welcome'), 'back'); prenomInput.focus(); };
+const K='coursesData';
+function loadData(){ try{ return JSON.parse(localStorage.getItem(K)||'{}'); }catch(e){ return {}; } }
+function saveData(v){ localStorage.setItem(K, JSON.stringify(v)); }
 
-    // boutons menu
-    $('#btn-cours').onclick   = ()=> navigate($('#scr-home'), $('#scr-cours'), 'forward');
-    $('#btn-emploi').onclick  = ()=> alert('Écran "Emploi du temps" à brancher');
-    $('#btn-devoirs').onclick = ()=> alert('Écran "Devoirs" à brancher');
-    $('#btn-controle').onclick= ()=> alert('Écran "Contrôle" à brancher');
+/* ====== screens init ====== */
+function showHome(){
+  const name = (localStorage.getItem('prenom')||'').trim();
+  if(!name){ nav($('#scr-home'), $('#scr-welcome'), 'b'); prenomInput.focus(); return; }
+  who.textContent = name;
+  nav(activeScreen(), $('#scr-home'), 'f');
+}
+function saveAndGo(){
+  const name = (prenomInput.value||'').trim();
+  if(!name){ msg.textContent = "Entre ton prénom pour continuer."; return; }
+  localStorage.setItem('prenom', name);
+  who.textContent = name; msg.textContent='';
+  nav($('#scr-welcome'), $('#scr-home'), 'f');
+}
 
-    // retour depuis cours
-    $('#back-home').onclick = ()=> navigate($('#scr-cours'), $('#scr-home'), 'back');
+$('#go').onclick = saveAndGo;
+prenomInput.addEventListener('keydown', e=>{ if(e.key==='Enter') saveAndGo(); });
 
-    // remplir la liste des matières avec icônes & couleurs
-    const subjects = [
-      {name:'français',  color:'var(--c-fr)',  icon:'📚'},
-      {name:'histoire',  color:'var(--c-his)', icon:'🏛️'},
-      {name:'SVT',       color:'var(--c-svt)', icon:'🧬'},
-      {name:'Chimie',    color:'var(--c-chi)', icon:'⚗️'},
-      {name:'SNT',       color:'var(--c-snt)', icon:'💻'},
-      {name:'SES',       color:'var(--c-ses)', icon:'📈'},
-      {name:'Anglais',   color:'var(--c-ang)', icon:'🇬🇧'}
-    ];
-    const list = $('#mat-list');
-    for (const s of subjects){
-      const li = document.createElement('button');
-      li.className='mat'; li.style.background = s.color; li.type='button';
-      li.innerHTML = `
-        <span class="left"><span class="title">${s.name}</span> <span class="icon" aria-hidden="true">${s.icon}</span></span>
-        <span class="pillArrow">→</span>
-      `;
-      li.onclick = ()=> alert('Ouvrir la page du cours : ' + s.name);
-      list.appendChild(li);
-    }
+/* ====== cours (liste matières) ====== */
+$('#btn-cours').onclick = ()=>{
+  renderMatieres();
+  nav($('#scr-home'), $('#scr-cours'), 'f');
+};
+function renderMatieres(){
+  const wrap = $('#mat-list'); wrap.innerHTML='';
+  for(const s of subjects){
+    const btn=document.createElement('button');
+    btn.className='mat'; btn.style.background=s.color; btn.type='button';
+    btn.innerHTML=`<span class="left"><span>${s.name}</span> <span class="icon">${s.icon}</span></span><span class="pillArrow">→</span>`;
+    btn.onclick=()=>openSubject(s.slug);
+    wrap.appendChild(btn);
+  }
+}
 
-    // init
-    window.addEventListener('load', ()=>{
-      const hasName = !!(localStorage.getItem('prenom')||'').trim();
-      if (hasName){
-        $('#scr-welcome').classList.remove('active');
-        $('#scr-home').classList.add('active');
-        who.textContent = localStorage.getItem('prenom');
-      }
-      // hauteur initiale
-      setStackHeight(activeScreen().scrollHeight);
-    });
-    window.addEventListener('resize', ()=> setStackHeight(activeScreen().scrollHeight));
-  </script>
+/* ====== subject detail ====== */
+const slidesEl = $('#slides'); const datesEl = $('#dates');
+let idx=0, slides=[], slideW=120;
+
+function openSubject(slug){
+  currentSubject = slug;
+  const subj = subjects.find(s=>s.slug===slug);
+  $('#subjectTitle').textContent = subj.name;
+  renderSubject();
+  nav($('#scr-cours'), $('#scr-subject'), 'f');
+  toggleFab(); // show fab if admin
+  setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
+}
+
+function renderSubject(){
+  const data = loadData();
+  const arr = (data[currentSubject]||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  slides = arr;
+  slidesEl.innerHTML=''; datesEl.innerHTML='';
+  if(!arr.length){
+    datesEl.innerHTML = '<div class="hint">Aucun cours pour le moment.</div>';
+  }
+  for(const it of arr){
+    const card=document.createElement('div');
+    card.className='slide';
+    if(it.img){ const im=new Image(); im.src=it.img; card.appendChild(im); }
+    card.onclick=()=>openViewer(it.img);
+    slidesEl.appendChild(card);
+
+    const d=document.createElement('div');
+    const [y,m,dd]=it.date.split('-');
+    d.className='dateLabel';
+    d.textContent=`${dd}/${m}`;
+    datesEl.appendChild(d);
+  }
+  idx=0; layoutSlides(); moveTo(0,false);
+}
+
+function layoutSlides(){
+  const wrap = slidesEl.parentElement; // sliderWrap
+  const w = wrap.clientWidth;
+  slideW = Math.floor((w - 2*10) / 3); // 3 cartes visibles, 10px gap
+  [...slidesEl.children].forEach(s=>s.style.width = slideW+'px');
+}
+
+function moveTo(i,animate=true){
+  const n = slidesEl.children.length || 1;
+  idx = ((i % n) + n) % n;
+  if(!animate){ slidesEl.style.transition='none'; }
+  slidesEl.style.transform = `translateX(${-idx*(slideW+10)}px)`;
+  if(!animate){ void slidesEl.offsetWidth; slidesEl.style.transition='transform 260ms var(--ease)'; }
+}
+
+$('#navPrev').onclick = ()=> moveTo(idx-1);
+$('#navNext').onclick = ()=> moveTo(idx+1);
+window.addEventListener('resize', ()=>{ if($('#scr-subject').classList.contains('active')){ layoutSlides(); moveTo(idx,false); setStackHeight(activeScreen().scrollHeight);} });
+
+/* ====== viewer ====== */
+function openViewer(src){ if(!src) return; $('#viewerImg').src=src; $('#viewer').style.display='flex'; }
+$('#viewerClose').onclick = ()=>{ $('#viewer').style.display='none'; };
+
+/* ====== engrenage / admin ====== */
+const modalGear = $('#modalGear');
+const adminRow = $('#adminRow');
+
+function refreshGear(){
+  adminRow.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'btn';
+  btn.textContent = isAdmin ? 'Quitter admin' : 'Admin';
+  btn.onclick = ()=>{
+    if(isAdmin){ isAdmin=false; localStorage.setItem('isAdmin','0'); toggleFab(); modalGear.style.display='none'; }
+    else { modalGear.style.display='none'; openAdminModal(); }
+  };
+  adminRow.appendChild(btn);
+}
+function openAdminModal(){
+  $('#adminCode').value='';
+  $('#adminMsg').textContent='';
+  $('#modalAdmin').style.display='flex';
+}
+$('#gear').onclick = ()=>{ refreshGear(); modalGear.style.display='flex'; };
+$('#gearClose').onclick = ()=> modalGear.style.display='none';
+$('#adminCancel').onclick = ()=> $('#modalAdmin').style.display='none';
+$('#adminOk').onclick = ()=>{
+  if($('#adminCode').value.trim()==='2525'){ isAdmin=true; localStorage.setItem('isAdmin','1'); $('#modalAdmin').style.display='none'; toggleFab(); }
+  else { $('#adminMsg').textContent='Code incorrect.'; }
+};
+
+/* ====== fab add (admin only) ====== */
+function toggleFab(){
+  $('#fabAdd').style.display = (isAdmin && $('#scr-subject').classList.contains('active')) ? 'grid' : 'none';
+}
+$('#fabAdd').onclick = ()=>{ $('#addImg').value=''; $('#addDate').value=''; $('#addMsg').textContent=''; $('#modalAdd').style.display='flex'; };
+$('#addCancel').onclick = ()=> $('#modalAdd').style.display='none';
+$('#addSave').onclick = async ()=>{
+  const f = $('#addImg').files[0];
+  const d = $('#addDate').value;
+  if(!f || !d){ $('#addMsg').textContent='Choisis une image et une date.'; return; }
+  const img = await fileToDataURL(f);
+  const data = loadData();
+  data[currentSubject] = data[currentSubject] || [];
+  data[currentSubject].push({id:Date.now(), img, date:d});
+  saveData(data);
+  $('#modalAdd').style.display='none';
+  renderSubject();
+  toggleFab();
+};
+function fileToDataURL(file){ return new Promise((res)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(file); }); }
+
+/* ====== autres boutons ====== */
+$('#btn-emploi').onclick  = ()=> alert('Écran "emploie du temps" à venir');
+$('#btn-devoirs').onclick = ()=> alert('Écran "devoirs" à venir');
+$('#btn-controle').onclick= ()=> alert('Écran "controle" à venir');
+
+/* ====== init ====== */
+window.addEventListener('load', ()=>{
+  const name = (localStorage.getItem('prenom')||'').trim();
+  if(name){ who.textContent=name; $('#scr-welcome').classList.remove('active'); $('#scr-home').classList.add('active'); }
+  setStackHeight(activeScreen().scrollHeight);
+});
+window.addEventListener('resize', ()=> setStackHeight(activeScreen().scrollHeight));
+
+/* ====== navigation utilitaire (retours) ====== */
+document.addEventListener('click', (e)=>{
+  // retour glissant si on clique sur l'entête de matière ? ici non, on reste avec engrenage
+});
+</script>
 </body>
 </html>
