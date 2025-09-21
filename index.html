@@ -1,759 +1,372 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-<title>Espace de cours</title>
-<style>
-:root{
-  --pad:20px; --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
-  --ink:#000; --bg:#fff; --fg:#111; --radius:18px; --thick:4px; --dur:300ms; --ease:cubic-bezier(.2,.7,.3,1);
-  --gap:10px;
-  --c-fr:#fac3cf; --c-his:#ffd9b3; --c-svt:#c9f0db; --c-chi:#fff3b8; --c-snt:#cfeeff; --c-ses:#f1dbff; --c-ang:#ffc6e9;
-}
-*{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font:700 clamp(16px,2.6vw,18px)/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-.app{max-width:420px;margin:0 auto;padding:calc(var(--safe-top)+var(--pad)) var(--pad) calc(var(--safe-bottom)+var(--pad));min-height:100svh;position:relative}
-header.bar{position:sticky;top:calc(var(--safe-top)+6px);display:flex;gap:8px;align-items:center;justify-content:flex-start;z-index:5}
-.iconBtn{width:40px;height:40px;border:3px solid var(--ink);border-radius:50%;display:grid;place-items:center;background:#fff;color:#000;cursor:pointer}
-#backBtn{visibility:hidden}
-h1{margin:14px 0 24px;font-size:clamp(26px,7vw,36px);line-height:1.1;text-align:center}
-h2{margin:6px 0 14px;font-size:clamp(22px,6.5vw,30px);text-align:center}
-label{display:block;margin:8px 0 6px}
-input[type="text"],input[type="file"],input[type="date"],input[type="time"],select{
-  width:100%;padding:14px;border-radius:16px;border:var(--thick) solid var(--ink);background:#ececec;
-  font:800 17px/1.2 system-ui;color:#000;outline:none
-}
-.radioRow{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap}
-.radioRow label{display:flex;gap:8px;align-items:center;border:3px solid var(--ink);padding:8px 12px;border-radius:14px;background:#fff;cursor:pointer}
-.btn{margin-top:14px;padding:12px 16px;border:3px solid var(--ink);border-radius:14px;background:#000;color:#fff;font:800 17px system-ui;cursor:pointer;width:fit-content}
-.btn.secondary{background:#fff;color:#000}.btn:active{transform:translateY(1px)}
-.hint{margin-top:8px;opacity:.65;font-weight:600}
-.stack{position:relative}
-.screen{position:absolute;inset:0;opacity:0;pointer-events:none;transform:translateX(40px);display:flex;flex-direction:column}
-.screen.active{opacity:1;pointer-events:auto;transform:none}
-.anim-out-left{animation:outLeft var(--dur) var(--ease) both}
-.anim-in-right{animation:inRight var(--dur) var(--ease) both}
-.anim-out-right{animation:outRight var(--dur) var(--ease) both}
-.anim-in-left{animation:inLeft var(--dur) var(--ease) both}
-@keyframes outLeft{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-40px)}}
-@keyframes inRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
-@keyframes outRight{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
-@keyframes inLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
-.center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:4px}
-.welcomeBox{padding:10px}
-.menu{display:flex;flex-direction:column;gap:14px}
-.cardLink,.mat{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;background:#e5e5e5;border:var(--thick) solid var(--ink);border-radius:20px;text-decoration:none;color:#000;cursor:pointer;font-size:clamp(18px,5vw,22px);font-weight:900;box-shadow:0 6px 14px rgba(0,0,0,.06)}
-.pillArrow{min-width:52px;height:38px;border:3px solid var(--ink);border-radius:999px;display:grid;place-items:center;background:#fff;color:#000}
-.list{display:flex;flex-direction:column;gap:12px;margin-top:6px}
-.left{display:flex;align-items:center;gap:10px}
-.icon{font-size:1.1em}
-.subjectTitle{font-size:clamp(28px,8vw,38px);text-align:center;margin:6px 0 8px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-top:6px}
-.gridItem{position:relative;overflow:hidden;background:#dcdcdc;border:var(--thick) solid var(--ink);border-radius:14px;aspect-ratio:3/4;cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,.06)}
-.gridItem img{width:100%;height:100%;object-fit:cover;display:block}
-.delBtn{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;border:3px solid var(--ink);background:#fff;color:#000;display:none;place-items:center;font-size:14px;cursor:pointer}
-.gridItem.admin .delBtn{display:grid}
-.delSmall{position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:50%;border:3px solid var(--ink);background:#fff;display:none;place-items:center}
-.mat.admin .delSmall{display:grid}
-.fab{position:fixed;right:22px;bottom:calc(22px + var(--safe-bottom));width:56px;height:56px;border-radius:50%;border:3px solid var(--ink);background:#000;color:#fff;display:none;place-items:center;font-size:26px;box-shadow:0 8px 18px rgba(0,0,0,.18);cursor:pointer;z-index:7}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:8}
-.modal .box{background:#fff;color:#000;border:var(--thick) solid var(--ink);border-radius:18px;padding:16px;width:min(92vw,400px)}
-.modal .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
-.viewer{position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:9}
-.viewer img{max-width:96vw;max-height:90vh;border-radius:12px}
-.viewer .close{position:fixed;top:16px;right:16px;width:42px;height:42px;border:3px solid #fff;border-radius:50%;color:#fff;display:grid;place-items:center;cursor:pointer}
-.sep{height:10px}
-.rowInline{display:flex;gap:8px;align-items:center;justify-content:center;margin:8px 0;flex-wrap:wrap}
-.badge{border:3px solid var(--ink);border-radius:12px;padding:6px 10px;background:#fff}
-.hwCard{border:3px solid var(--ink);border-radius:18px;padding:14px;background:#fff;display:flex;justify-content:space-between;gap:10px;align-items:center}
-.tag{font-weight:900}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Espace de cours — Pronote import</title>
+  <style>
+    :root{
+      --bg:#f7f7f8;
+      --card:#ffffff;
+      --txt:#111;
+      --muted:#666;
+      --primary:#111;
+      --radius:16px;
+      --shadow:0 6px 20px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    header{
+      position:sticky;top:0;z-index:3;background:var(--bg);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;border-bottom:1px solid #e9e9ee
+    }
+    h1{font-size:18px;margin:0}
+    .gear{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid #ddd;background:#fff;box-shadow:var(--shadow);cursor:pointer}
+    .tabs{display:flex;gap:8px;padding:12px 16px}
+    .tab{padding:10px 14px;border-radius:999px;border:1px solid #ddd;background:#fff;cursor:pointer}
+    .tab.active{background:#111;color:#fff;border-color:#111}
+    main{padding:8px 16px 80px}
+    .day{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 12px 8px;margin-bottom:14px}
+    .day h3{margin:0 0 8px 0;font-size:16px}
+    .slot{padding:10px 12px;border:1px solid #eee;border-radius:12px;margin:8px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .slot .left{display:flex;flex-direction:column}
+    .muted{color:var(--muted);font-size:12px}
+    .badge{padding:2px 8px;border-radius:999px;border:1px solid #ddd;font-size:12px}
+    .empty{padding:28px 12px;text-align:center;color:#999}
+    .panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:16px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn{background:#111;color:#fff;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+    .btn.secondary{background:#fff;color:#111;border:1px solid #ddd}
+    input,select{width:100%;padding:12px 12px;border:1px solid #ddd;border-radius:12px;background:#fff}
+    label{display:block;margin:8px 2px 4px;font-size:13px;color:#333}
+    /* modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.28);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+    .modal .card{background:#fff;border-radius:18px;max-width:560px;width:100%;padding:16px;box-shadow:var(--shadow)}
+    .card h2{margin:0 0 12px}
+    .hint{font-size:12px;color:#666;margin-top:8px}
+    .right{margin-left:auto}
+    /* limites centrage */
+    .wrap{max-width:860px;margin:0 auto}
+  </style>
 </head>
 <body>
-<main class="app">
-  <header class="bar">
-    <button id="gear" class="iconBtn" title="Paramètres">⚙️</button>
-    <button id="backBtn" class="iconBtn" aria-label="Retour">←</button>
+  <header class="wrap">
+    <h1>Espace de cours</h1>
+    <button id="gearBtn" class="gear" title="Paramètres">⚙️</button>
   </header>
 
-  <div id="stack" class="stack" aria-live="polite" aria-atomic="true">
-    <!-- 1) accueil -->
-    <section id="scr-welcome" class="screen active">
-      <div class="center welcomeBox">
-        <h1>Bienvenue dans ton espace de cours</h1>
-        <div>
-          <label for="prenom">Quel est ton prénom ?</label>
-          <input id="prenom" type="text" placeholder="Ton prénom" autocomplete="given-name">
-          <label>LV2 ?</label>
-          <div class="radioRow">
-            <label><input type="radio" name="lv2" value="allemand" checked> Allemand</label>
-            <label><input type="radio" name="lv2" value="espagnol"> Espagnol</label>
-          </div>
-          <button id="go" class="btn">Continuer</button>
-          <div id="msg" class="hint"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2) menu -->
-    <section id="scr-home" class="screen" aria-hidden="true">
-      <div class="center">
-        <h2>Bonjour <span id="who">Prénom</span></h2>
-        <nav class="menu">
-          <button id="btn-cours"    class="cardLink" type="button">COURS <span class="pillArrow">→</span></button>
-          <button id="btn-emploi"   class="cardLink" type="button">EMPLOI DU TEMPS <span class="pillArrow">→</span></button>
-          <button id="btn-devoirs"  class="cardLink" type="button">DEVOIRS <span class="pillArrow">→</span></button>
-          <button id="btn-controle" class="cardLink" type="button">CONTRÔLES <span class="pillArrow">→</span></button>
-        </nav>
-      </div>
-    </section>
-
-    <!-- 3) matières -->
-    <section id="scr-cours" class="screen" aria-hidden="true">
-      <h2 style="margin-top:4px">COURS</h2>
-      <div id="mat-list" class="list"></div>
-    </section>
-
-    <!-- 4) chapitres -->
-    <section id="scr-chapters" class="screen" aria-hidden="true">
-      <h2 id="chapTitle" class="subjectTitle">CHAPITRES</h2>
-      <div id="chap-list" class="list"></div>
-    </section>
-
-    <!-- 5) cours (grille) -->
-    <section id="scr-courses" class="screen" aria-hidden="true">
-      <h2 id="courseTitle" class="subjectTitle">COURS</h2>
-      <div id="grid" class="grid"></div>
-    </section>
-
-    <!-- 6) Emploi du temps -->
-    <section id="scr-emploi" class="screen" aria-hidden="true">
-      <h2>EMPLOI DU TEMPS</h2>
-      <div class="rowInline">
-        <button id="viewDay" class="btn secondary">Jour</button>
-        <button id="viewWeek" class="btn secondary">Semaine</button>
-      </div>
-      <div class="rowInline" id="dayControls">
-        <button id="dayPrev" class="iconBtn">◀</button>
-        <input id="dayPicker" type="date"/>
-        <button id="dayNext" class="iconBtn">▶</button>
-      </div>
-      <div id="agendaList" class="list"></div>
-      <div id="agendaWeek" class="list" style="display:none"></div>
-    </section>
-
-    <!-- 7) Devoirs -->
-    <section id="scr-homeworks" class="screen" aria-hidden="true">
-      <h2>DEVOIRS</h2>
-      <div id="hwList" class="list"></div>
-    </section>
-
-    <!-- 8) Contrôles -->
-    <section id="scr-exams" class="screen" aria-hidden="true">
-      <h2>CONTRÔLES</h2>
-      <div class="rowInline">
-        <button id="tabUp"   class="btn secondary">À venir</button>
-        <button id="tabPast" class="btn secondary">Passés</button>
-      </div>
-      <div id="upWrap" class="list"></div>
-      <div id="pastWrap" class="grid" style="margin-top:12px"></div>
-    </section>
+  <div class="tabs wrap">
+    <button class="tab active" id="tab-edt">Emploi du temps</button>
+    <button class="tab" id="tab-hw">Devoirs</button>
   </div>
 
-  <!-- FAB -->
-  <button id="fabAdd" class="fab" title="Ajouter">＋</button>
+  <main class="wrap">
+    <!-- Emploi du temps -->
+    <section id="view-edt">
+      <div class="panel" id="weekInfo">
+        <div class="row">
+          <strong id="weekLabel">Semaine :</strong>
+          <span class="right"></span>
+          <button class="btn secondary" id="prevWeek">◀︎ Semaine -1</button>
+          <button class="btn secondary" id="thisWeek">Aujourd’hui</button>
+          <button class="btn secondary" id="nextWeek">Semaine +1 ▶︎</button>
+        </div>
+      </div>
+      <div id="edtList"></div>
+    </section>
 
-  <!-- Modales -->
-  <div id="modalGear" class="modal"><div class="box">
-    <h3 style="margin:0 0 8px">Paramètres</h3><div id="adminRow"></div>
-    <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="gearClose">Fermer</button></div>
-  </div></div>
+    <!-- Devoirs -->
+    <section id="view-hw" style="display:none">
+      <div id="hwList"></div>
+    </section>
+  </main>
 
-  <div id="modalAdmin" class="modal"><div class="box">
-    <h3 style="margin:0 0 8px">Mode admin</h3>
-    <label for="adminCode">Code</label><input id="adminCode" type="text" inputmode="numeric" maxlength="8" placeholder="Code admin">
-    <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="adminCancel">Annuler</button><button class="btn" id="adminOk">Valider</button></div>
-    <div id="adminMsg" class="hint"></div>
-  </div></div>
+  <!-- MODAL Paramètres / Admin / Pronote -->
+  <div class="modal" id="modal">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>Paramètres</h2>
+        <button class="btn secondary" id="closeModal">Fermer</button>
+      </div>
 
-  <div id="modalChapter" class="modal"><div class="box">
-    <h3 style="margin:0 0 8px">Ajouter un chapitre</h3>
-    <label for="chapName">Nom du chapitre</label><input id="chapName" type="text" placeholder="Ex. Chapitre 1">
-    <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="chapCancel">Annuler</button><button class="btn" id="chapSave">Enregistrer</button></div>
-    <div id="chapMsg" class="hint"></div>
-  </div></div>
-
-  <div id="modalAdd" class="modal"><div class="box">
-    <h3 style="margin:0 0 8px">Ajouter des cours</h3>
-    <label>Images (une ou plusieurs)</label><input id="addImg" type="file" accept="image/*" capture="environment" multiple>
-    <label>Pour qui ?</label>
-    <div class="radioRow" id="audRow">
-      <label><input type="radio" name="aud" value="all" checked> Tous</label>
-      <label><input type="radio" name="aud" value="allemand"> Allemand</label>
-      <label><input type="radio" name="aud" value="espagnol"> Espagnol</label>
+      <div class="panel" id="adminPanel">
+        <div class="row">
+          <strong>Mode administrateur</strong>
+          <span class="right"></span>
+          <button class="btn" id="adminToggle">Admin</button>
+        </div>
+        <div id="adminArea" style="display:none;margin-top:10px"></div>
+      </div>
     </div>
-    <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="addCancel">Annuler</button><button class="btn" id="addSave">Enregistrer</button></div>
-    <div id="addMsg" class="hint"></div>
-  </div></div>
+  </div>
 
-  <div id="modalAgenda" class="modal"><div class="box">
-    <h3 style="margin:0 0 8px">Ajouter un cours (emploi du temps)</h3>
-    <label for="agDate">Jour</label><input id="agDate" type="date">
-    <div class="row"><div style="flex:1">
-      <label for="agStart">De</label><input id="agStart" type="time" value="08:00">
-    </div><div style="flex:1">
-      <label for="agEnd">À</label><input id="agEnd" type="time" value="09:00">
-    </div></div>
-    <label for="agTitle">Matière - salle</label><input id="agTitle" type="text" placeholder='Ex. "Math - 112"'>
-    <label>Récurrence</label>
-    <div class="radioRow" id="recRow">
-      <label><input type="radio" name="rec" value="once" checked> Une fois</label>
-      <label><input type="radio" name="rec" value="weekly"> Toutes les semaines</label>
-      <label><input type="radio" name="rec" value="biweekly"> Toutes les 2 semaines</label>
-    </div>
-    <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="agCancel">Annuler</button><button class="btn" id="agSave">Enregistrer</button></div>
-    <div id="agMsg" class="hint"></div>
-  </div></div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-  <div id="modalHW" class="modal"><div class="box">
-    <h3 style="margin:0 0 8px">Ajouter un devoir</h3>
-    <label for="hwSubject">Matière</label>
-    <select id="hwSubject"></select>
-    <label for="hwTitle">Devoir (texte)</label><input id="hwTitle" type="text" placeholder="Ex. Exo 3 p.27">
-    <label for="hwDue">Pour le</label><input id="hwDue" type="date">
-    <label>Correction (image/doc)</label><input id="hwCorr" type="file" accept="image/*,application/pdf">
-    <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="hwCancel">Annuler</button><button class="btn" id="hwSave">Enregistrer</button></div>
-    <div id="hwMsg" class="hint"></div>
-  </div></div>
+  <script type="module">
+    /* =========================
+       1)  CONFIG FIREBASE
+    ========================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
+      authDomain: "app-cours-94f32.firebaseapp.com",
+      projectId: "app-cours-94f32",
+      storageBucket: "app-cours-94f32.firebasestorage.app",
+      messagingSenderId: "519755746540",
+      appId: "1:519755746540:web:8d55f18754ce08884269c9",
+      measurementId: "G-VD89GYHJWV"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  <div id="modalExam" class="modal"><div class="box">
-    <h3 style="margin:0 0 8px">Ajouter un contrôle</h3>
-    <div class="radioRow">
-      <label><input type="radio" name="examType" value="upcoming" checked> À venir</label>
-      <label><input type="radio" name="examType" value="past"> Passé</label>
-    </div>
-    <label for="exTitle">Titre</label><input id="exTitle" type="text" placeholder="Ex. DS n°2">
-    <label for="exDate">Date</label><input id="exDate" type="date">
+    /* =========================
+       2)  HELPERS DATES
+    ========================== */
+    const pad = n => String(n).padStart(2,'0');
+    const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const fromISO = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+    const shift = (date,days) => { const d = new Date(date); d.setDate(d.getDate()+days); return d; };
+    const monday = (date)=>{ const d=new Date(date); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); return d; };
 
-    <div id="exUpcomingWrap">
-      <label for="exSubject">Matière</label>
-      <select id="exSubject"></select>
-      <label for="exChapter">Chapitre à réviser</label>
-      <select id="exChapter"><option value="">— Sélectionne une matière —</option></select>
-    </div>
+    /* =========================
+       3)  UI + NAV
+    ========================== */
+    const $ = sel => document.querySelector(sel);
+    const edtList = $('#edtList');
+    const hwList  = $('#hwList');
 
-    <div id="exPastWrap" style="display:none">
-      <label>Énoncé (image)</label><input id="exStmt" type="file" accept="image/*">
-      <label>Correction (image)</label><input id="exCorr" type="file" accept="image/*">
-    </div>
+    // onglets
+    const tabEdt = $('#tab-edt');
+    const tabHw  = $('#tab-hw');
+    tabEdt.onclick = ()=>{ tabEdt.classList.add('active'); tabHw.classList.remove('active'); $('#view-edt').style.display='block'; $('#view-hw').style.display='none'; };
+    tabHw.onclick  = ()=>{ tabHw.classList.add('active'); tabEdt.classList.remove('active'); $('#view-edt').style.display='none'; $('#view-hw').style.display='block'; renderHomeworks(); };
 
-    <div class="row" style="justify-content:flex-end"><button class="btn secondary" id="exCancel">Annuler</button><button class="btn" id="exSave">Enregistrer</button></div>
-    <div id="exMsg" class="hint"></div>
-  </div></div>
-
-  <!-- viewer -->
-  <div id="viewer" class="viewer"><button class="close" id="viewerClose">✕</button><img id="viewerImg" alt="Image"></div>
-</main>
-
-<script type="module">
-/* ---------- Firebase ---------- */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, query, orderBy, onSnapshot,
-  doc, deleteDoc, getDocs, where
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
-  authDomain: "app-cours-94f32.firebaseapp.com",
-  projectId: "app-cours-94f32",
-  storageBucket: "app-cours-94f32.firebasestorage.app",
-  messagingSenderId: "519755746540",
-  appId: "1:519755746540:web:8d55f18754ce08884269c9",
-  measurementId: "G-VD89GYHJWV"
-};
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
-
-/* ---------- helpers UI ---------- */
-const $ = s => document.querySelector(s);
-const stack = $('#stack'), backBtn = $('#backBtn'), gearBtn = $('#gear');
-function setStackHeight(h){ stack.style.height = h+'px'; }
-const navStack = ['scr-welcome'];
-function activeId(){ return navStack[navStack.length-1]; }
-function activeScreen(){ return document.getElementById(activeId()); }
-function canGoBack(){ return navStack.length>1; }
-function refreshBack(){ backBtn.style.visibility = canGoBack() ? 'visible' : 'hidden'; }
-function refreshGear(){ gearBtn.style.display = activeId()==='scr-welcome' ? 'none' : 'inline-grid'; }
-function animate(fromEl,toEl,dir){
-  setStackHeight(Math.max(fromEl.scrollHeight,toEl.scrollHeight));
-  fromEl.classList.remove('active'); toEl.classList.add('active');
-  const o = dir==='f' ? 'anim-out-left':'anim-out-right';
-  const i = dir==='f' ? 'anim-in-right':'anim-in-left';
-  fromEl.classList.add(o); toEl.classList.add(i);
-  toEl.addEventListener('animationend',()=>{ fromEl.classList.remove(o); toEl.classList.remove(i); setStackHeight(toEl.scrollHeight); },{once:true});
-}
-function go(id,dir='f'){ const a=activeScreen(); const b=document.getElementById(id); if(a===b) return; navStack.push(id); animate(a,b,dir); refreshBack(); refreshGear(); toggleFab(); }
-function back(){ if(!canGoBack()) return; const a=activeScreen(); navStack.pop(); const b=activeScreen(); animate(a,b,'b'); refreshBack(); refreshGear(); toggleFab(); }
-backBtn.onclick = back;
-
-/* ---------- Etat ----------- */
-const who = $('#who'), prenomInput = $('#prenom'), msg = $('#msg');
-let isAdminUI = false;
-let currentSubject = null, currentSubjectName = null;
-let currentChapter = null;
-let unsubscribe = null;
-
-const chapterOrderMaxBySubject = {};
-const courseOrderMaxByChap = {};
-let hwOrderMax = -1;
-
-const subjects = [
-  {slug:'francais', name:'Français', color:'var(--c-fr)',  icon:'📚'},
-  {slug:'histoire', name:'Histoire', color:'var(--c-his)', icon:'🏛️'},
-  {slug:'svt',      name:'SVT',      color:'var(--c-svt)', icon:'🧬'},
-  {slug:'chimie',   name:'Chimie',   color:'var(--c-chi)', icon:'⚗️'},
-  {slug:'snt',      name:'SNT',      color:'var(--c-snt)', icon:'💻'},
-  {slug:'ses',      name:'SES',      color:'var(--c-ses)', icon:'📈'},
-  {slug:'anglais',  name:'Anglais',  color:'var(--c-ang)', icon:'🇬🇧'}
-];
-function subjectBySlug(s){ return subjects.find(x=>x.slug===s); }
-function todayISO(){ return new Date().toISOString().slice(0,10); }
-function shiftDate(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
-
-/* ---------- Accueil ---------- */
-function saveAndGo(){
-  const name = (prenomInput.value||'').trim();
-  if(!name){ msg.textContent = "Entre ton prénom pour continuer."; return; }
-  const lv2 = document.querySelector('input[name="lv2"]:checked')?.value || 'allemand';
-  localStorage.setItem('prenom', name);
-  localStorage.setItem('lv2', lv2);
-  who.textContent = name;
-  msg.textContent = '';
-  go('scr-home','f');
-}
-$('#go').onclick = saveAndGo;
-prenomInput.addEventListener('keydown', e=>{ if(e.key==='Enter') saveAndGo(); });
-
-/* ---------- Menu ---------- */
-$('#btn-cours').onclick    = ()=>{ renderMatieres(); go('scr-cours','f'); };
-$('#btn-emploi').onclick   = ()=>{ initAgenda(); go('scr-emploi','f'); };
-$('#btn-devoirs').onclick  = ()=>{ openHomeworks(); go('scr-homeworks','f'); };
-$('#btn-controle').onclick = ()=>{ openExams(); go('scr-exams','f'); };
-
-function renderMatieres(){
-  const wrap = $('#mat-list'); wrap.innerHTML='';
-  for(const s of subjects){
-    const b = document.createElement('button');
-    b.className='mat'; b.type='button'; b.style.background = s.color;
-    b.innerHTML = `<span class="left"><span>${s.name}</span> <span class="icon">${s.icon}</span></span><span class="pillArrow">→</span>`;
-    b.onclick = ()=> openSubject(s.slug, s.name);
-    wrap.appendChild(b);
-  }
-}
-
-/* ---------- Chapitres (CRUD + suppression admin) ---------- */
-function openSubject(slug, name){
-  currentSubject = slug; currentSubjectName = name;
-  $('#chapTitle').textContent = `${name} — chapitres`;
-  renderChapters();
-  go('scr-chapters','f');
-  setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-}
-
-async function deleteChapterCascade(chId){
-  const path = `subjects/${currentSubject}/chapters/${chId}/courses`;
-  const snap = await getDocs(collection(db, path));
-  const tasks = [];
-  snap.forEach(d=> tasks.push(deleteDoc(doc(db, path, d.id))));
-  await Promise.all(tasks);
-  await deleteDoc(doc(db, `subjects/${currentSubject}/chapters/${chId}`));
-}
-
-function renderChapters(){
-  if (unsubscribe) { unsubscribe(); unsubscribe=null; }
-  const list = $('#chap-list'); list.innerHTML='';
-  const qy = query(collection(db, `subjects/${currentSubject}/chapters`), orderBy("order","asc"));
-  unsubscribe = onSnapshot(qy, snap=>{
-    const arr=[]; snap.forEach(d=>arr.push({id:d.id, ...d.data()}));
-    chapterOrderMaxBySubject[currentSubject] =
-      arr.reduce((acc,it)=>Math.max(acc, typeof it.order==='number'?it.order:-1), -1);
-
-    list.innerHTML='';
-    if(!arr.length){ list.innerHTML = '<div class="hint" style="margin:8px auto">Aucun chapitre pour le moment.</div>'; }
-    else for(const ch of arr){
-      const btn = document.createElement('button');
-      btn.className='mat' + (isAdminUI?' admin':''); btn.type='button';
-      btn.innerHTML = `<span class="left"><span>${ch.name}</span></span><span class="pillArrow">→</span>`;
-      btn.onclick = ()=> openChapter(ch.id, ch.name);
-      if(isAdminUI){
-        const del=document.createElement('button'); del.className='delSmall'; del.textContent='🗑️'; del.title='Supprimer';
-        del.onclick = async (e)=>{ e.stopPropagation(); if(confirm('Supprimer ce chapitre et tous ses cours ?')){ await deleteChapterCascade(ch.id); } };
-        btn.appendChild(del);
+    // semaine
+    let currentMonday = monday(new Date());
+    const weekLabel = $('#weekLabel');
+    const updateWeekLabel = ()=>{
+      const d1 = currentMonday;
+      const d7 = shift(currentMonday,6);
+      weekLabel.textContent = `Semaine : ${iso(d1)} → ${iso(d7)}`;
+    };
+    const renderWeek = async ()=>{
+      updateWeekLabel();
+      edtList.innerHTML = '';
+      for(let i=0;i<7;i++){
+        const day = iso(shift(currentMonday,i));
+        await renderDay(day);
       }
-      list.appendChild(btn);
-    }
-    setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-  });
-}
+    };
+    $('#prevWeek').onclick = ()=>{ currentMonday = shift(currentMonday,-7); renderWeek(); };
+    $('#nextWeek').onclick = ()=>{ currentMonday = shift(currentMonday, 7); renderWeek(); };
+    $('#thisWeek').onclick = ()=>{ currentMonday = monday(new Date()); renderWeek(); };
 
-function openChapter(chapterId, chapterName){
-  currentChapter = { id: chapterId, name: chapterName };
-  $('#courseTitle').textContent = `${currentSubjectName} — ${chapterName}`;
-  renderCourses();
-  go('scr-courses','f');
-  setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-}
+    async function renderDay(dayISO){
+      const dayEl = document.createElement('div');
+      dayEl.className='day';
+      const label = new Date(dayISO+'T00:00');
+      const weekday = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][ (label.getDay()+6)%7 ];
+      dayEl.innerHTML = `<h3>${weekday} — ${dayISO}</h3>`;
+      const cont = document.createElement('div');
 
-/* ---------- Cours (grille, filtrage LV2) ---------- */
-const grid = $('#grid');
-function lv2(){ return localStorage.getItem('lv2') || 'allemand'; }
-function renderCourses(){
-  if (unsubscribe) { unsubscribe(); unsubscribe=null; }
-  grid.innerHTML='';
-  const path = `subjects/${currentSubject}/chapters/${currentChapter.id}/courses`;
-  const qy = query(collection(db, path), orderBy("order","asc"));
-  unsubscribe = onSnapshot(qy, snap=>{
-    const arr=[]; snap.forEach(d=>arr.push({id:d.id, ...d.data()}));
-    const key = `${currentSubject}/${currentChapter.id}`;
-    courseOrderMaxByChap[key] = arr.reduce((acc,it)=>Math.max(acc, typeof it.order==='number'?it.order:-1), -1);
-
-    // filtre LV2 pour les élèves
-    const myLv2 = lv2();
-    const filtered = isAdminUI ? arr : arr.filter(it => (it.aud||'all')==='all' || (it.aud===myLv2));
-
-    grid.innerHTML='';
-    if(!filtered.length){ grid.innerHTML = '<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>'; }
-    else for(const it of filtered){
-      const item=document.createElement('div'); item.className='gridItem'+(isAdminUI?' admin':'');
-      const im = new Image(); im.src=it.img; item.appendChild(im);
-      const del=document.createElement('button'); del.className='delBtn'; del.textContent='🗑️'; del.title='Supprimer';
-      del.onclick=async(e)=>{ e.stopPropagation(); if(confirm('Supprimer ce cours ?')){ await deleteDoc(doc(db, path, it.id)); } };
-      item.appendChild(del);
-      item.onclick=()=> openViewer(it.img);
-      grid.appendChild(item);
-    }
-    setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-  });
-}
-
-/* ---------- viewer ---------- */
-function openViewer(src){ if(!src) return; $('#viewerImg').src=src; $('#viewer').style.display='flex'; }
-$('#viewerClose').onclick = ()=> $('#viewer').style.display='none';
-
-/* ---------- Paramètres + Admin ---------- */
-const modalGear=$('#modalGear'), adminRow=$('#adminRow');
-function refreshGearModal(){
-  adminRow.innerHTML='';
-  const b=document.createElement('button'); b.className='btn'; b.textContent=isAdminUI?'Quitter admin':'Admin';
-  b.onclick=()=>{ if(isAdminUI){isAdminUI=false; modalGear.style.display='none'; toggleFab(); renderChapters(); renderCourses(); refreshAdminLists(); } else{ modalGear.style.display='none'; openAdminModal(); } };
-  adminRow.appendChild(b);
-}
-function refreshAdminLists(){
-  document.querySelectorAll('.gridItem').forEach(el=> isAdminUI?el.classList.add('admin'):el.classList.remove('admin'));
-  document.querySelectorAll('.mat').forEach(el=> isAdminUI?el.classList.add('admin'):el.classList.remove('admin'));
-}
-function openAdminModal(){ $('#adminCode').value=''; $('#adminMsg').textContent=''; $('#modalAdmin').style.display='flex'; }
-gearBtn.onclick=()=>{ refreshGearModal(); modalGear.style.display='flex'; };
-$('#gearClose').onclick=()=> modalGear.style.display='none';
-$('#adminCancel').onclick=()=> $('#modalAdmin').style.display='none';
-$('#adminOk').onclick=()=>{ if($('#adminCode').value.trim()==='2525'){ isAdminUI=true; $('#modalAdmin').style.display='none'; toggleFab(); refreshAdminLists(); } else { $('#adminMsg').textContent='Code incorrect.'; } };
-
-/* ---------- FAB : contextes ---------- */
-const fab = $('#fabAdd');
-function toggleFab(){
-  const id = activeId(); let show=false, action='';
-  if(isAdminUI && id==='scr-chapters'){ show=true; action='chapter'; }
-  if(isAdminUI && id==='scr-courses'){  show=true; action='course'; }
-  if(isAdminUI && id==='scr-emploi'){   show=true; action='agenda'; }
-  if(isAdminUI && id==='scr-homeworks'){show=true; action='homework'; }
-  if(isAdminUI && id==='scr-exams'){    show=true; action='exam'; }
-  fab.style.display = show ? 'grid' : 'none'; fab.dataset.action = action;
-}
-fab.onclick=()=>{
-  switch(fab.dataset.action){
-    case 'chapter': $('#chapName').value=''; $('#chapMsg').textContent=''; $('#modalChapter').style.display='flex'; break;
-    case 'course' : $('#addImg').value=''; $('#addMsg').textContent=''; $('#modalAdd').style.display='flex'; break;
-    case 'agenda' : openAgendaAdd(); break;
-    case 'homework':
-      fillHWSubjects(); $('#hwTitle').value=''; $('#hwDue').value=''; $('#hwCorr').value='';
-      $('#hwMsg').textContent=''; $('#modalHW').style.display='flex'; break;
-    case 'exam'   : openExamAdd(); break;
-  }
-};
-
-/* ---------- Ajout Chapitre ---------- */
-$('#chapCancel').onclick=()=> $('#modalChapter').style.display='none';
-$('#chapSave').onclick=async()=>{
-  const name=($('#chapName').value||'').trim(); const out=$('#chapMsg');
-  if(!name){ out.textContent='Entre un nom de chapitre.'; return; }
-  try{
-    const start=(chapterOrderMaxBySubject[currentSubject]??-1)+1;
-    await addDoc(collection(db, `subjects/${currentSubject}/chapters`), {name, order:start, createdAt:Date.now()});
-    $('#modalChapter').style.display='none';
-  }catch(e){ out.textContent="Impossible d'ajouter ce chapitre."; }
-};
-
-/* ---------- Ajout Cours (multi) ---------- */
-$('#addCancel').onclick=()=> $('#modalAdd').style.display='none';
-$('#addSave').onclick=async()=>{
-  const files=Array.from($('#addImg').files||[]); const out=$('#addMsg');
-  const aud=document.querySelector('input[name="aud"]:checked')?.value||'all';
-  if(!files.length){ out.textContent='Choisis au moins une image.'; return; }
-  if(!currentChapter){ out.textContent='Pas de chapitre sélectionné.'; return; }
-  out.textContent='Compression et enregistrement...';
-  try{
-    const key=`${currentSubject}/${currentChapter.id}`;
-    let start=(courseOrderMaxByChap[key]??-1)+1;
-    const path=`subjects/${currentSubject}/chapters/${currentChapter.id}/courses`;
-    for(let i=0;i<files.length;i++){
-      const imgURL=await compressAndUpload(files[i],1280,.8);
-      await addDoc(collection(db, path), {img:imgURL, order:start+i, createdAt:Date.now()+i, aud});
-    }
-    $('#modalAdd').style.display='none';
-  }catch(e){ out.textContent="Échec de l'enregistrement. Essaie avec des images plus petites."; }
-};
-async function compressAndUpload(file,max=1280,quality=.8){
-  const url=URL.createObjectURL(file);
-  const img=await new Promise((res,rej)=>{const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url;});
-  let {width:w,height:h}=img; if(Math.max(w,h)>max){ if(w>h){h=Math.round(h*max/w);w=max;} else {w=Math.round(w*max/h);h=max;} }
-  const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h; const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
-  URL.revokeObjectURL(url); return canvas.toDataURL('image/jpeg',quality);
-}
-
-/* ---------- Emploi du temps : jour / semaine + récurrence ---------- */
-const dayPicker=$('#dayPicker'), agendaList=$('#agendaList'), weekWrap=$('#agendaWeek');
-const viewDayBtn=$('#viewDay'), viewWeekBtn=$('#viewWeek'), dayControls=$('#dayControls');
-let viewMode='day';
-viewDayBtn.onclick=()=>{ viewMode='day'; dayControls.style.display='flex'; agendaList.style.display='block'; weekWrap.style.display='none'; initAgenda(); };
-viewWeekBtn.onclick=()=>{ viewMode='week'; dayControls.style.display='none'; agendaList.style.display='none'; weekWrap.style.display='block'; initAgenda(); };
-
-$('#dayPrev').onclick=()=>{ dayPicker.value=shiftDate(dayPicker.value,-1); listenAgendaDay(); };
-$('#dayNext').onclick=()=>{ dayPicker.value=shiftDate(dayPicker.value,+1); listenAgendaDay(); };
-dayPicker.onchange=()=> listenAgendaDay();
-
-let unsubAgenda=null;
-function initAgenda(){
-  if(!dayPicker.value) dayPicker.value=todayISO();
-  if(viewMode==='day'){ listenAgendaDay(); }
-  else { renderWeek(dayPicker.value); }
-}
-function dowISO(date){ const d=new Date(date).getDay(); return ((d+6)%7); } // 0=lundi ... 6=dim
-function mondayISO(date){
-  const d=new Date(date); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); return d.toISOString().slice(0,10);
-}
-function diffWeeks(a,b){ // nb de semaines entre a (start) et b (>=a)
-  const d1=new Date(a), d2=new Date(b);
-  const ms= (mondayISO(d2.toISOString())===mondayISO(d1.toISOString())) ? 0 : Math.round((d2 - d1)/(1000*60*60*24*7));
-  return ms;
-}
-
-async function getRecurringFor(dateISO){
-  const arr=[]; const snap=await getDocs(collection(db,'scheduleRecurring/items'));
-  snap.forEach(d=>{
-    const it=d.data();
-    const condDOW = it.dow === (new Date(dateISO).getDay());
-    const after = dateISO >= it.startDate;
-    const weeks = diffWeeks(mondayISO(it.startDate), mondayISO(dateISO));
-    const okInterval = (it.interval||1)===1 || (weeks%2===0);
-    if(condDOW && after && okInterval){ arr.push(it); }
-  });
-  return arr;
-}
-
-function listenAgendaDay(){
-  if(unsubAgenda){unsubAgenda();unsubAgenda=null;}
-  agendaList.innerHTML='';
-  const qy=query(collection(db,`schedule/${dayPicker.value}/items`),orderBy("start","asc"));
-  unsubAgenda=onSnapshot(qy, async snap=>{
-    const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data(), _col:'day'}));
-    // add recurring
-    const rec=await getRecurringFor(dayPicker.value);
-    for(const r of rec){ arr.push({...r,_col:'rec'}); }
-    arr.sort((a,b)=> (a.start||'') < (b.start||'') ? -1 : 1);
-    agendaList.innerHTML='';
-    if(!arr.length) agendaList.innerHTML='<div class="hint" style="margin:8px auto">Aucun cours ce jour.</div>';
-    for(const it of arr){
-      const row=document.createElement('div'); row.className='mat'+(isAdminUI?' admin':'');
-      row.innerHTML=`<span class="left"><span>${it.title}</span><span class="badge">${it.start}–${it.end}</span></span>`;
-      if(isAdminUI && it._col==='day'){ const del=document.createElement('button'); del.className='delSmall'; del.textContent='🗑️'; del.onclick=async(e)=>{e.stopPropagation(); if(confirm('Supprimer ?')) await deleteDoc(doc(db,`schedule/${dayPicker.value}/items/${it.id}`));}; row.appendChild(del); }
-      agendaList.appendChild(row);
-    }
-    setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-  });
-}
-
-async function renderWeek(anchorISO){
-  const startMon=mondayISO(anchorISO); weekWrap.innerHTML='';
-  for(let i=0;i<7;i++){
-    const d=shiftDate(startMon,i);
-    const dayName=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][i];
-    const holder=document.createElement('div'); holder.className='mat'; holder.innerHTML=`<span class="left"><span>${dayName} ${d}</span></span>`;
-    weekWrap.appendChild(holder);
-
-    const snap=await getDocs(query(collection(db,`schedule/${d}/items`),orderBy("start","asc")));
-    const arr=[]; snap.forEach(x=>arr.push({...x.data(), _col:'day'}));
-    const rec=await getRecurringFor(d); rec.forEach(x=>arr.push({...x,_col:'rec'}));
-    arr.sort((a,b)=> (a.start||'') < (b.start||'') ? -1 : 1);
-    if(!arr.length){ const empty=document.createElement('div'); empty.className='hint'; empty.textContent='—'; empty.style.margin='0 0 8px 12px'; weekWrap.appendChild(empty); }
-    else{
-      for(const it of arr){
-        const row=document.createElement('div'); row.className='hwCard'; row.innerHTML=`<span>${it.title}</span><span class="badge">${it.start}–${it.end}</span>`;
-        weekWrap.appendChild(row);
+      const snap = await db.collection(`schedule/${dayISO}/items`).orderBy('start').get();
+      if(snap.empty){
+        cont.innerHTML = `<div class="empty">Aucun cours.</div>`;
+      }else{
+        snap.forEach(doc=>{
+          const it = doc.data();
+          const row = document.createElement('div');
+          row.className='slot';
+          row.innerHTML = `
+            <div class="left">
+              <strong>${it.title || ''}</strong>
+              <span class="muted">${it.start || ''} — ${it.end || ''}</span>
+            </div>
+            <span class="badge">Salle</span>
+          `;
+          cont.appendChild(row);
+        });
       }
+      dayEl.appendChild(cont);
+      edtList.appendChild(dayEl);
     }
-  }
-  setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-}
 
-function openAgendaAdd(){ $('#agMsg').textContent=''; $('#agDate').value=dayPicker.value; $('#agStart').value='08:00'; $('#agEnd').value='09:00'; $('#agTitle').value=''; $('#modalAgenda').style.display='flex'; }
-$('#agCancel').onclick=()=> $('#modalAgenda').style.display='none';
-$('#agSave').onclick=async()=>{
-  const d=$('#agDate').value, s=$('#agStart').value, e=$('#agEnd').value, t=($('#agTitle').value||'').trim(), out=$('#agMsg');
-  const rec=document.querySelector('input[name="rec"]:checked')?.value||'once';
-  if(!d||!s||!e||!t){ out.textContent='Complète tous les champs.'; return; }
-  if(s>=e){ out.textContent='L\'heure de début doit être < fin.'; return; }
-  try{
-    if(rec==='once'){
-      await addDoc(collection(db,`schedule/${d}/items`), {title:t,start:s,end:e,createdAt:Date.now()});
-      if(dayPicker.value!==d){dayPicker.value=d; listenAgendaDay();}
-    }else{
-      await addDoc(collection(db,'scheduleRecurring/items'), {
-        title:t,start:s,end:e,startDate:d, dow:new Date(d).getDay(), interval:(rec==='weekly'?1:2), createdAt:Date.now()
+    async function renderHomeworks(){
+      hwList.innerHTML = '';
+      const snap = await db.collection('homeworks').orderBy('dueDate').get();
+      if(snap.empty){
+        hwList.innerHTML = `<div class="panel empty">Aucun devoir.</div>`;
+        return;
+      }
+      let currentDate = '';
+      snap.forEach(doc=>{
+        const d = doc.data();
+        if(d.dueDate !== currentDate){
+          currentDate = d.dueDate;
+          const h = document.createElement('div');
+          h.className='day';
+          h.innerHTML = `<h3>Pour le ${currentDate}</h3>`;
+          hwList.appendChild(h);
+        }
+        const row = document.createElement('div');
+        row.className='slot';
+        row.innerHTML = `
+          <div class="left">
+            <strong>${(d.subjectSlug||'').toUpperCase()} — ${d.title||''}</strong>
+            <span class="muted">Ajouté le ${d.createdAt ? new Date(d.createdAt).toLocaleString() : ''}</span>
+          </div>
+        `;
+        hwList.lastElementChild.appendChild(row);
       });
-      // rafraîchir vue
-      if(viewMode==='day') listenAgendaDay(); else renderWeek(d);
     }
-    $('#modalAgenda').style.display='none';
-  }catch(err){ out.textContent='Erreur: '+(err.message||err); }
-};
 
-/* ---------- Devoirs (matière + couleur + correction + purge passés) ---------- */
-let unsubHW=null;
-function colorFor(slug){ return (subjectBySlug(slug)||{}).color || '#fff'; }
-function fillHWSubjects(){
-  const sel=$('#hwSubject'); sel.innerHTML = subjects.map(s=>`<option value="${s.slug}">${s.name}</option>`).join('');
-}
-function openHomeworks(){
-  if(unsubHW){unsubHW();unsubHW=null;}
-  const qy=query(collection(db,'homeworks'),orderBy("dueDate","asc"));
-  unsubHW=onSnapshot(qy, async snap=>{
-    const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()}));
-    // purge auto des passés
-    const today=todayISO();
-    for(const it of arr){ if(it.dueDate && it.dueDate<today){ try{ await deleteDoc(doc(db,`homeworks/${it.id}`)); }catch{} } }
-    const future=arr.filter(it=> !it.dueDate || it.dueDate>=today );
-    hwOrderMax=future.reduce((a,it)=>Math.max(a,typeof it.order==='number'?it.order:-1),-1);
+    /* =========================
+       4)  MODAL / ADMIN
+    ========================== */
+    const modal = $('#modal');
+    $('#gearBtn').onclick = ()=>{ modal.style.display='flex'; refreshAdminPanel(); };
+    $('#closeModal').onclick = ()=> modal.style.display='none';
 
-    const list=$('#hwList'); list.innerHTML='';
-    if(!future.length) list.innerHTML='<div class="hint" style="margin:8px auto">Aucun devoir.</div>';
-    for(const it of future){
-      const card=document.createElement('div'); card.className='hwCard'+(isAdminUI?' admin':''); card.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue(colorFor(it.subjectSlug)?'--ink':'--ink');
-      card.style.borderColor = (subjectBySlug(it.subjectSlug)?.color) ? subjectBySlug(it.subjectSlug).color : '#000';
-      const due=it.dueDate?`<span class="badge">${it.dueDate}</span>`:''; 
-      card.innerHTML=`<div class="left"><span class="tag">${(subjectBySlug(it.subjectSlug)?.name)||'?'}</span> — ${it.title}</div>${due}`;
-      if(it.corr){ card.style.cursor='pointer'; card.title='Voir la correction'; card.onclick=()=> openViewer(it.corr); }
-      if(isAdminUI){ const del=document.createElement('button'); del.className='delSmall'; del.textContent='🗑️'; del.onclick=async(e)=>{e.stopPropagation(); if(confirm('Supprimer ?')) await deleteDoc(doc(db,`homeworks/${it.id}`));}; card.appendChild(del); }
-      list.appendChild(card);
+    let isAdmin = false;
+    $('#adminToggle').onclick = async ()=>{
+      if(isAdmin){
+        isAdmin = false;
+        refreshAdminPanel();
+        return;
+      }
+      const code = prompt('Code admin :');
+      if(code === '2525'){ isAdmin = true; }
+      refreshAdminPanel();
+    };
+
+    function refreshAdminPanel(){
+      $('#adminToggle').textContent = isAdmin ? 'Quitter admin' : 'Admin';
+      const area = $('#adminArea');
+      area.style.display = isAdmin ? 'block' : 'none';
+      if(!isAdmin){ area.innerHTML=''; return; }
+      renderPronoteForm(area);
     }
-    setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-  });
-}
-$('#hwCancel').onclick=()=> $('#modalHW').style.display='none';
-$('#hwSave').onclick=async()=>{
-  const subjectSlug=$('#hwSubject').value;
-  const title=($('#hwTitle').value||'').trim(); const due=$('#hwDue').value||''; const out=$('#hwMsg');
-  const corrFile=$('#hwCorr').files[0];
-  if(!title){ out.textContent='Entre le texte du devoir.'; return; }
-  let corr=null; if(corrFile){ corr = await compressAndUpload(corrFile,1280,.8); }
-  try{ await addDoc(collection(db,'homeworks'),{title,subjectSlug,dueDate:due,order:(hwOrderMax+1),corr,createdAt:Date.now()}); $('#modalHW').style.display='none'; }
-  catch(err){ out.textContent='Erreur: '+(err.message||err); }
-};
 
-/* ---------- Contrôles ---------- */
-let unsubUp=null, unsubPast=null; let examTab='upcoming';
-const upWrap=$('#upWrap'), pastWrap=$('#pastWrap');
-$('#tabUp').onclick=()=>{examTab='upcoming'; toggleExamTab();};
-$('#tabPast').onclick=()=>{examTab='past'; toggleExamTab();};
-function toggleExamTab(){ $('#tabUp').classList.toggle('secondary', examTab!=='upcoming'); $('#tabPast').classList.toggle('secondary', examTab!=='past'); upWrap.style.display= examTab==='upcoming'?'block':'none'; pastWrap.style.display= examTab==='past'?'grid':'none'; setStackHeight(activeScreen().scrollHeight); }
-function openExams(){
-  toggleExamTab();
-  if(unsubUp){unsubUp();unsubUp=null;}
-  unsubUp=onSnapshot(query(collection(db,'exams/upcoming'),orderBy("date","asc")),snap=>{
-    upWrap.innerHTML=''; const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()}));
-    if(!arr.length) upWrap.innerHTML='<div class="hint" style="margin:8px auto">Aucun contrôle à venir.</div>';
-    for(const it of arr){
-      const card=document.createElement('div'); card.className='mat'+(isAdminUI?' admin':'');
-      card.innerHTML=`<span class="left"><span>${it.title}</span><span class="badge">${it.date||''}</span></span><span class="pillArrow">Réviser →</span>`;
-      card.onclick=()=> gotoChapter(it.subjectSlug, it.chapterId, it.chapterName);
-      if(isAdminUI){ const del=document.createElement('button'); del.className='delSmall'; del.textContent='🗑️'; del.onclick=async(e)=>{e.stopPropagation(); if(confirm('Supprimer ?')) await deleteDoc(doc(db,`exams/upcoming/${it.id}`));}; card.appendChild(del); }
-      upWrap.appendChild(card);
-    }
-    setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-  });
-  if(unsubPast){unsubPast();unsubPast=null;}
-  unsubPast=onSnapshot(query(collection(db,'exams/past'),orderBy("date","desc")),snap=>{
-    pastWrap.innerHTML=''; const arr=[]; snap.forEach(d=>arr.push({id:d.id,...d.data()}));
-    if(!arr.length){ pastWrap.parentElement.insertAdjacentHTML('beforeend','<div class="hint" style="margin:8px auto">Aucun contrôle passé.</div>'); }
-    for(const it of arr){
-      const item=document.createElement('div'); item.className='gridItem'+(isAdminUI?' admin':''); 
-      const img=new Image(); img.src=it.stmt; item.appendChild(img);
-      const del=document.createElement('button'); del.className='delBtn'; del.textContent='🗑️'; del.onclick=async(e)=>{e.stopPropagation(); if(confirm('Supprimer ?')) await deleteDoc(doc(db,`exams/past/${it.id}`));};
-      item.appendChild(del);
-      item.onclick=()=> openViewer(it.corr||it.stmt);
-      pastWrap.appendChild(item);
-    }
-    setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
-  });
-}
-function gotoChapter(slug, chapId, chapName){
-  const s = subjectBySlug(slug); if(!s) return;
-  openSubject(slug, s.name);
-  setTimeout(()=> openChapter(chapId, chapName), 250);
-}
-function openExamAdd(){
-  $('#exMsg').textContent='';
-  const selSub=$('#exSubject'); selSub.innerHTML = subjects.map(s=>`<option value="${s.slug}">${s.name}</option>`).join('');
-  fillChaptersForSubject(selSub.value);
-  selSub.onchange=()=> fillChaptersForSubject(selSub.value);
-  const typeSel=()=>document.querySelector('input[name="examType"]:checked')?.value||'upcoming';
-  const toggle=()=>{ const t=typeSel(); $('#exUpcomingWrap').style.display=t==='upcoming'?'block':'none'; $('#exPastWrap').style.display=t==='past'?'block':'none'; };
-  document.querySelectorAll('input[name="examType"]').forEach(r=> r.onchange=toggle); toggle();
-  $('#exTitle').value=''; $('#exDate').value=''; $('#exStmt').value=''; $('#exCorr').value='';
-  $('#modalExam').style.display='flex';
-}
-async function fillChaptersForSubject(slug){
-  const sel=$('#exChapter'); sel.innerHTML='';
-  const snap=await getDocs(query(collection(db,`subjects/${slug}/chapters`),orderBy("order","asc")));
-  snap.forEach(d=> sel.insertAdjacentHTML('beforeend', `<option value="${d.id}">${d.data().name}</option>`));
-}
-$('#exCancel').onclick=()=> $('#modalExam').style.display='none';
-$('#exSave').onclick=async()=>{
-  const out=$('#exMsg'); const title=($('#exTitle').value||'').trim(); const date=$('#exDate').value||'';
-  const type=document.querySelector('input[name="examType"]:checked')?.value||'upcoming';
-  if(!title){ out.textContent='Titre requis.'; return; }
-  try{
-    if(type==='upcoming'){
-      const subjectSlug=$('#exSubject').value, chapterId=$('#exChapter').value, chapterName=$('#exChapter').selectedOptions[0]?.text||'Chapitre';
-      await addDoc(collection(db,'exams/upcoming'), {title,date,subjectSlug,chapterId,chapterName,createdAt:Date.now()});
-    }else{
-      const f1=$('#exStmt').files[0], f2=$('#exCorr').files[0];
-      if(!f1||!f2){ out.textContent='Ajoute énoncé ET correction.'; return; }
-      const stmt=await compressAndUpload(f1,1280,.8); const corr=await compressAndUpload(f2,1280,.8);
-      await addDoc(collection(db,'exams/past'), {title,date,stmt,corr,createdAt:Date.now()});
-    }
-    $('#modalExam').style.display='none';
-  }catch(e){ out.textContent='Erreur: '+(e.message||e); }
-};
+    /* =========================
+       5)  PRONOTE: ENDPOINT + FORM + IMPORT
+    ========================== */
+    // >>>>> MET ICI TON ENDPOINT VERCEL <<<<<
+    const PRONOTE_ENDPOINT = "https://pronote-proxy-izn5mtwgb-maximilienvien-2635s-projects.vercel.app/api/pronote";
 
-/* ---------- Init ---------- */
-window.addEventListener('load', ()=>{
-  const name=(localStorage.getItem('prenom')||'').trim(); if(name){ who.textContent=name; document.getElementById('scr-welcome').classList.remove('active'); document.getElementById('scr-home').classList.add('active'); navStack[0]='scr-home'; }
-  setStackHeight(activeScreen().scrollHeight); refreshBack(); refreshGear(); toggleFab();
-});
-window.addEventListener('resize', ()=> setStackHeight(activeScreen().scrollHeight));
+    // petite mémoire locale côté admin (mdp non stocké)
+    let pnCfg = {
+      url: localStorage.getItem('pn_url') || "",
+      user: localStorage.getItem('pn_user') || "",
+      cas : localStorage.getItem('pn_cas')  || ""
+    };
 
-</script>
+    function renderPronoteForm(holder){
+      holder.innerHTML = `
+        <div class="panel">
+          <h3 style="margin:0 0 8px">Pronote</h3>
+          <label>URL Pronote (eleve.html)</label>
+          <input id="pn_url" type="text" placeholder="https://.../pronote/eleve.html" value="${pnCfg.url}">
+          <label>Identifiant</label>
+          <input id="pn_user" type="text" placeholder="identifiant" value="${pnCfg.user}">
+          <label>Mot de passe</label>
+          <input id="pn_pwd" type="password" placeholder="mot de passe">
+          <label>CAS (optionnel)</label>
+          <input id="pn_cas" type="text" placeholder="ex: ac-besancon" value="${pnCfg.cas}">
+          <div class="row" style="justify-content:flex-end;margin-top:10px">
+            <button class="btn secondary" id="pn_save">Sauver</button>
+            <button class="btn" id="pn_import">Importer la semaine</button>
+          </div>
+          <div id="pn_msg" class="hint"></div>
+        </div>
+      `;
+      $('#pn_save').onclick = ()=>{
+        pnCfg.url  = $('#pn_url').value.trim();
+        pnCfg.user = $('#pn_user').value.trim();
+        pnCfg.cas  = $('#pn_cas').value.trim();
+        localStorage.setItem('pn_url', pnCfg.url);
+        localStorage.setItem('pn_user', pnCfg.user);
+        localStorage.setItem('pn_cas', pnCfg.cas);
+        $('#pn_msg').textContent = 'Enregistré localement.';
+      };
+      $('#pn_import').onclick = ()=> importFromPronote();
+    }
+
+    // mapping matières Pronote -> tes slugs (adapte librement)
+    const SUBJECT_MAP = {
+      "français":"francais","francais":"francais",
+      "histoire-géographie":"histoire","histoire":"histoire",
+      "svt":"svt",
+      "physique-chimie":"chimie","chimie":"chimie",
+      "snt":"snt","ses":"ses","anglais":"anglais","maths":"ses"
+    };
+    let hwOrderMax = 0;
+
+    const todayISO = ()=> iso(new Date());
+    const mondayISO = (sISO)=> iso(monday(fromISO(sISO)));
+    const shiftISO = (sISO,days)=> iso(shift(fromISO(sISO),days));
+
+    async function importFromPronote(){
+      const msg = $('#pn_msg'); msg.textContent = 'Import en cours…';
+      try{
+        const body = {
+          url: $('#pn_url').value.trim() || pnCfg.url,
+          username: $('#pn_user').value.trim()|| pnCfg.user,
+          password: $('#pn_pwd').value,
+          cas: $('#pn_cas').value.trim()|| pnCfg.cas,
+          from: mondayISO(todayISO()),
+          to  : shiftISO(mondayISO(todayISO()),6)
+        };
+        if(!body.url || !body.username || !body.password){
+          msg.textContent = 'Remplis URL / identifiant / mot de passe.';
+          return;
+        }
+
+        const r = await fetch(PRONOTE_ENDPOINT, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data.error || 'Erreur inconnue');
+
+        // 1) EDT -> Firestore
+        for(const ev of data.edt){
+          if(ev.cancelled) continue;
+          await db.collection(`schedule/${ev.date}/items`).add({
+            title: `${ev.subject}${ev.room ? ' - '+ev.room : ''}`,
+            start: ev.start, end: ev.end, createdAt: Date.now()
+          });
+        }
+
+        // 2) Devoirs -> Firestore
+        for(const hw of data.homeworks){
+          const subj = (hw.subject||'').toLowerCase();
+          const slug = SUBJECT_MAP[subj] || 'francais';
+          await db.collection('homeworks').add({
+            title: hw.content || 'Devoir',
+            subjectSlug: slug,
+            dueDate: hw.date,
+            order: ++hwOrderMax,
+            createdAt: Date.now()
+          });
+        }
+
+        msg.textContent = 'Import Pronote terminé ✅';
+        alert('Import Pronote terminé ✅');
+        // refresh
+        renderWeek(); renderHomeworks();
+      }catch(e){
+        console.error(e);
+        msg.textContent = 'Erreur import : ' + (e.message||e);
+        alert('Erreur import : ' + (e.message||e));
+      }
+    }
+
+    /* =========================
+       6)  BOOT
+    ========================== */
+    renderWeek();
+  </script>
 </body>
 </html>
