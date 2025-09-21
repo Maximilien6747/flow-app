@@ -2,8 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Espace de cours</title>
   <style>
     :root{
@@ -20,7 +19,6 @@
       margin:0;background:var(--bg);color:var(--fg);
       font:700 clamp(16px,2.6vw,18px)/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial;
     }
-
     .app{
       max-width: 400px;
       margin: 0 auto;
@@ -28,8 +26,7 @@
       min-height: 100svh;
       position: relative;
     }
-
-    /* barre haute : engrenage puis flèche (tous à gauche) */
+    /* barre haute : engrenage puis flèche (à gauche) */
     header.bar{
       position: sticky; top: calc(var(--safe-top) + 6px);
       display:flex; gap:8px; align-items:center; justify-content:flex-start;
@@ -76,7 +73,6 @@
     @keyframes outRight{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
     @keyframes inLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
 
-    /* centre vertical pour les écrans d’accueil/menu */
     .center{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px }
 
     /* cartes */
@@ -176,8 +172,6 @@
         <div class="sliderWrap" id="sliderWrap">
           <div id="slides" class="slides"></div>
         </div>
-
-        <!-- recherche -->
         <div class="searchRow">
           <span>je cherche le cours du</span>
           <input id="searchDate" type="date" style="max-width:190px">
@@ -200,17 +194,17 @@
       </div>
     </div>
 
-    <!-- Modal admin login -->
+    <!-- Modal admin -->
     <div id="modalAdmin" class="modal">
       <div class="box">
         <h3 style="margin:0 0 8px">Mode admin</h3>
-        <label for="adminCode">Code</label>
-        <input id="adminCode" type="text" inputmode="numeric" maxlength="8" placeholder="Code admin">
-        <div class="row" style="justify-content:flex-end">
-          <button class="btn secondary" id="adminCancel">Annuler</button>
-          <button class="btn" id="adminOk">Valider</button>
-        </div>
-        <div id="adminMsg" class="hint"></div>
+      <label for="adminCode">Code</label>
+      <input id="adminCode" type="text" inputmode="numeric" maxlength="8" placeholder="Code admin">
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn secondary" id="adminCancel">Annuler</button>
+        <button class="btn" id="adminOk">Valider</button>
+      </div>
+      <div id="adminMsg" class="hint"></div>
       </div>
     </div>
 
@@ -237,36 +231,43 @@
     </div>
   </main>
 
-  <script>
-    /* ====== helpers & stack ====== */
+  <!-- =========================
+       SCRIPT (Firebase + UI)
+       ========================= -->
+  <script type="module">
+    /* ---------- Firebase ---------- */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    // >>>>>>> Ta configuration Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
+      authDomain: "app-cours-94f32.firebaseapp.com",
+      projectId: "app-cours-94f32",
+      storageBucket: "app-cours-94f32.firebasestorage.app",
+      messagingSenderId: "519755746540",
+      appId: "1:519755746540:web:8d55f18754ce08884269c9",
+      measurementId: "G-VD89GYHJWV"
+    };
+    // <<<<<<<
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const stg = getStorage(app);
+
+    /* ---------- helpers UI ---------- */
     const $ = s => document.querySelector(s);
     const stack = $('#stack');
     const backBtn = $('#backBtn');
 
+    function setStackHeight(h){ stack.style.height = h+'px'; }
     const navStack = ['scr-welcome'];
     function activeId(){ return navStack[navStack.length-1]; }
     function activeScreen(){ return document.getElementById(activeId()); }
-    function setStackHeight(h){ stack.style.height = h+'px'; }
     function canGoBack(){ return navStack.length>1; }
     function refreshBack(){ backBtn.style.visibility = canGoBack() ? 'visible' : 'hidden'; }
 
-    function go(toId, dir='f'){
-      const fromEl = activeScreen();
-      const toEl   = document.getElementById(toId);
-      if(fromEl===toEl) return;
-      navStack.push(toId);
-      animate(fromEl, toEl, dir);
-      refreshBack();
-    }
-    function back(){
-      if(!canGoBack()) return;
-      const fromEl = activeScreen();
-      navStack.pop();
-      const toEl = activeScreen();
-      animate(fromEl, toEl, 'b');
-      refreshBack();
-      toggleFab();
-    }
     function animate(fromEl,toEl,dir){
       setStackHeight(Math.max(fromEl.scrollHeight,toEl.scrollHeight));
       fromEl.classList.remove('active'); toEl.classList.add('active');
@@ -278,14 +279,16 @@
         setStackHeight(toEl.scrollHeight);
       },{once:true});
     }
+    function go(id,dir='f'){ const a=activeScreen(); const b=document.getElementById(id); if(a===b) return; navStack.push(id); animate(a,b,dir); refreshBack(); toggleFab(); }
+    function back(){ if(!canGoBack()) return; const a=activeScreen(); navStack.pop(); const b=activeScreen(); animate(a,b,'b'); refreshBack(); toggleFab(); }
     backBtn.onclick = back;
 
-    /* ====== état global ====== */
+    /* ---------- Etat ----------- */
     const who = $('#who'), prenomInput = $('#prenom'), msg = $('#msg');
-    let isAdmin = localStorage.getItem('isAdmin')==='1';
+    let isAdminUI = false;
     let currentSubject = null;
+    let unsubscribe = null;
 
-    /* ====== données ====== */
     const subjects = [
       {slug:'francais', name:'francais', color:'var(--c-fr)',  icon:'📚'},
       {slug:'histoire', name:'histoire', color:'var(--c-his)', icon:'🏛️'},
@@ -295,11 +298,8 @@
       {slug:'ses',      name:'SES',      color:'var(--c-ses)', icon:'📈'},
       {slug:'anglais',  name:'Anglais',  color:'var(--c-ang)', icon:'🇬🇧'}
     ];
-    const K='coursesData';
-    function loadData(){ try{return JSON.parse(localStorage.getItem(K)||'{}')}catch(e){return{}} }
-    function saveData(v){ localStorage.setItem(K, JSON.stringify(v)) }
 
-    /* ====== accueil ====== */
+    /* ---------- Accueil ---------- */
     function saveAndGo(){
       const name = (prenomInput.value||'').trim();
       if(!name){ msg.textContent = "Entre ton prénom pour continuer."; return; }
@@ -311,8 +311,8 @@
     $('#go').onclick = saveAndGo;
     prenomInput.addEventListener('keydown', e=>{ if(e.key==='Enter') saveAndGo(); });
 
-    /* ====== menu → cours ====== */
-    $('#btn-cours').onclick = ()=>{ renderMatieres(); go('scr-cours','f'); };
+    /* ---------- Menu ---------- */
+    $('#btn-cours').onclick   = ()=>{ renderMatieres(); go('scr-cours','f'); };
     $('#btn-emploi').onclick  = ()=> alert('Écran "emploie du temps" à venir');
     $('#btn-devoirs').onclick = ()=> alert('Écran "devoirs" à venir');
     $('#btn-controle').onclick= ()=> alert('Écran "controle" à venir');
@@ -329,63 +329,62 @@
       }
     }
 
-    /* ====== matière : carrousel swipe ====== */
+    /* ---------- Matière : rendu + écoute Firestore ---------- */
     const slidesEl = $('#slides'), sliderWrap = $('#sliderWrap');
-    let slides = [], idx=0, slideW=120;
+    let slideW=120, idx=0;
 
     function openSubject(slug){
       currentSubject = slug;
       const s = subjects.find(x=>x.slug===slug);
       $('#subjectTitle').textContent = s.name;
-      renderSubject();
+      renderSubjectCloud(slug);
       go('scr-subject','f');
-      toggleFab();
       setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
     }
 
-    function renderSubject(){
-      const data = loadData();
-      const arr = (data[currentSubject]||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
-      slides = arr;
-      slidesEl.innerHTML='';
-      if(!arr.length){
-        slidesEl.innerHTML = `<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>`;
-      } else {
-        for(const it of arr){
-          const card = document.createElement('div');
-          card.className='slide';
-          const imgWrap = document.createElement('div');
-          imgWrap.className='imgWrap';
-          if(it.img){ const im=new Image(); im.src=it.img; imgWrap.appendChild(im); }
-          const [y,m,dd] = it.date.split('-');
-          const caption = document.createElement('div');
-          caption.className='caption';
-          caption.textContent = `${dd}/${m}`;
-          card.appendChild(imgWrap);
-          card.appendChild(caption);
-          card.onclick = ()=> openViewer(it.img);
-          slidesEl.appendChild(card);
+    function renderSubjectCloud(slug){
+      if (unsubscribe) { unsubscribe(); unsubscribe=null; }
+      slidesEl.innerHTML = '';
+      const q = query(collection(db, `subjects/${slug}/courses`), orderBy("date","asc"));
+      unsubscribe = onSnapshot(q, snap=>{
+        const arr=[]; snap.forEach(d=>arr.push({id:d.id, ...d.data()}));
+        slidesEl.innerHTML = '';
+        if(!arr.length){
+          slidesEl.innerHTML = '<div class="hint" style="margin:8px auto">Aucun cours pour le moment.</div>';
+        }else{
+          for(const it of arr){
+            const card = document.createElement('div');
+            card.className='slide';
+            const imgWrap=document.createElement('div'); imgWrap.className='imgWrap';
+            if(it.img){ const im=new Image(); im.src=it.img; imgWrap.appendChild(im); }
+            const [y,m,d]=it.date.split('-');
+            const cap=document.createElement('div'); cap.className='caption'; cap.textContent=`${d}/${m}`;
+            card.appendChild(imgWrap); card.appendChild(cap);
+            card.onclick = ()=> openViewer(it.img);
+            slidesEl.appendChild(card);
+          }
         }
-      }
-      idx=0; layoutSlides(); moveTo(0,false);
+        layoutSlides(); moveTo(0,false);
+        setTimeout(()=>setStackHeight(activeScreen().scrollHeight),10);
+      });
     }
 
     function layoutSlides(){
       const w = sliderWrap.clientWidth;
       const gap = parseInt(getComputedStyle(slidesEl).gap||'10');
-      slideW = Math.floor((w - 2*gap)/3);   // 3 visibles
+      slideW = Math.floor((w - 2*gap)/3);
       [...slidesEl.children].forEach(s=> s.style.width = slideW+'px');
     }
     function moveTo(i, animate=true){
       const n = slidesEl.children.length || 1;
-      idx = ((i % n) + n) % n;
+      idx = Math.max(0, Math.min(n-1, i));
       if(!animate) slidesEl.style.transition='none';
       const offset = -(idx * (slideW + parseInt(getComputedStyle(slidesEl).gap||'10')));
       slidesEl.style.transform = `translateX(${offset}px)`;
       if(!animate){ void slidesEl.offsetWidth; slidesEl.style.transition='transform 260ms var(--ease)'; }
     }
 
-    // swipe (pointer events)
+    // swipe
     let startX=0, dragging=false, baseX=0;
     sliderWrap.addEventListener('pointerdown', e=>{
       if(!slidesEl.children.length) return;
@@ -403,32 +402,38 @@
     sliderWrap.addEventListener('pointerup', e=>{
       if(!dragging) return; dragging=false; slidesEl.style.transition='transform 260ms var(--ease)';
       const dx = e.clientX - startX;
-      const threshold = 40;
-      if(Math.abs(dx) > threshold){ moveTo(idx - Math.sign(dx)); }
+      const thr = 40;
+      if(Math.abs(dx) > thr){ moveTo(idx - Math.sign(dx)); }
       else { moveTo(idx, true); }
     });
     window.addEventListener('resize', ()=>{ if(document.getElementById('scr-subject').classList.contains('active')){ layoutSlides(); moveTo(idx,false); setStackHeight(activeScreen().scrollHeight);} });
 
-    /* recherche par date */
+    // recherche
     $('#searchGo').onclick = ()=>{
       const d = ($('#searchDate').value||'').trim();
-      if(!d || !slides.length) return;
-      const i = slides.findIndex(x=>x.date===d);
-      if(i>=0) moveTo(i);
+      if(!d || !slidesEl.children.length) return;
+      let targetIndex = -1;
+      [...slidesEl.children].forEach((el,i)=>{
+        const cap = el.querySelector('.caption')?.textContent || '';
+        const [dd,mm] = cap.split('/');
+        const [y,m,d2] = d.split('-');
+        if(dd===d2 && mm===m) targetIndex = i;
+      });
+      if(targetIndex>=0) moveTo(targetIndex);
     };
 
-    /* viewer image */
+    /* ---------- viewer ---------- */
     function openViewer(src){ if(!src) return; $('#viewerImg').src=src; $('#viewer').style.display='flex'; }
     $('#viewerClose').onclick = ()=> $('#viewer').style.display='none';
 
-    /* paramètres / admin */
+    /* ---------- Paramètres + Admin (UI code 2525) ---------- */
     const modalGear = $('#modalGear'), adminRow = $('#adminRow');
     function refreshGear(){
       adminRow.innerHTML='';
       const b = document.createElement('button');
-      b.className='btn'; b.textContent = isAdmin ? 'Quitter admin' : 'Admin';
+      b.className='btn'; b.textContent = isAdminUI ? 'Quitter admin' : 'Admin';
       b.onclick = ()=>{
-        if(isAdmin){ isAdmin=false; localStorage.setItem('isAdmin','0'); toggleFab(); modalGear.style.display='none'; }
+        if(isAdminUI){ isAdminUI=false; toggleFab(); modalGear.style.display='none'; }
         else{ modalGear.style.display='none'; openAdminModal(); }
       };
       adminRow.appendChild(b);
@@ -442,49 +447,48 @@
     $('#adminCancel').onclick = ()=> $('#modalAdmin').style.display='none';
     $('#adminOk').onclick = ()=>{
       if($('#adminCode').value.trim()==='2525'){
-        isAdmin=true; localStorage.setItem('isAdmin','1'); $('#modalAdmin').style.display='none'; toggleFab();
+        isAdminUI=true; $('#modalAdmin').style.display='none'; toggleFab();
       } else { $('#adminMsg').textContent='Code incorrect.'; }
     };
 
-    /* ajout cours (admin) – compression image */
+    /* ---------- Ajout cours ---------- */
     function toggleFab(){
       const onSubject = activeId()==='scr-subject';
-      $('#fabAdd').style.display = (isAdmin && onSubject) ? 'grid' : 'none';
+      $('#fabAdd').style.display = (isAdminUI && onSubject) ? 'grid' : 'none';
     }
     $('#fabAdd').onclick = ()=>{ $('#addImg').value=''; $('#addDate').value=''; $('#addMsg').textContent=''; $('#modalAdd').style.display='flex'; };
     $('#addCancel').onclick = ()=> $('#modalAdd').style.display='none';
     $('#addSave').onclick = async ()=>{
-      const f = $('#addImg').files[0], d = $('#addDate').value;
-      if(!f || !d){ $('#addMsg').textContent='Choisis une image et une date.'; return; }
+      const f = $('#addImg').files[0], d = $('#addDate').value, out = $('#addMsg');
+      if(!f || !d){ out.textContent='Choisis une image et une date.'; return; }
       try{
-        const img = await resizeImageToDataURL(f, 1280, 0.8); // compresse
-        const data = loadData();
-        (data[currentSubject] ||= []).push({ id:Date.now(), img, date:d });
-        saveData(data);
+        const imgURL = await compressAndUpload(f, 1280, .8, currentSubject);
+        await addDoc(collection(db, `subjects/${currentSubject}/courses`), { date:d, img:imgURL, createdAt:Date.now() });
         $('#modalAdd').style.display='none';
-        renderSubject(); toggleFab();
       }catch(e){
-        $('#addMsg').textContent = "Impossible d'enregistrer (espace insuffisant). Essaie avec une image plus petite.";
+        out.textContent="Échec de l'enregistrement. Essaie avec une image plus petite.";
       }
     };
 
-    // compression client
-    async function resizeImageToDataURL(file, maxSize=1280, quality=0.8){
-      const blobURL = URL.createObjectURL(file);
-      const img = await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=blobURL; });
-      const {width:W,height:H} = img;
-      let w=W, h=H;
-      if (Math.max(W,H) > maxSize){
-        if (W > H){ w = maxSize; h = Math.round(H * (maxSize/W)); }
-        else { h = maxSize; w = Math.round(W * (maxSize/H)); }
+    // compression + upload vers Storage
+    async function compressAndUpload(file, max=1280, quality=.8, slug='misc'){
+      const url = URL.createObjectURL(file);
+      const img = await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; });
+      let {width:w, height:h} = img;
+      if (Math.max(w,h)>max) {
+        if (w>h){ h = Math.round(h*max/w); w = max; } else { w = Math.round(w*max/h); h = max; }
       }
       const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
       const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
-      URL.revokeObjectURL(blobURL);
-      return canvas.toDataURL('image/jpeg', quality);
+      URL.revokeObjectURL(url);
+      const blob = await new Promise(res=> canvas.toBlob(res, 'image/jpeg', quality));
+      const key = `course-images/${slug}/${Date.now()}.jpg`;
+      const r = ref(stg, key);
+      await uploadBytes(r, blob);
+      return await getDownloadURL(r);
     }
 
-    /* init */
+    /* ---------- Init ---------- */
     window.addEventListener('load', ()=>{
       const name = (localStorage.getItem('prenom')||'').trim();
       if(name){ who.textContent=name; document.getElementById('scr-welcome').classList.remove('active'); document.getElementById('scr-home').classList.add('active'); navStack[0]='scr-home'; }
