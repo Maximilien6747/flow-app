@@ -1,473 +1,742 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Espace de cours — Onboarding</title>
-  <style>
-    :root{
-      /* Couleurs dynamiques (modifiées par JS pour le thème) */
-      --bg: #f0d0ff;
-      --card: #f4ddff;
-      --text: #0b0b0b;
-      --accent: #8b5cf6; /* violet par défaut */
-      --outline: color-mix(in oklab, var(--accent) 50%, transparent);
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Espace de cours</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F1C6FF;      /* fond app */
+    --bubble:#F3D8FF;  /* bulles/panels */
+    --card:#F1DFFF;    /* cartes */
+    --text:#120914;    /* textes */
+    --accent:#7A28FF;  /* accents/boutons */
+  }
+  /* Thèmes clair (couleur = var(--bg) modifiable à chaud) */
+  [data-theme="orange"] { --bg:#FF761E; --bubble:#FFB27E; --card:#FFC59F; --text:#1a0d00; --accent:#7A28FF; }
+  [data-theme="noir"]   { --bg:#000;    --bubble:#5b5b5b; --card:#777;     --text:#fff;    --accent:#7A28FF; }
+  [data-theme="bleu"]   { --bg:#5CC2FF; --bubble:#AEE2FF; --card:#D2F0FF; --text:#052033; --accent:#7A28FF; }
+  [data-theme="rose"]   { --bg:#F1C6FF; --bubble:#F3D8FF; --card:#F1DFFF; --text:#120914; --accent:#7A28FF; }
+  [data-theme="vert"]   { --bg:#84E77B; --bubble:#C5F3C1; --card:#E4F9E2; --text:#0b2509; --accent:#7A28FF; }
+  [data-theme="rouge"]  { --bg:#FF5C5C; --bubble:#FF9A9A; --card:#FFC1C1; --text:#2b0000; --accent:#7A28FF; }
 
-    /* Reset + base */
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-      background:var(--bg);
-      color:var(--text);
-      -webkit-tap-highlight-color: transparent;
-    }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; color:var(--text);}
+  body{background:var(--bg); transition:background .25s ease,color .25s ease;}
+  #app{max-width:420px;margin:0 auto;min-height:100%;position:relative;overflow-x:hidden}
 
-    /* Contrainte mobile type iPhone */
-    .frame{
-      min-height:100dvh;
-      max-width: 430px;   /* format iPhone */
-      margin:0 auto;
-      padding:24px 18px 28px;
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-    }
+  .screen{min-height:100dvh;padding:20px 16px;display:none}
+  .screen.active{display:block}
+  .bubble{background:var(--bubble);border-radius:18px;padding:18px;box-shadow:0 6px 0 rgba(0,0,0,.08);margin:12px 4px}
+  .title{font-family:Fraunces,serif;font-weight:700;text-align:center;font-size:30px;margin:4px 0 8px}
+  .subtitle{font-family:Fraunces,serif;font-size:21px;margin:0 0 8px;text-align:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+       background:#fff;border:2px solid #0002;border-radius:16px;padding:14px 18px;font-weight:700;cursor:pointer}
+  .btn.full{width:100%}
+  .btn.accent{background:var(--accent);color:#fff;border-color:#0000}
+  .row{display:flex;gap:12px;align-items:center}
+  .col{display:flex;flex-direction:column;gap:12px}
+  .chip{display:inline-flex;align-items:center;gap:.5rem;padding:8px 12px;border-radius:999px;background:var(--card);font-weight:700}
+  .list{display:flex;flex-direction:column;gap:10px;max-height:62dvh;overflow:auto;padding-right:2px}
+  .card{background:var(--card);border-radius:14px;padding:14px 16px;font-weight:800;display:flex;align-items:center;justify-content:space-between}
+  .tiny{opacity:.7;font-size:.9rem}
+  .topbar{display:flex;align-items:center;gap:10px}
+  .iconbtn{width:40px;height:40px;border-radius:999px;border:2px solid #0003;background:var(--card);display:grid;place-items:center;cursor:pointer}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .imgcell{aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#fff5; position:relative}
+  .imgcell img{width:100%;height:100%;object-fit:cover}
+  .x{position:absolute;top:6px;right:6px;background:#000a;color:#fff;border-radius:999px;font-size:.8rem;padding:2px 8px;cursor:pointer}
+  .hint{font-size:.9rem;opacity:.7}
+  .danger{background:#ff3b3b;color:#fff}
+  .ok{background:#14b885;color:#fff}
+  .fadeUp{animation:fadeUp .38s both}
+  .slideUp{animation:slideUp .38s both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUp{from{transform:translateY(30px)}to{transform:translateY(0)}}
 
-    /* Bulle générique */
-    .bubble{
-      background:var(--card);
-      border-radius:20px;
-      padding:18px 20px;
-      box-shadow: 0 2px 0 0 rgba(0,0,0,.08) inset, 0 1px 10px rgba(0,0,0,.06);
-      border: 3px solid color-mix(in oklab, var(--card) 80%, #000 20%);
-    }
+  /* Inputs */
+  input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:2px solid #0002;background:#fff;outline:none;font-size:16px}
+  label{font-weight:700;margin:10px 2px 6px;display:block}
 
-    .title{
-      font-weight:900;
-      font-size: clamp(22px, 5.8vw, 34px);
-      line-height:1.15;
-      text-align:center;
-    }
-
-    .big-title{
-      font-weight:900;
-      font-size: clamp(28px, 7vw, 42px);
-      text-align:center;
-      margin: 8px 0 2px;
-    }
-
-    .center{ text-align:center }
-
-    /* Carte fonction (cours / edt / devoirs / contrôles) */
-    .card{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      padding:18px 20px;
-      border-radius:16px;
-      background:var(--card);
-      border:2.5px solid var(--outline);
-    }
-    .card .label{
-      font-size: clamp(20px,5.4vw,28px);
-      font-weight:900;
-    }
-    .card .emoji{
-      font-size:32px;
-      filter: drop-shadow(0 1px 0 rgba(0,0,0,.2));
-    }
-
-    /* Bouton continuer */
-    .cta{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      padding:16px 20px;
-      border-radius:16px;
-      background:var(--card);
-      border:3px solid var(--outline);
-      font-weight:900;
-      font-size: clamp(20px,5vw,26px);
-      cursor:pointer;
-      user-select:none;
-    }
-    .cta .arrow{
-      width:48px;height:40px;
-      border-radius:999px;
-      border:3px solid var(--text);
-      display:grid;place-items:center;
-    }
-    .cta:active{ transform: translateY(1px) }
-
-    /* Choix Allemand / Espagnol */
-    .choice{
-      display:grid; gap:14px;
-    }
-    .choice button{
-      border-radius:16px;
-      padding:16px 20px;
-      font-weight:900;
-      font-size: clamp(20px,5.4vw,28px);
-      background:var(--card);
-      border:3px solid var(--outline);
-      cursor:pointer;
-    }
-    .choice button.active{
-      outline:4px solid #55c34a;
-      outline-offset:2px;
-    }
-
-    /* Input prénom */
-    .input{
-      width:100%;
-      border-radius:14px;
-      padding:16px 16px;
-      border:2.5px solid color-mix(in oklab, var(--card) 60%, #000 40%);
-      background: color-mix(in oklab, var(--card) 82%, #fff 18%);
-      font-size:20px;
-      font-weight:700;
-    }
-
-    /* Palette thème */
-    .palette{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap:14px;
-      padding:8px 0 2px;
-    }
-    .swatch{
-      height:60px;border-radius:50%;
-      border:3px solid rgba(0,0,0,.22);
-      cursor:pointer;
-    }
-    .mode-row{
-      display:flex; gap:10px; justify-content:center; margin:8px 0 2px;
-    }
-    .mode{
-      padding:8px 14px; border-radius:999px; font-weight:800; cursor:pointer;
-      border:3px solid var(--outline); background:var(--card)
-    }
-    .mode.active{ outline:4px solid var(--text); outline-offset:2px }
-
-    /* Étapes & animations */
-    #stage{ position:relative; min-height:100dvh }
-    .step{
-      position:absolute; inset:0;
-      display:flex; flex-direction:column; gap:18px;
-      padding:24px 18px 28px;
-      overflow:hidden;
-      max-width:430px; margin:0 auto;
-    }
-    .step-enter{
-      opacity:0; transform: translateY(40px);
-    }
-    .step-enter-active{
-      transition:.45s cubic-bezier(.2,.8,.2,1);
-      opacity:1; transform: translateY(0);
-    }
-    .step-exit{
-      opacity:1; transform: translateY(0);
-    }
-    .step-exit-active{
-      transition:.45s cubic-bezier(.2,.8,.2,1);
-      opacity:0; transform: translateY(-38px);
-    }
-
-    /* Helpers de spacing pour “bulles” */
-    .sp-xxl{ height:2px } /* fine */
-
-    /* Accessibilité simple */
-    button, .cta{ color:var(--text) }
-  </style>
+  /* Fab */
+  .fab{position:fixed;right:18px;bottom:18px;width:56px;height:56px;border-radius:999px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:26px;border:none;cursor:pointer;box-shadow:0 8px 22px #0004}
+  dialog{border:none;border-radius:16px;padding:0;max-width:420px;width:92%}
+  dialog .panel{padding:16px}
+</style>
 </head>
 <body>
-  <main id="stage" aria-live="polite"></main>
+<div id="app" data-theme="rose">
 
-  <script>
-    /* --------- Thème dynamique (Light / Dark + couleur accent) --------- */
-    const state = {
-      prenom: localStorage.getItem('prenom') || '',
-      langue: localStorage.getItem('langue') || '',  // "allemand" | "espagnol"
-      theme: JSON.parse(localStorage.getItem('theme') || '{"mode":"light","accent":"#8b5cf6"}')
+  <!-- 0. Accueil -->
+  <section id="welcome" class="screen active">
+    <div class="bubble fadeUp">
+      <div class="title">Bienvenu dans ton espace de cours.</div>
+      <p class="hint" style="text-align:center">Fais défiler ou appuie pour continuer.</p>
+    </div>
+    <div class="bubble">
+      <button class="btn full accent" id="goName">Continuer</button>
+    </div>
+  </section>
+
+  <!-- 1. Prénom -->
+  <section id="askName" class="screen">
+    <div class="bubble fadeUp">
+      <div class="title">Quel est ton prénom ?</div>
+      <input id="nameInput" placeholder="Prénom" autocomplete="given-name"/>
+    </div>
+    <div class="bubble">
+      <button class="btn full accent" id="saveName">Continuer</button>
+    </div>
+  </section>
+
+  <!-- 2. Langue (Allemand/Espagnol) -->
+  <section id="track" class="screen">
+    <div class="bubble fadeUp">
+      <div class="title" id="helloName">Bienvenue</div>
+      <div class="subtitle">Tu fais ?</div>
+      <div class="col">
+        <button class="btn full" data-track="allemand">Allemand</button>
+        <button class="btn full" data-track="espagnol">Espagnol</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Présentation des fonctionnalités (4 bulles + continuer) -->
+  <section id="tour" class="screen">
+    <div class="bubble fadeUp"><div class="subtitle">Tu trouveras ici <b>tous tes cours</b> depuis le début de l’année.</div>
+      <div class="card">cours <span>📕</span></div>
+    </div>
+    <div class="bubble slideUp"><div class="subtitle">Tu auras aussi ton <b>emploi du temps</b>.</div>
+      <div class="card">emploi du temps <span>📅</span></div>
+    </div>
+    <div class="bubble slideUp"><div class="subtitle">Tous tes <b>devoirs</b> déjà faits et expliqués.</div>
+      <div class="card">devoirs <span>✏️</span></div>
+    </div>
+    <div class="bubble slideUp"><div class="subtitle">Et tes <b>contrôles</b> avec fiches de révisions.</div>
+      <div class="card">contrôle <span>📝</span></div>
+    </div>
+    <div class="bubble">
+      <button class="btn full accent" id="goTheme">Continuer</button>
+    </div>
+  </section>
+
+  <!-- 4. Choix du thème (live) -->
+  <section id="theme" class="screen">
+    <div class="bubble fadeUp">
+      <div class="title">Choisis le thème</div>
+      <div class="row" style="flex-wrap:wrap;gap:12px">
+        <button class="chip" data-theme="rose" style="background:#F1DFFF">Rose</button>
+        <button class="chip" data-theme="orange" style="background:#FFC59F">Orange</button>
+        <button class="chip" data-theme="noir" style="background:#333;color:#fff">Noir</button>
+        <button class="chip" data-theme="bleu" style="background:#D2F0FF">Bleu</button>
+        <button class="chip" data-theme="vert" style="background:#E4F9E2">Vert</button>
+        <button class="chip" data-theme="rouge" style="background:#FFC1C1">Rouge</button>
+      </div>
+    </div>
+    <div class="bubble">
+      <button class="btn full accent" id="goHome">Entrer</button>
+    </div>
+  </section>
+
+  <!-- 5. Accueil principal -->
+  <section id="home" class="screen">
+    <div class="topbar">
+      <button id="openSettings" class="iconbtn" title="Paramètres">⚙️</button>
+      <div class="bubble" style="flex:1"><div class="title" id="hi"></div></div>
+    </div>
+    <div class="col">
+      <div class="card" id="navCourses">cours <span>➡️</span></div>
+      <div class="card" id="navSchedule">emploi du temps <span>➡️</span></div>
+      <div class="card" id="navHw">devoirs <span>➡️</span></div>
+      <div class="card" id="navExams">contrôle <span>➡️</span></div>
+    </div>
+  </section>
+
+  <!-- COURS : matières -->
+  <section id="subjects" class="screen">
+    <div class="topbar">
+      <button class="iconbtn" data-back="home">⬅️</button>
+      <div class="bubble" style="flex:1"><div class="title">cours</div></div>
+    </div>
+
+    <div class="list" id="subjectList"></div>
+  </section>
+
+  <!-- COURS : chapitres d’une matière -->
+  <section id="chapters" class="screen">
+    <div class="topbar">
+      <button class="iconbtn" data-back="subjects">⬅️</button>
+      <div class="bubble" style="flex:1"><div class="title" id="subjectTitle">matière</div></div>
+      <button class="iconbtn" id="addChapterBtn" title="Ajouter chapitre">➕</button>
+    </div>
+    <div class="list" id="chapterList"></div>
+  </section>
+
+  <!-- COURS : pages d’un chapitre (3 colonnes, scroll vertical) -->
+  <section id="chapterView" class="screen">
+    <div class="topbar">
+      <button class="iconbtn" data-back="chapters">⬅️</button>
+      <div class="bubble" style="flex:1"><div class="title" id="chapterTitle">chapitre</div></div>
+      <button class="iconbtn" id="addPagesBtn" title="Ajouter des feuilles">📤</button>
+    </div>
+    <div class="bubble">
+      <div class="grid3" id="pageGrid"></div>
+      <p class="tiny">Astuce : balaye l’écran vers le bas/haut pour défiler.</p>
+    </div>
+    <button class="fab" id="deleteChapterFab" title="Supprimer le chapitre">🗑️</button>
+  </section>
+
+  <!-- EMPLOI DU TEMPS -->
+  <section id="schedule" class="screen">
+    <div class="topbar">
+      <button class="iconbtn" data-back="home">⬅️</button>
+      <div class="bubble" style="flex:1"><div class="title">emploi du temps</div></div>
+      <button class="iconbtn" id="toggleWeek" title="Jour/Semaine">📆</button>
+    </div>
+    <div class="bubble row" style="justify-content:center">
+      <button class="iconbtn" id="prevDay">◀️</button>
+      <div style="min-width:180px;text-align:center;font-weight:800" id="dayLabel"></div>
+      <button class="iconbtn" id="nextDay">▶️</button>
+    </div>
+    <div class="bubble" id="daySlots"></div>
+    <button class="fab" id="addLessonFab" title="Ajouter un cours">＋</button>
+  </section>
+
+  <!-- DEVOIRS -->
+  <section id="homework" class="screen">
+    <div class="topbar">
+      <button class="iconbtn" data-back="home">⬅️</button>
+      <div class="bubble" style="flex:1"><div class="title">devoirs</div></div>
+      <button class="iconbtn" id="addHw" title="Ajouter devoir">➕</button>
+    </div>
+    <div id="hwList" class="list"></div>
+  </section>
+
+  <!-- DEVOIR détail (énoncé / corrections) -->
+  <section id="hwDetail" class="screen">
+    <div class="topbar">
+      <button class="iconbtn" data-back="homework">⬅️</button>
+      <div class="bubble" style="flex:1"><div class="title" id="hwTitle">devoir</div></div>
+    </div>
+    <div class="col">
+      <div class="card" id="openEnonce">énoncé du devoir <span>➡️</span></div>
+      <div class="card" id="openCorrSimple">correction simple <span>➡️</span></div>
+      <div class="card" id="openCorrExp">correction avec explications <span>➡️</span></div>
+      <div class="bubble tiny" id="hwStatus"></div>
+    </div>
+  </section>
+
+  <!-- CONTROLES -->
+  <section id="exams" class="screen">
+    <div class="topbar">
+      <button class="iconbtn" data-back="home">⬅️</button>
+      <div class="bubble" style="flex:1"><div class="title">contrôle</div></div>
+      <button class="iconbtn" id="addExam" title="Ajouter contrôle">➕</button>
+    </div>
+    <div id="examList" class="list"></div>
+  </section>
+
+  <!-- Détail contrôle -->
+  <section id="examDetail" class="screen">
+    <div class="topbar">
+      <button class="iconbtn" data-back="exams">⬅️</button>
+      <div class="bubble" style="flex:1"><div class="title" id="examHeader">contrôle</div></div>
+    </div>
+    <div class="col">
+      <div class="card" id="gotoCourse">le cours à apprendre <span>➡️</span></div>
+      <div class="card" id="openRev">fiche de révision <span>➡️</span></div>
+      <div class="card" id="genQuiz">petit quiz (auto) <span>➡️</span></div>
+      <div class="card" id="genMock">test blanc (auto) <span>➡️</span></div>
+    </div>
+  </section>
+
+  <!-- Modales / Paramètres -->
+  <dialog id="settings">
+    <div class="panel">
+      <div class="title">Paramètres</div>
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div class="chip">Mode administrateur</div>
+        <button id="adminToggle" class="btn">Se connecter</button>
+      </div>
+      <div style="height:12px"></div>
+      <div class="subtitle">Thème</div>
+      <div class="row" style="flex-wrap:wrap;gap:12px">
+        <button class="chip" data-theme="rose"   style="background:#F1DFFF">Rose</button>
+        <button class="chip" data-theme="orange" style="background:#FFC59F">Orange</button>
+        <button class="chip" data-theme="noir"   style="background:#333;color:#fff">Noir</button>
+        <button class="chip" data-theme="bleu"   style="background:#D2F0FF">Bleu</button>
+        <button class="chip" data-theme="vert"   style="background:#E4F9E2">Vert</button>
+        <button class="chip" data-theme="rouge"  style="background:#FFC1C1">Rouge</button>
+      </div>
+      <div style="height:16px"></div>
+      <button class="btn full accent" onclick="document.getElementById('settings').close()">Fermer</button>
+    </div>
+  </dialog>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
+<!-- OCR pour Quiz auto -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+/*** =========================
+ *  CONFIG FIREBASE (tes clés)
+ *  ========================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyBdfzyOuEWW7kcvPAxruh_Oxz3WJHyMBnE",
+  authDomain: "app-cours-94f32.firebaseapp.com",
+  projectId: "app-cours-94f32",
+  storageBucket: "app-cours-94f32.firebasestorage.app",
+  messagingSenderId: "519755746540",
+  appId: "1:519755746540:web:8d55f18754ce08884269c9",
+  measurementId: "G-VD89GYHJWV"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+/*** Utils ***/
+const $ = s=>document.querySelector(s);
+const app = $('#app');
+const screens = id => document.querySelectorAll('.screen').forEach(e=>e.classList.toggle('active', e.id===id));
+function toast(msg){ alert(msg); }
+function todayYMD(d=new Date()){ return d.toISOString().slice(0,10); }
+function dayLabel(d=new Date()){
+  return d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'2-digit'});
+}
+function uid(){ return Math.random().toString(36).slice(2); }
+
+let state = {
+  user:{
+    name: localStorage.getItem('name')||'',
+    track: localStorage.getItem('track')||'allemand',
+    theme: localStorage.getItem('theme')||'rose',
+    isAdmin: localStorage.getItem('isAdmin')==='1'
+  },
+  subject:null, chapter:null, date:new Date(), weekMode:false,
+  hw:null, exam:null
+};
+app.dataset.theme = state.user.theme;
+
+/*** Onboarding flow ***/
+$('#goName').onclick = ()=> screens('askName');
+$('#saveName').onclick = ()=>{
+  const v = $('#nameInput').value.trim();
+  if(!v) return toast('Écris ton prénom 😊');
+  state.user.name=v; localStorage.setItem('name',v);
+  $('#helloName').textContent = `bienvenu ${v}`;
+  screens('track');
+};
+$('#track').addEventListener('click',(e)=>{
+  const b = e.target.closest('[data-track]'); if(!b) return;
+  state.user.track = b.dataset.track; localStorage.setItem('track', state.user.track);
+  screens('tour');
+});
+$('#goTheme').onclick = ()=> screens('theme');
+document.querySelectorAll('[data-theme]').forEach(btn=>{
+  btn.onclick = ()=>{
+    const th = btn.dataset.theme;
+    app.dataset.theme = th;
+    state.user.theme = th;
+    localStorage.setItem('theme', th);
+  };
+});
+$('#goHome').onclick = ()=>{
+  if(!state.user.name) return toast('Prénom manquant.');
+  buildHome();
+  screens('home');
+};
+
+/*** Home ***/
+function buildHome(){
+  $('#hi').textContent = `Bonjour ${state.user.name}`;
+}
+$('#navCourses').onclick = loadSubjects;
+$('#navSchedule').onclick = ()=>{ buildSchedule(); screens('schedule'); };
+$('#navHw').onclick = ()=>{ loadHomework(); screens('homework'); };
+$('#navExams').onclick = ()=>{ loadExams(); screens('exams'); };
+
+$('#openSettings').onclick = ()=> $('#settings').showModal();
+document.querySelectorAll('#settings [data-theme]').forEach(b=>b.onclick=()=>{ app.dataset.theme=b.dataset.theme; localStorage.setItem('theme',b.dataset.theme) });
+
+/*** Admin ***/
+$('#adminToggle').onclick = async ()=>{
+  if(state.user.isAdmin){ state.user.isAdmin=false; localStorage.removeItem('isAdmin'); $('#adminToggle').textContent='Se connecter'; toast('Mode admin désactivé'); return; }
+  const code = prompt('Code admin ?');
+  if(code==='2525'){ state.user.isAdmin=true; localStorage.setItem('isAdmin','1'); $('#adminToggle').textContent='Déconnexion'; toast('Mode admin ON'); }
+  else toast('Mauvais code.');
+};
+
+/*** ======================
+ *   COURSES / SUBJECTS
+ *  ====================== */
+const SUBJECTS = [
+  {id:'math',label:'math',color:'#ff8a9b'},
+  {id:'francais',label:'francais',color:'#96B5FF'},
+  {id:'histoire',label:'histoire',color:'#ffa0a0'},
+  {id:'svt',label:'SVT',color:'#b5c7a3'},
+  {id:'physique',label:'Physique',color:'#F4CC8C'},
+  {id:'ses',label:'SES',color:'#DDAAFF'},
+  {id:'snt',label:'SNT',color:'#BAD7EA'},
+  {id:'anglais',label:'anglais',color:'#F7A6D0'},
+  {id:'allemand',label:'allemend',color:'#8AA0D9'},
+  {id:'espagnol',label:'espagnol',color:'#F2B39C'},
+];
+
+async function ensureSubjects(){
+  // crée la liste des matières si vide (une fois)
+  const root = db.collection('classes').doc(state.user.track).collection('subjects');
+  const snap = await root.get();
+  if(snap.empty){
+    let batch = db.batch();
+    SUBJECTS.forEach(s=>{
+      batch.set(root.doc(s.id), {label:s.label,color:s.color,order:SUBJECTS.indexOf(s)})
+    });
+    await batch.commit();
+  }
+}
+
+async function loadSubjects(){
+  await ensureSubjects();
+  const root = db.collection('classes').doc(state.user.track).collection('subjects').orderBy('order');
+  const snap = await root.get();
+  const list = $('#subjectList'); list.innerHTML='';
+  snap.forEach(doc=>{
+    const s = doc.data();
+    const div = document.createElement('div');
+    div.className='card'; div.style.background=s.color;
+    div.innerHTML = `<span style="font-size:1.2rem;font-weight:900">${s.label}</span><span>➡️</span>`;
+    div.onclick = ()=> openSubject(doc.id,s.label);
+    list.append(div);
+  });
+  screens('subjects');
+}
+
+function openSubject(subjectId,label){
+  state.subject={id:subjectId,label};
+  $('#subjectTitle').textContent = label;
+  loadChapters();
+  screens('chapters');
+}
+
+/*** Chapitres ***/
+async function loadChapters(){
+  const ref = db.collection('classes').doc(state.user.track)
+    .collection('subjects').doc(state.subject.id).collection('chapters').orderBy('createdAt','asc');
+  const snap = await ref.get();
+  const list = $('#chapterList'); list.innerHTML='';
+  snap.forEach(d=>{
+    const c = d.data();
+    const row = document.createElement('div');
+    row.className='card';
+    row.innerHTML = `<div style="font-weight:900">${c.title}</div><span>➡️</span>`;
+    row.onclick = ()=> openChapter(d.id,c.title);
+    list.append(row);
+  });
+  if(state.user.isAdmin){
+    $('#addChapterBtn').style.display='inline-flex';
+    $('#addChapterBtn').onclick = async ()=>{
+      const t = prompt('Nom du chapitre ?'); if(!t) return;
+      await ref.doc(uid()).set({title:t, createdAt:Date.now()});
+      loadChapters();
     };
+  }else $('#addChapterBtn').style.display='none';
+}
 
-    function clamp01(x){ return Math.max(0,Math.min(1,x)) }
+function openChapter(chapterId,title){
+  state.chapter={id:chapterId,title};
+  $('#chapterTitle').textContent = title;
+  loadPages();
+  screens('chapterView');
+}
 
-    // Convert hex -> hsl et l'inverse pour éclaircir/assombrir simplement
-    function hexToHsl(hex){
-      hex = hex.replace('#','');
-      if (hex.length===3) hex = hex.split('').map(c=>c+c).join('');
-      const r = parseInt(hex.slice(0,2),16)/255;
-      const g = parseInt(hex.slice(2,4),16)/255;
-      const b = parseInt(hex.slice(4,6),16)/255;
-      const max = Math.max(r,g,b), min=Math.min(r,g,b);
-      let h,s,l=(max+min)/2;
-      if (max===min){ h=s=0; }
-      else{
-        const d = max-min;
-        s = l>0.5 ? d/(2-max-min) : d/(max+min);
-        switch(max){
-          case r: h=(g-b)/d+(g<b?6:0); break;
-          case g: h=(b-r)/d+2; break;
-          case b: h=(r-g)/d+4; break;
+/*** Pages d’un chapitre (images) ***/
+async function loadPages(){
+  const grid = $('#pageGrid'); grid.innerHTML='';
+  const ref = db.collection('classes').doc(state.user.track).collection('subjects').doc(state.subject.id)
+        .collection('chapters').doc(state.chapter.id).collection('pages').orderBy('order','asc');
+  const snap = await ref.get();
+  snap.forEach(p=>{
+    const it = p.data();
+    const cell = document.createElement('div');
+    cell.className='imgcell';
+    cell.innerHTML = `<img src="${it.url}" alt=""> ${state.user.isAdmin?'<span class="x">x</span>':''}`;
+    if(state.user.isAdmin) cell.querySelector('.x').onclick = async ()=>{
+      await ref.doc(p.id).delete();
+      try{ await storage.refFromURL(it.url).delete(); }catch(e){}
+      loadPages();
+    };
+    grid.append(cell);
+  });
+
+  // ajout images
+  if(state.user.isAdmin){
+    $('#addPagesBtn').style.display='inline-flex';
+    $('#addPagesBtn').onclick = async ()=>{
+      const input = document.createElement('input');
+      input.type='file'; input.accept='image/*'; input.multiple=true;
+      input.onchange = async ()=>{
+        const files = Array.from(input.files);
+        const basePath = `classes/${state.user.track}/subjects/${state.subject.id}/chapters/${state.chapter.id}`;
+        // ordre = nb actuel + index
+        const cur = (await ref.get()).size;
+        for(let i=0;i<files.length;i++){
+          const f = files[i];
+          const path = `${basePath}/${Date.now()}-${i}-${f.name}`;
+          const snap = await storage.ref(path).put(f);
+          const url = await snap.ref.getDownloadURL();
+          await ref.doc(uid()).set({url,order:cur+i,createdAt:Date.now()});
         }
-        h/=6;
-      }
-      return {h,s,l}
-    }
-    function hslToHex(h,s,l){
-      function hue2rgb(p, q, t){
-        if (t<0) t+=1; if (t>1) t-=1;
-        if (t<1/6) return p+(q-p)*6*t;
-        if (t<1/2) return q;
-        if (t<2/3) return p+(q-p)*(2/3 - t)*6;
-        return p;
-      }
-      let r,g,b;
-      if (s===0){ r=g=b=l; }
-      else{
-        const q = l < .5 ? l*(1+s) : l+s - l*s;
-        const p = 2*l - q;
-        r = hue2rgb(p, q, h+1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h-1/3);
-      }
-      const toHex = x => ('0'+Math.round(x*255).toString(16)).slice(-2);
-      return '#'+toHex(r)+toHex(g)+toHex(b);
-    }
+        loadPages();
+      };
+      input.click();
+    };
+    $('#deleteChapterFab').style.display='grid';
+    $('#deleteChapterFab').onclick = async ()=>{
+      if(!confirm('Supprimer ce chapitre et toutes ses feuilles ?')) return;
+      // suppr pages
+      const ps = await ref.get();
+      for(const p of ps.docs){ try{ await storage.refFromURL(p.data().url).delete() }catch(e){} await p.ref.delete(); }
+      await db.collection('classes').doc(state.user.track).collection('subjects').doc(state.subject.id)
+        .collection('chapters').doc(state.chapter.id).delete();
+      screens('chapters'); loadChapters();
+    };
+  }else{
+    $('#addPagesBtn').style.display='none';
+    $('#deleteChapterFab').style.display='none';
+  }
+}
 
-    function applyTheme(mode, accentHex){
-      const a = hexToHsl(accentHex);
-      // Couleurs calculées
-      let bg, card, text;
-      if (mode === 'dark'){
-        text = '#ffffff';
-        const base = {h:a.h, s: clamp01(a.s*0.65), l: 0.18};
-        bg   = hslToHex(base.h, base.s, base.l);
-        card = hslToHex(base.h, clamp01(base.s*0.55), 0.34);
-      } else {
-        text = '#0b0b0b';
-        bg   = hslToHex(a.h, clamp01(a.s*0.35), 0.88);
-        card = hslToHex(a.h, clamp01(a.s*0.30), 0.92);
-      }
-      document.documentElement.style.setProperty('--bg', bg);
-      document.documentElement.style.setProperty('--card', card);
-      document.documentElement.style.setProperty('--text', text);
-      document.documentElement.style.setProperty('--accent', accentHex);
-      document.documentElement.style.setProperty('--outline', accentHex+'55');
-      state.theme = {mode, accent: accentHex};
-      localStorage.setItem('theme', JSON.stringify(state.theme));
-    }
+/*** ======================
+ *   EMPLOI DU TEMPS
+ *  ====================== */
+let viewDate = new Date();
+function buildSchedule(){
+  viewDate = new Date();
+  $('#dayLabel').textContent = dayLabel(viewDate);
+  renderDay();
+}
+function moveDay(delta){ viewDate.setDate(viewDate.getDate()+delta); $('#dayLabel').textContent = dayLabel(viewDate); renderDay(); }
+$('#prevDay').onclick = ()=> moveDay(-1);
+$('#nextDay').onclick = ()=> moveDay(+1);
+$('#toggleWeek').onclick = ()=>{ state.weekMode=!state.weekMode; renderDay(); };
 
-    // Appliquer le thème au chargement
-    applyTheme(state.theme.mode, state.theme.accent);
+function slotLine(t){ return `<div class="row" style="align-items:center;margin:8px 0"><div style="width:64px;font-weight:900">${t}</div><div style="flex:1;height:42px;border-radius:12px;background:var(--card)"></div></div>` }
 
-    /* --------------------- Gestion du flux / étapes --------------------- */
-    const stage = document.getElementById('stage');
-    let stepIndex = 0;
-
-    // Utilitaires anim
-    function mountStep(el){
-      el.classList.add('step','step-enter');
-      stage.appendChild(el);
-      requestAnimationFrame(()=> el.classList.add('step-enter-active'));
-    }
-    function replaceStep(nextEl){
-      const current = stage.querySelector('.step');
-      if (!current){ mountStep(nextEl); return; }
-      current.classList.remove('step-enter','step-enter-active');
-      current.classList.add('step-exit');
-      requestAnimationFrame(()=> current.classList.add('step-exit-active'));
-      current.addEventListener('transitionend', ()=> current.remove(), {once:true});
-      mountStep(nextEl);
-    }
-
-    function bubble(titleText){
-      const d = document.createElement('div');
-      d.className = 'bubble';
-      d.innerHTML = `<div class="title">${titleText}</div>`;
-      return d;
-    }
-    function cta(label, onClick){
-      const d = document.createElement('div');
-      d.className = 'cta';
-      d.role = 'button';
-      d.tabIndex = 0;
-      d.innerHTML = `<div>${label}</div><div class="arrow">➜</div>`;
-      d.addEventListener('click', onClick);
-      d.addEventListener('keypress', (e)=>{ if(e.key==='Enter' || e.key===' ') onClick(); });
-      return d;
-    }
-    function card(label, emoji){
-      const d = document.createElement('div');
-      d.className = 'card';
-      d.innerHTML = `<div class="label">${label}</div><div class="emoji">${emoji}</div>`;
-      return d;
-    }
-
-    /* --------------------------- Les étapes ---------------------------- */
-    const steps = [
-      /* 0 — Accueil */
-      () => {
-        const el = document.createElement('section');
-        el.innerHTML = '';
-        el.append(
-          (()=>{ const b=bubble(`Bienvenu dans ton espace de cours.`); b.querySelector('.title').classList.add('big-title'); return b; })(),
-          card('continuer',''),
-        );
-        el.querySelector('.card').replaceWith(
-          (()=>{ const d = document.createElement('div'); d.appendChild(cta('continuer', next)); return d; })()
-        );
-        return el;
-      },
-
-      /* 1 — Prénom */
-      () => {
-        const el = document.createElement('section');
-        const b = bubble(`quel est ton prénom ?`);
-        const input = document.createElement('input');
-        input.className = 'input';
-        input.placeholder = 'Ton prénom';
-        input.value = state.prenom;
-        input.autocapitalize = 'words';
-        input.autocomplete = 'given-name';
-        const wrap = document.createElement('div'); wrap.className='bubble'; wrap.appendChild(input);
-        el.append(b, wrap, cta('continuer', ()=> {
-          const v = input.value.trim();
-          if(!v){ input.focus(); input.style.outline='3px solid #ff7272'; setTimeout(()=>input.style.outline='',600); return; }
-          state.prenom = v;
-          localStorage.setItem('prenom', v);
-          next();
-        }));
-        setTimeout(()=>input.focus(), 100);
-        return el;
-      },
-
-      /* 2 — Allemand ou Espagnol */
-      () => {
-        const el = document.createElement('section');
-        const b = document.createElement('div'); b.className='bubble';
-        b.innerHTML = `<div class="big-title">bienvenu ${state.prenom||'à toi'}</div>
-                       <div class="title" style="margin-top:8px">tu fais ?</div>`;
-        const ch = document.createElement('div'); ch.className='choice';
-        const btnA = document.createElement('button'); btnA.textContent='Allemand';
-        const btnE = document.createElement('button'); btnE.textContent='Espagnol';
-        if(state.langue==='allemand') btnA.classList.add('active');
-        if(state.langue==='espagnol') btnE.classList.add('active');
-        btnA.onclick = ()=>{ state.langue='allemand'; btnA.classList.add('active'); btnE.classList.remove('active'); };
-        btnE.onclick = ()=>{ state.langue='espagnol'; btnE.classList.add('active'); btnA.classList.remove('active'); };
-        ch.append(btnA, btnE);
-        const go = cta('continuer', ()=>{
-          if(!state.langue){ btnA.focus(); return;}
-          localStorage.setItem('langue', state.langue);
-          next();
-        });
-        el.append(b, ch, go);
-        return el;
-      },
-
-      /* 3 — Présentation : cours */
-      () => {
-        const el = document.createElement('section');
-        el.append(
-          bubble(`tu trouvera ici tout tes cours depuis le debut de l’année`),
-          card('cours','📘'),
-          cta('continuer', next)
-        );
-        return el;
-      },
-
-      /* 4 — Présentation : emploi du temps */
-      () => {
-        const el = document.createElement('section');
-        el.append(
-          bubble(`tu trouvera aussi ton emploie du temps`),
-          card('emploie du temps','🗓️'),
-          cta('continuer', next)
-        );
-        return el;
-      },
-
-      /* 5 — Présentation : devoirs */
-      () => {
-        const el = document.createElement('section');
-        el.append(
-          bubble(`tout tes devoirs deja fais et expliquée`),
-          card('devoirs','✏️'),
-          cta('continuer', next)
-        );
-        return el;
-      },
-
-      /* 6 — Présentation : contrôles */
-      () => {
-        const el = document.createElement('section');
-        el.append(
-          bubble(`ainsi que tout tes controles a venir avec des fiches de  revisions`),
-          card('controle','📝'),
-          cta('continuer', next)
-        );
-        return el;
-      },
-
-      /* 7 — Choix du thème (aperçu immédiat) */
-      () => {
-        const el = document.createElement('section');
-        const b = bubble(`choisi des maintenant le theme de ton application`);
-        const box = document.createElement('div'); box.className='bubble';
-        // Modes
-        const modes = document.createElement('div'); modes.className='mode-row';
-        const mLight = document.createElement('button'); mLight.className='mode'; mLight.textContent='Clair';
-        const mDark  = document.createElement('button'); mDark.className='mode';  mDark.textContent='Sombre';
-        const setModeBtn = ()=>{
-          mLight.classList.toggle('active', state.theme.mode==='light');
-          mDark .classList.toggle('active', state.theme.mode==='dark');
+async function renderDay(){
+  const box = $('#daySlots'); box.innerHTML='';
+  // lignes heure “visuelles”
+  const hours = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+  box.innerHTML = hours.map(slotLine).join('');
+  // events du jour
+  const dow = viewDate.getDay(); // 0..6
+  const weekNum = Math.floor((viewDate - new Date(new Date().getFullYear(),0,1)) / 604800000);
+  const ref = db.collection('classes').doc(state.user.track).collection('schedule');
+  const snap = await ref.where('dow','==',dow).get();
+  snap.forEach(d=>{
+    const ev = d.data();
+    // récurrence: NONE / WEEKLY / BIWEEKLY
+    if(ev.recur==='WEEKLY' || (ev.recur==='BIWEEKLY' && (weekNum %2)=== (ev.weekParity||0))){
+      // rendu simple: un “pavé” dans la bonne rangée
+      const idx = hours.findIndex(h=>h===ev.start);
+      const row = $('#daySlots').children[idx];
+      if(row){
+        const pill = document.createElement('div');
+        pill.className='btn';
+        pill.style.marginLeft='12px';
+        pill.textContent = `${ev.title} - ${ev.room||''}`;
+        if(state.user.isAdmin){
+          pill.onclick = async ()=>{
+            if(confirm('Supprimer ce cours ?')){ await d.ref.delete(); renderDay(); }
+          };
         }
-        mLight.onclick=()=>{ applyTheme('light', state.theme.accent); setModeBtn(); };
-        mDark .onclick=()=>{ applyTheme('dark',  state.theme.accent); setModeBtn(); };
-        setModeBtn();
-        modes.append(mLight,mDark);
-
-        // Palette
-        const palette = document.createElement('div'); palette.className='palette';
-        const colors = ['#ffffff','#111111','#23a6ff','#ff3b30','#c084fc','#a3e635','#ff7a18','#ff59c7'];
-        colors.forEach(hex=>{
-          const s = document.createElement('button'); s.className='swatch'; s.style.background=hex;
-          s.title = hex;
-          s.onclick=()=>{ applyTheme(state.theme.mode, hex); };
-          palette.appendChild(s);
-        });
-
-        box.append(modes, palette);
-        el.append(b, box, cta('continuer', ()=> {
-          // Fin de l’onboarding : ici tu pourras rediriger vers l’app principale
-          // Pour l’instant on repart au début.
-          stepIndex = -1; // sera ++ dans next()
-          next();
-        }));
-        return el;
-      },
-    ];
-
-    function next(){
-      stepIndex++;
-      if (stepIndex >= steps.length) stepIndex = 0;
-      const node = steps[stepIndex]();
-      replaceStep(node);
-      // Focus léger sur le premier élément interactif
-      setTimeout(()=>{
-        const first = stage.querySelector('.step').querySelector('input,button,.cta');
-        if (first && first.focus) first.focus();
-      }, 50);
+        row.lastElementChild.innerHTML='';
+        row.lastElementChild.append(pill);
+      }
     }
+  });
+}
 
-    // Lancement
-    next();
-  </script>
+$('#addLessonFab').onclick = async ()=>{
+  if(!state.user.isAdmin){ toast('Admin uniquement.'); return; }
+  const title = prompt('Ex: Math'); if(!title) return;
+  const room  = prompt('Salle (ex: 208)')||'';
+  const start = prompt('Heure début (ex: 08:00)','08:00')||'08:00';
+  const recur = prompt('Récurrence? NONE / WEEKLY / BIWEEKLY','WEEKLY')||'WEEKLY';
+  const parity = recur==='BIWEEKLY' ? Number(prompt('Parité (0 ou 1)', '0')||'0') : 0;
+  const doc = {title, room, start, dow:viewDate.getDay(), recur, weekParity:parity, createdAt:Date.now()};
+  await db.collection('classes').doc(state.user.track).collection('schedule').add(doc);
+  renderDay();
+};
+
+/*** ======================
+ *   DEVOIRS
+ *  ====================== */
+async function loadHomework(){
+  const root = db.collection('classes').doc(state.user.track).collection('homework').orderBy('due','asc');
+  const snap = await root.get();
+  const list = $('#hwList'); list.innerHTML='';
+  const n = new Date(); n.setHours(0,0,0,0);
+  snap.forEach(d=>{
+    const hw = d.data();
+    const due = new Date(hw.due);
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML = `<div><div style="font-weight:900">${hw.subject} — ${due.toLocaleDateString('fr-FR',{weekday:'long'})}</div>
+                      <div class="tiny">${due.toLocaleDateString()}</div></div><span>➡️</span>`;
+    card.onclick = ()=> openHomework(d.id, hw);
+    list.append(card);
+  });
+  if(state.user.isAdmin) $('#addHw').style.display='inline-flex'; else $('#addHw').style.display='none';
+}
+$('#addHw').onclick = async ()=>{
+  if(!state.user.isAdmin) return;
+  const subject = prompt('Matière ?'); if(!subject) return;
+  const due = prompt('Date (YYYY-MM-DD)', todayYMD()) || todayYMD();
+  const root = db.collection('classes').doc(state.user.track).collection('homework');
+  await root.add({subject, due, createdAt:Date.now()});
+  loadHomework();
+};
+
+function openHomework(id, hw){
+  state.hw={id, ...hw};
+  $('#hwTitle').textContent = `${hw.subject} — ${new Date(hw.due).toLocaleDateString()}`;
+  const status = [];
+  if(!hw.enonce) status.push('Énoncé : pas encore publié');
+  if(!hw.corrSimple) status.push('Correction simple : pas encore publié');
+  if(!hw.corrExp) status.push('Correction détaillée : pas encore publié');
+  $('#hwStatus').textContent = status.length? status.join(' | ') : 'Complet ✅';
+  $('#openEnonce').onclick = ()=> openFile('homework', id, 'enonce');
+  $('#openCorrSimple').onclick = ()=> openFile('homework', id, 'corrSimple');
+  $('#openCorrExp').onclick = ()=> openFile('homework', id, 'corrExp');
+  screens('hwDetail');
+}
+async function openFile(scope, id, field){
+  const doc = await db.collection('classes').doc(state.user.track).collection(scope).doc(id).get();
+  const data = doc.data();
+  if(!data[field]){
+    if(!state.user.isAdmin) return toast('Pas encore publié.');
+    const input = document.createElement('input'); input.type='file'; input.accept='image/*,application/pdf';
+    input.onchange = async ()=>{
+      const f = input.files[0]; const path = `${scope}/${id}/${field}-${Date.now()}-${f.name}`;
+      const snap = await storage.ref(path).put(f); const url = await snap.ref.getDownloadURL();
+      await doc.ref.set({[field]:url},{merge:true}); toast('Publié ✅');
+    }; input.click();
+    return;
+  }
+  window.open(data[field], '_blank');
+}
+
+/*** ======================
+ *   CONTROLES
+ *  ====================== */
+async function loadExams(){
+  const list = $('#examList'); list.innerHTML='';
+  const snap = await db.collection('classes').doc(state.user.track).collection('exams').orderBy('date','asc').get();
+  snap.forEach(d=>{
+    const ex = d.data();
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML = `<div><div style="font-weight:900">${ex.subject}</div><div class="tiny">${new Date(ex.date).toLocaleDateString()}</div></div><span>➡️</span>`;
+    card.onclick = ()=> openExam(d.id, ex);
+    list.append(card);
+  });
+}
+$('#addExam').onclick = async ()=>{
+  if(!state.user.isAdmin) return;
+  const subject = prompt('Matière ?'); if(!subject) return;
+  const date = prompt('Date (YYYY-MM-DD)', todayYMD()); if(!date) return;
+  const chapterPath = prompt('Lien chapitre (matiereId/chapterId) ou vide'); // ex: "math/chap-1"
+  await db.collection('classes').doc(state.user.track).collection('exams').add({subject,date,chapterPath:chapterPath||'', createdAt:Date.now()});
+  loadExams();
+};
+
+function openExam(id, ex){
+  state.exam={id,...ex};
+  $('#examHeader').textContent = `${ex.subject} ${new Date(ex.date).toLocaleDateString()}`;
+  $('#gotoCourse').onclick = ()=>{
+    if(!ex.chapterPath) return toast('Pas de chapitre lié.');
+    const [sub, chap] = ex.chapterPath.split('/');
+    openSubject(sub, sub); // label naïf
+    state.subject.id=sub;
+    openChapter(chap, chap);
+  };
+  $('#openRev').onclick = ()=> openExamFolder('revisions');
+  $('#genQuiz').onclick = ()=> autoQuizOrMock('quiz');
+  $('#genMock').onclick = ()=> autoQuizOrMock('mock');
+  screens('examDetail');
+}
+
+async function openExamFolder(kind){
+  const base = `exams/${state.exam.id}/${kind}`;
+  // si admin -> uploader si vide
+  const ref = storage.ref(base);
+  try{
+    const list = await ref.listAll();
+    if(list.items.length===0 && state.user.isAdmin){
+      const input = document.createElement('input'); input.type='file'; input.accept='image/*,application/pdf'; input.multiple=true;
+      input.onchange = async ()=>{
+        for(const f of input.files){
+          await storage.ref(`${base}/${Date.now()}-${f.name}`).put(f);
+        }
+        toast('Ajouté ✅'); 
+      }; input.click();
+      return;
+    }
+    // sinon ouvrir 1ère image/ensemble
+    const urls = await Promise.all(list.items.map(x=>x.getDownloadURL()));
+    if(urls.length===1) window.open(urls[0], '_blank');
+    else {
+      // affichage simple en popup
+      const w = window.open('','_blank');
+      w.document.write('<title>Fiches</title>');
+      urls.forEach(u=> w.document.write(`<div style="margin:8px 0"><img src="${u}" style="max-width:100%"/></div>`));
+    }
+  }catch(e){ toast('Aucune fiche.'); }
+}
+
+/*** GÉNÉRATION QUIZ / TEST (BETA) à partir des fiches (OCR simple) ***/
+async function autoQuizOrMock(mode='quiz'){
+  const base = `exams/${state.exam.id}/revisions`;
+  const list = await storage.ref(base).listAll();
+  if(list.items.length===0) return toast('Ajoute d’abord des fiches de révision.');
+  const urls = await Promise.all(list.items.map(x=>x.getDownloadURL()));
+  const textChunks=[];
+  for(const u of urls){
+    try{
+      const res = await Tesseract.recognize(u,'fra',{logger:()=>{}});
+      textChunks.push(res.data.text.replace(/\s+/g,' ').trim());
+    }catch(e){}
+  }
+  const corpus = textChunks.join(' ').slice(0,8000);
+  if(!corpus) return toast('OCR illisible. Essaie avec des scans nets.');
+  // génération naïve : 6 questions à trous sur mots longs
+  const words = corpus.split(' ').filter(w=>w.length>7);
+  const qs = [];
+  for(let i=0;i<Math.min(6, words.length);i++){
+    const w = words[Math.floor(Math.random()*words.length)];
+    const sentence = `Complète : ${corpus.slice( Math.max(0, corpus.indexOf(w)-40), Math.min(corpus.length, corpus.indexOf(w)+40) ).replace(w,'_____')}`;
+    qs.push({q:sentence, a:w});
+  }
+  // rendu simple
+  const w = window.open('','_blank');
+  w.document.write(`<title>${mode==='quiz'?'Petit quiz':'Test blanc'}</title><style>body{font-family:Inter;padding:16px} .q{margin:12px 0;padding:10px;border:1px solid #ddd;border-radius:12px}</style>`);
+  qs.forEach((x,i)=> w.document.write(`<div class="q"><b>Q${i+1}.</b> ${x.q}<br><small style="opacity:.6">Réponse : ${x.a}</small></div>`));
+}
+
+/*** Navigation générique (boutons retour) ***/
+document.querySelectorAll('[data-back]').forEach(b=> b.onclick=()=> screens(b.dataset.back));
+
+/*** Démarrage ***/
+(function init(){
+  if(state.user.name){ buildHome(); screens('home'); }
+})();
+</script>
 </body>
 </html>
