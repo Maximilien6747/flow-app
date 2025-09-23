@@ -181,6 +181,356 @@
     document.addEventListener('DOMContentLoaded', refresh);
   })();
 </script>
+<!-- === PAGE 4 : Matières === -->
+<section id="page4" class="page">
+  <div class="wrap">
+    <!-- Bouton engrenage (haut-gauche) -->
+    <button id="gearBtn" class="gear-btn" aria-label="Admin">⚙️</button>
+
+    <!-- Panneau admin -->
+    <div id="adminPanel" class="admin-panel" hidden>
+      <label for="adminCode">Code admin</label>
+      <input id="adminCode" type="password" class="input-pill" placeholder="2525" />
+      <div class="row" style="gap:8px; margin-top:10px;">
+        <button class="btn-outline" id="adminValidate">Valider</button>
+        <button class="btn-outline" id="adminClose">Fermer</button>
+      </div>
+      <p id="adminMsg" class="msg"></p>
+    </div>
+
+    <ul class="subjects" id="subjectsList" aria-label="Matières"></ul>
+  </div>
+</section>
+
+<style>
+  /* ---- Styles spécifiques Page 4 ---- */
+  #page4 .gear-btn{
+    position: fixed; top: 18px; left: 18px;
+    font-size: 20px; line-height:1;
+    background:#fff; border:3px solid #000; border-radius:50%;
+    width:44px; height:44px; cursor:pointer;
+  }
+  #page4 .admin-panel{
+    position: fixed; top: 72px; left: 18px; z-index: 10;
+    background:#fff; border:3px solid #000; border-radius:16px;
+    padding:14px; width:min(280px, 92vw);
+  }
+  #page4 .admin-panel .msg{ margin:.6rem 0 0; font-weight:700 }
+  #page4 .row{ display:flex; align-items:center }
+  .subjects{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px }
+  .subject-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 18px; border-radius:22px; border:3px solid #000;
+    font-weight:800; font-size:clamp(18px,4.2vw,28px); cursor:pointer;
+  }
+  .subject-item .arrow{
+    border:3px solid #000; border-radius:999px; padding:4px 10px; font-weight:800;
+  }
+</style>
+
+<script>
+(function(){
+  // --- Sécurité admin globale (réutilisée partout)
+  function setAdminUI(on){
+    document.documentElement.setAttribute('data-admin', on ? '1' : '0');
+    try { localStorage.setItem('isAdmin', on ? '1' : '0'); } catch(e){}
+    window.APP = window.APP || { state:{} };
+    APP.state.isAdmin = !!on;
+  }
+  // init admin flag si déjà activé
+  try { setAdminUI(localStorage.getItem('isAdmin') === '1'); } catch(e){}
+
+  // --- DB par défaut (matières + chapitres)
+  const defaultDB = {
+    math:      { label:'math',      color:'#ffb0b0', chapters:[] },
+    francais:  { label:'francais',  color:'#c9d0ff', chapters:[] },
+    histoire:  { label:'histoire',  color:'#ffc999', chapters:[] },
+    svt:       { label:'s.v.t',     color:'#cfeec2', chapters:[] },
+    physique:  { label:'physique',  color:'#fff1b3', chapters:[] },
+    ses:       { label:'s.e.s',     color:'#eac6ff', chapters:[] },
+    snt:       { label:'s.n.t',     color:'#c9f0f3', chapters:[] },
+    anglais:   { label:'anglais',   color:'#ffc0da', chapters:[] },
+    allemand:  { label:'allemend',  color:'#b7a7ef', chapters:[] },
+    espagnol:  { label:'espagnol',  color:'#fde0b0', chapters:[] }
+  };
+
+  // expose DB dans APP.state
+  window.APP = window.APP || { state:{} };
+  APP.state.db = APP.state.db || (()=>{
+    try{
+      const raw = localStorage.getItem('db');
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return defaultDB;
+  })();
+
+  function saveDB(){
+    try { localStorage.setItem('db', JSON.stringify(APP.state.db)); } catch(e){}
+  }
+
+  // --- Rendu de la liste des matières
+  const list = document.getElementById('subjectsList');
+  function renderSubjects(){
+    list.innerHTML = '';
+    Object.entries(APP.state.db).forEach(([key, mat])=>{
+      const li = document.createElement('li');
+      li.className = 'subject-item';
+      li.style.background = mat.color;
+      li.innerHTML = `<span>${mat.label}</span> <span class="arrow">→</span>`;
+      li.addEventListener('click', ()=>{
+        APP.state.currentSubject = key;
+        APP.go('#chapitres');
+      });
+      list.appendChild(li);
+    });
+  }
+
+  // --- Panneau admin
+  const gearBtn = document.getElementById('gearBtn');
+  const panel   = document.getElementById('adminPanel');
+  const codeInp = document.getElementById('adminCode');
+  const btnOK   = document.getElementById('adminValidate');
+  const btnClose= document.getElementById('adminClose');
+  const msg     = document.getElementById('adminMsg');
+
+  gearBtn.addEventListener('click', ()=>{
+    panel.hidden = !panel.hidden;
+    if(!panel.hidden) codeInp.focus();
+  });
+  btnClose.addEventListener('click', ()=> panel.hidden = true);
+
+  btnOK.addEventListener('click', ()=>{
+    const ok = (codeInp.value || '').trim() === '2525';
+    if(ok){
+      setAdminUI(true);
+      msg.textContent = '✅ Admin activé';
+      msg.style.color = '#117e00';
+      setTimeout(()=> panel.hidden = true, 600);
+    }else{
+      msg.textContent = '❌ Code incorrect';
+      msg.style.color = '#c00000';
+      codeInp.select();
+    }
+  });
+  codeInp.addEventListener('keydown', e=>{ if(e.key==='Enter') btnOK.click() });
+
+  // Activer quand on affiche la page
+  document.addEventListener('app:show', e=>{
+    if(e.detail.id === 'page4') renderSubjects();
+  });
+  // Premier rendu si cette page est initiale
+  if(document.getElementById('page4')?.classList.contains('active')) renderSubjects();
+
+  // expose helpers pour autres pavés
+  APP.saveDB = saveDB;
+})();
+</script>
+<!-- === PAGE Chapitres === -->
+<section id="chapitres" class="page">
+  <div class="wrap">
+    <div class="chip" id="chipMatiere">matière</div>
+
+    <div id="chaptersList" class="chapters"></div>
+
+    <!-- Bouton admin pour ajouter un chapitre -->
+    <div class="row-center admin-only" style="margin-top:16px;">
+      <button class="btn-outline" id="addChapterBtn">+ ajouter un chapitre</button>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Styles spécifiques Chapitres */
+  #chapitres .chip{
+    display:inline-block; border:3px solid #000; border-radius:18px;
+    padding:8px 14px; font-weight:800; background:#ffd4b3;
+    margin-bottom:16px;
+  }
+  .chapters{ display:flex; flex-direction:column; gap:18px; }
+  .chapter-card{
+    background:#ff7a1a; color:#000; border:3px solid #000; border-radius:22px;
+    padding:28px; font-weight:800; font-size:clamp(18px,4.2vw,26px); cursor:pointer;
+  }
+  /* cacher admin-only si pas admin */
+  .admin-only{ display:none }
+  html[data-admin="1"] .admin-only{ display:flex }
+</style>
+
+<script>
+(function(){
+  const page = document.getElementById('chapitres');
+  if(!page) return;
+
+  const chip = document.getElementById('chipMatiere');
+  const list = document.getElementById('chaptersList');
+  const addBtn = document.getElementById('addChapterBtn');
+
+  function current(){
+    const key = (window.APP?.state?.currentSubject) || '';
+    return { key, mat: APP.state.db[key] };
+  }
+
+  function render(){
+    const { key, mat } = current();
+    if(!key || !mat){ APP.go('#page4'); return; }
+
+    chip.textContent = mat.label;
+    chip.style.background = mat.color;
+
+    list.innerHTML = '';
+    (mat.chapters || []).forEach((ch, i)=>{
+      const card = document.createElement('div');
+      card.className = 'chapter-card';
+      card.textContent = ch.title || `chapitre ${i+1}`;
+      card.addEventListener('click', ()=>{
+        APP.state.currentChapter = ch.id;
+        APP.go('#galerie');
+      });
+      list.appendChild(card);
+    });
+
+    // si aucun chapitre, on en affiche zéro (l'admin pourra en créer)
+  }
+
+  function addChapter(){
+    if(!(APP.state?.isAdmin)) return alert('Admin requis');
+    const { key, mat } = current();
+    const t = prompt('Titre du chapitre :', `chapitre ${ (mat.chapters?.length||0)+1 }`);
+    if(!t) return;
+    const ch = { id: 'ch_' + Date.now(), title: t, photos: [] };
+    mat.chapters = mat.chapters || [];
+    mat.chapters.push(ch);
+    APP.saveDB && APP.saveDB();
+    render();
+  }
+
+  addBtn.addEventListener('click', addChapter);
+
+  document.addEventListener('app:show', e=>{
+    if(e.detail.id === 'chapitres') render();
+  });
+})();
+</script>
+<!-- === PAGE Galerie === -->
+<section id="galerie" class="page">
+  <div class="wrap">
+    <div class="row" style="gap:12px; align-items:center; margin-bottom:12px;">
+      <div class="chip" id="chipMat">matière</div>
+      <div class="chip" id="chipChap">chapitre</div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+
+    <!-- Bouton flottant + (admin) -->
+    <button id="fabAdd" class="fab admin-only" aria-label="Ajouter des photos">+</button>
+    <input id="fileInput" type="file" accept="image/*" multiple hidden />
+  </div>
+</section>
+
+<style>
+  /* Styles spécifiques Galerie */
+  #galerie .chip{
+    display:inline-block; border:3px solid #000; border-radius:18px;
+    padding:8px 14px; font-weight:800; background:#ff7a1a;
+  }
+  .grid{
+    display:grid; grid-template-columns: repeat(3, minmax(0,1fr));
+    gap:16px; margin-top:8px;
+  }
+  @media (max-width:720px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  .ph{
+    aspect-ratio: 3/4; border:3px solid #ff7a1a; border-radius:16px;
+    background:#fff; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  }
+  .ph img{ width:100%; height:100%; object-fit:cover }
+  .ph.empty{ color:#ff7a1a; font-weight:700; }
+
+  .fab{
+    position: fixed; right: 22px; bottom: 22px; z-index: 20;
+    width:64px; height:64px; border-radius:50%;
+    background:#ff7a1a; border:3px solid #000; color:#000;
+    font-size:34px; font-weight:800; line-height:1; cursor:pointer;
+  }
+  .admin-only{ display:none } html[data-admin="1"] .admin-only{ display:inline-flex }
+  .row{ display:flex; }
+</style>
+
+<script>
+(function(){
+  const page = document.getElementById('galerie');
+  if(!page) return;
+
+  const chipMat  = document.getElementById('chipMat');
+  const chipChap = document.getElementById('chipChap');
+  const grid     = document.getElementById('grid');
+  const fab      = document.getElementById('fabAdd');
+  const input    = document.getElementById('fileInput');
+
+  function ctx(){
+    const sKey = APP?.state?.currentSubject;
+    const cId  = APP?.state?.currentChapter;
+    const mat  = APP.state.db[sKey];
+    const chap = (mat?.chapters || []).find(c=>c.id===cId);
+    return { sKey, cId, mat, chap };
+  }
+
+  function render(){
+    const { mat, chap } = ctx();
+    if(!mat || !chap){ APP.go('#page4'); return; }
+
+    chipMat.textContent  = mat.label;
+    chipMat.style.background = mat.color;
+    chipChap.textContent = chap.title;
+
+    grid.innerHTML = '';
+    const photos = chap.photos || [];
+    if(photos.length === 0){
+      for(let i=0;i<6;i++){
+        const ph = document.createElement('div');
+        ph.className = 'ph empty';
+        ph.textContent = ' ';
+        grid.appendChild(ph);
+      }
+    }else{
+      photos.forEach(src=>{
+        const ph = document.createElement('div'); ph.className='ph';
+        const img = new Image(); img.src = src; ph.appendChild(img);
+        grid.appendChild(ph);
+      });
+    }
+  }
+
+  // Ajout de photos (admin)
+  fab.addEventListener('click', ()=>{
+    if(!(APP.state?.isAdmin)) return alert('Admin requis');
+    input.click();
+  });
+
+  input.addEventListener('change', async (e)=>{
+    const files = [...(e.target.files || [])];
+    if(files.length===0) return;
+    const { chap } = ctx();
+    chap.photos = chap.photos || [];
+
+    // lire en base64
+    for(const f of files){
+      await new Promise((res, rej)=>{
+        const fr = new FileReader();
+        fr.onload = () => { chap.photos.push(fr.result); res(); };
+        fr.onerror = rej;
+        fr.readAsDataURL(f);
+      });
+    }
+    APP.saveDB && APP.saveDB();
+    render();
+    input.value = '';
+  });
+
+  document.addEventListener('app:show', e=>{
+    if(e.detail.id === 'galerie') render();
+  });
+})();
+</script>
 
 
   <!-- ====== CORE SCRIPT (routeur + état) ====== -->
