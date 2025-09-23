@@ -2,83 +2,179 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accueil – Espace de cours</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>App de cours</title>
+
   <style>
-    /* Reset minimal et variables */
-    * { box-sizing: border-box; }
-    :root {
-      --text: #000;
-      --bg: #fff;
-      --border: #000;
-      --radius: 22px;
-      --gap: clamp(24px, 6vw, 80px);
-      --title-size: clamp(28px, 7vw, 64px);
-      --button-font: clamp(18px, 5.5vw, 40px);
-      --button-pad-y: clamp(10px, 1.8vw, 18px);
-      --button-pad-x: clamp(18px, 4vw, 36px);
-      --button-border: 4px;
+    /* ====== CORE STYLES (commun à toutes les pages) ====== */
+    *{box-sizing:border-box}
+    :root{
+      --text:#000; --bg:#fff; --border:#000;
+      --title-size:clamp(28px,7vw,64px);
+      --btn-font:clamp(18px,4.2vw,32px);
+      --btn-pad-y:clamp(8px,1.6vw,14px);
+      --btn-pad-x:clamp(20px,4.2vw,36px);
+      --btn-border:4px;
+      --gap:clamp(24px,6vw,80px);
+    }
+    html,body{
+      height:100%; margin:0; background:var(--bg); color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
     }
 
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    }
+    .page{ display:none; }
+    .page.active{ display:block; }
 
-    /* Conteneur proche du bord gauche comme sur la maquette */
-    .wrap {
-      max-width: 820px;
-      margin-left: clamp(20px, 6vw, 48px);
-      margin-right: clamp(20px, 6vw, 48px);
-      padding-top: clamp(28px, 10vh, 120px);
+    .wrap{
+      max-width: 900px;
+      margin-left: clamp(20px,6vw,48px);
+      margin-right: clamp(20px,6vw,48px);
+      padding-top: clamp(28px,10vh,120px);
     }
+    h1{
+      font-size:var(--title-size);
+      line-height:1.1; letter-spacing:-0.02em; font-weight:800;
+      margin:0 0 var(--gap) 0; text-wrap:balance;
+    }
+    .row-center{ display:flex; justify-content:center; }
 
-    h1 {
-      font-size: var(--title-size);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      font-weight: 800;
-      margin: 0 0 var(--gap) 0;
-      text-wrap: balance;
+    .btn-outline{
+      background:#fff; color:#000;
+      border:var(--btn-border) solid var(--border);
+      border-radius:9999px;
+      padding:var(--btn-pad-y) var(--btn-pad-x);
+      font-weight:800; font-size:var(--btn-font); line-height:1;
+      cursor:pointer; text-decoration:none; display:inline-block;
+      transition:transform .08s ease;
     }
+    .btn-outline:hover{ transform:translateY(-1px) }
+    .btn-outline:active{ transform:translateY(0) }
 
-    .cta {
-      display: inline-block;
-      text-decoration: none;
-      color: var(--text);
-      background: var(--bg);
-      border: var(--button-border) solid var(--border);
-      border-radius: var(--radius);
-      padding: var(--button-pad-y) var(--button-pad-x);
-      font-weight: 800;
-      font-size: var(--button-font);
-      line-height: 1;
-      transition: transform .08s ease, box-shadow .08s ease;
-      box-shadow: 0 0 0 0 var(--text);
-      outline: none;
+    .input-pill{
+      width:min(680px,92%);
+      border:4px solid #000; border-radius:9999px;
+      padding: clamp(10px,2.2vw,18px) clamp(16px,3.6vw,28px);
+      font-size: clamp(16px,3.8vw,28px);
+      font-weight:600; outline:none;
     }
-    .cta:hover { transform: translateY(-1px); }
-    .cta:active { transform: translateY(0); }
-    .cta:focus-visible {
-      box-shadow: 0 0 0 4px #00000020, 0 0 0 8px var(--text);
-    }
+    .input-pill:focus{ box-shadow:0 0 0 4px #00000022 }
+    .input-pill.is-invalid{ border-color:#e00000; box-shadow:0 0 0 3px #e0000030 }
 
-    /* Option: centrer le bouton si tu préfères */
-    .row { display: flex; align-items: center; }
-    .row.center { justify-content: center; }
+    .sr-only{
+      position:absolute!important; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1>bienvenu dans ton<br>espace de cours</h1>
+  <noscript>Active JavaScript pour naviguer entre les pages.</noscript>
 
-    <!-- Mets "row center" si tu veux le bouton bien centré -->
-    <div class="row center">
-      <a class="cta" href="page2.html" aria-label="Continuer vers la page 2">continuer</a>
+  <!-- ====== COLLE LES PAVÉS DE PAGES ICI (dans n'importe quel ordre) ====== -->
+<!-- === PAGE 1 : Accueil === -->
+<section id="accueil" class="page">
+  <div class="wrap">
+    <h1>bienvenu dans ton<br>espace de cours</h1>
+    <div class="row-center">
+      <button class="btn-outline" data-go="#prenom" data-autofocus>continuer</button>
     </div>
-  </main>
+  </div>
+</section>
+<!-- === PAGE 2 : Prénom === -->
+<section id="prenom" class="page">
+  <div class="wrap">
+    <h1>quel est ton<br>prenom&nbsp;?</h1>
+
+    <div class="row-center" style="margin: clamp(24px, 6vh, 48px) 0;">
+      <label class="sr-only" for="prenomInput">Ton prénom</label>
+      <input id="prenomInput" class="input-pill" type="text"
+             placeholder="ton prénom" autocomplete="given-name" data-autofocus />
+    </div>
+
+    <div class="row-center">
+      <button class="btn-outline" data-action="save-prenom">continuer</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function(){
+    const page = document.getElementById('prenom');
+    if(!page) return; // Si ce pavé est retiré, rien ne s'exécute
+
+    const input = page.querySelector('#prenomInput');
+    const btn   = page.querySelector('[data-action="save-prenom"]');
+
+    function save(){
+      const val = (input.value || '').trim();
+      if(!val){ input.classList.add('is-invalid'); input.focus(); return; }
+      input.classList.remove('is-invalid');
+
+      window.APP = window.APP || { state:{} };
+      APP.state.prenom = val;
+      try { localStorage.setItem('prenom', val); } catch(e){}
+
+      // si la page bonjour existe, on y va ; sinon on reste
+      if (document.getElementById('bonjour')) APP.go('#bonjour');
+    }
+
+    btn && btn.addEventListener('click', save);
+    input && input.addEventListener('keydown', e => { if(e.key === 'Enter') save(); });
+
+    // Pré-remplissage si on a déjà un prénom
+    try{
+      const saved = (APP && APP.state && APP.state.prenom) || localStorage.getItem('prenom') || '';
+      if(saved) input.value = saved;
+    }catch(e){}
+  })();
+</script>
+
+
+  <!-- ====== CORE SCRIPT (routeur + état) ====== -->
+  <script>
+    (function(){
+      // Espace global minimal, partagé par les pages
+      window.APP = window.APP || { state: {}, go: go };
+
+      function show(id){
+        id = (id||'').replace(/^#/, '');
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(p => p.classList.toggle('active', p.id === id));
+        document.dispatchEvent(new CustomEvent('app:show', { detail:{ id } }));
+        // focus auto
+        const auto = document.querySelector('.page.active [data-autofocus]');
+        if(auto) auto.focus();
+      }
+
+      function fromHash(){
+        const hash = decodeURIComponent(location.hash || '');
+        const id = hash.replace(/^#/, '');
+        const el = id && document.getElementById(id);
+        if(el && el.classList.contains('page')) show(id);
+        else {
+          const first = document.querySelector('.page');
+          if(first) show(first.id);
+        }
+      }
+
+      // Navigation par attribut data-go (bouton ou lien)
+      document.addEventListener('click', e => {
+        const btn = e.target.closest('[data-go]');
+        if(!btn) return;
+        e.preventDefault();
+        const dest = btn.getAttribute('data-go') || btn.getAttribute('href') || '';
+        if(!dest) return;
+        location.hash = dest.startsWith('#') ? dest : '#'+dest;
+      });
+
+      window.addEventListener('hashchange', fromHash);
+
+      document.addEventListener('DOMContentLoaded', () => {
+        try { APP.state.prenom = localStorage.getItem('prenom') || ''; } catch(e){}
+        fromHash();
+      });
+
+      function go(id){ location.hash = id.startsWith('#') ? id : '#'+id; }
+    })();
+  </script>
 </body>
 </html>
