@@ -127,6 +127,60 @@
     }catch(e){}
   })();
 </script>
+<!-- === PAGE 3 : Bonjour === -->
+<section id="bonjour" class="page">
+  <div class="wrap">
+    <h1>bonjour <span id="prenomDisplay">prenom</span></h1>
+
+    <p class="lead">
+      tu retrouveras ici<br>
+      tous tes cours<br>
+      dans toutes les matières<br>
+      depuis le début de l’année
+    </p>
+
+    <div class="row-center">
+      <button class="btn-outline" data-go="#page4" data-autofocus>continuer</button>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Styles spécifiques à la page 3 (indépendants) */
+  #bonjour .lead{
+    font-weight: 700;
+    font-size: clamp(18px, 4.8vw, 34px);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0 0 clamp(24px, 6vh, 48px) 0;
+    max-width: 32ch;
+  }
+</style>
+
+<script>
+  (function(){
+    const page = document.getElementById('bonjour');
+    if(!page) return; // si tu retires ce pavé, rien ne plante
+
+    const span = page.querySelector('#prenomDisplay');
+
+    function refresh(){
+      let v = 'prenom';
+      try {
+        v = (window.APP && APP.state && APP.state.prenom) || localStorage.getItem('prenom') || 'prenom';
+      } catch(e){}
+      span.textContent = v;
+    }
+
+    // Quand on affiche cette page, on met à jour le prénom
+    document.addEventListener('app:show', (e) => {
+      if(e.detail && e.detail.id === 'bonjour') refresh();
+    });
+
+    // Et au premier chargement
+    document.addEventListener('DOMContentLoaded', refresh);
+  })();
+</script>
 
 
   <!-- ====== CORE SCRIPT (routeur + état) ====== -->
