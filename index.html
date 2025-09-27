@@ -1,508 +1,192 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>App de cours</title>
-  <style>
-    /* ========= CORE STYLES ========= */
-    *{ box-sizing:border-box }
-    :root{
-      --text:#000; --bg:#fff; --border:#000;
-      --title-size:clamp(28px,7vw,64px);
-      --btn-font:clamp(18px,4.2vw,32px);
-      --btn-pad-y:clamp(8px,1.6vw,14px);
-      --btn-pad-x:clamp(20px,4.2vw,36px);
-      --btn-border:4px;
-      --gap:clamp(24px,6vw,80px);
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'App de Cours',
+      theme: ThemeData(primarySwatch: Colors.deepPurple),
+      home: const CoursesPage(),
+    );
+  }
+}
+
+class CoursesPage extends StatelessWidget {
+  const CoursesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("📚 Liste des cours"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              final code = await showDialog<String>(
+                context: context,
+                builder: (ctx) {
+                  final controller = TextEditingController();
+                  return AlertDialog(
+                    title: const Text("Code secret"),
+                    content: TextField(
+                      controller: controller,
+                      obscureText: true,
+                      decoration: const InputDecoration(hintText: "Entrer le code"),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, controller.text),
+                        child: const Text("OK"),
+                      )
+                    ],
+                  );
+                },
+              );
+              if (code == "2525") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddCoursePage()),
+                );
+              }
+            },
+          )
+        ],
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection("courses").snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          final docs = snapshot.data!.docs;
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (ctx, i) {
+              final course = docs[i];
+              return ListTile(
+                title: Text(course['title']),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CourseGalleryPage(courseId: course.id),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class CourseGalleryPage extends StatelessWidget {
+  final String courseId;
+  const CourseGalleryPage({super.key, required this.courseId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("🖼 Galerie du cours")),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection("courses")
+            .doc(courseId)
+            .collection("images")
+            .orderBy("timestamp", descending: false)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          final docs = snapshot.data!.docs;
+          return GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+            itemCount: docs.length,
+            itemBuilder: (ctx, i) {
+              final url = docs[i]['url'];
+              return Image.network(url, fit: BoxFit.cover);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class AddCoursePage extends StatefulWidget {
+  const AddCoursePage({super.key});
+  @override
+  State<AddCoursePage> createState() => _AddCoursePageState();
+}
+
+class _AddCoursePageState extends State<AddCoursePage> {
+  final titleController = TextEditingController();
+  final picker = ImagePicker();
+  List<File> selectedImages = [];
+
+  Future<void> pickImages() async {
+    final picked = await picker.pickMultiImage();
+    if (picked != null) {
+      setState(() {
+        selectedImages = picked.map((e) => File(e.path)).toList();
+      });
     }
-    html,body{
-      height:100%; margin:0; background:var(--bg); color:var(--text);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
-    }
-    .page{ display:none } .page.active{ display:block }
+  }
 
-    .wrap{
-      max-width: 1000px;
-      margin-left: clamp(20px,6vw,48px);
-      margin-right: clamp(20px,6vw,48px);
-      padding-top: clamp(28px,10vh,120px);
-    }
-    h1{
-      font-size:var(--title-size);
-      line-height:1.1; letter-spacing:-0.02em; font-weight:800;
-      margin:0 0 var(--gap) 0; text-wrap:balance;
-    }
-    .row{ display:flex; align-items:center }
-    .center{ justify-content:center }
+  Future<void> uploadCourse() async {
+    final title = titleController.text;
+    if (title.isEmpty || selectedImages.isEmpty) return;
 
-    .btn-outline{
-      background:#fff; color:#000;
-      border:var(--btn-border) solid var(--border);
-      border-radius:9999px;
-      padding:var(--btn-pad-y) var(--btn-pad-x);
-      font-weight:800; font-size:var(--btn-font); line-height:1;
-      cursor:pointer; text-decoration:none; display:inline-block;
-      transition:transform .08s ease;
-    }
-    .btn-outline:hover{ transform:translateY(-1px) }
-    .btn-outline:active{ transform:translateY(0) }
+    final courseRef = await FirebaseFirestore.instance.collection("courses").add({"title": title});
 
-    .input-pill{
-      width:min(680px,92%);
-      border:4px solid #000; border-radius:9999px;
-      padding: clamp(10px,2.2vw,18px) clamp(16px,3.6vw,28px);
-      font-size: clamp(16px,3.8vw,28px);
-      font-weight:600; outline:none;
-    }
-    .input-pill:focus{ box-shadow:0 0 0 4px #00000022 }
-    .input-pill.is-invalid{ border-color:#e00000; box-shadow:0 0 0 3px #e0000030 }
-
-    .chip{
-      display:inline-block; border:3px solid #000; border-radius:18px;
-      padding:8px 14px; font-weight:800; background:#ffd4b3;
-    }
-    .sr-only{
-      position:absolute!important; width:1px; height:1px; padding:0; margin:-1px;
-      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
-    }
-    .admin-only{ display:none }
-    html[data-admin="1"] .admin-only{ display:flex }
-
-    /* ========= PAGE 4 (matières) ========= */
-    #page4 .gear-btn{
-      position: fixed; top: 18px; left: 18px;
-      font-size: 20px; line-height:1;
-      background:#fff; border:3px solid #000; border-radius:50%;
-      width:44px; height:44px; cursor:pointer; z-index: 20;
-    }
-    #page4 .admin-panel{
-      position: fixed; top: 72px; left: 18px; z-index: 30;
-      background:#fff; border:3px solid #000; border-radius:16px;
-      padding:14px; width:min(280px, 92vw);
-    }
-    #page4 .subjects{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px }
-    #page4 .subject-item{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 18px; border-radius:22px; border:3px solid #000;
-      font-weight:800; font-size:clamp(18px,4.2vw,28px); cursor:pointer;
-    }
-    #page4 .arrow{ border:3px solid #000; border-radius:999px; padding:4px 10px; font-weight:800 }
-
-    /* ========= Chapitres ========= */
-    #chapitres .chapters{ display:flex; flex-direction:column; gap:18px }
-    #chapitres .chapter-card{
-      background:#ff7a1a; color:#000; border:3px solid #000; border-radius:22px;
-      padding:28px; font-weight:800; font-size:clamp(18px,4.2vw,26px); cursor:pointer;
-    }
-
-    /* ========= Galerie ========= */
-    #galerie .grid{
-      display:grid; grid-template-columns: repeat(3, minmax(0,1fr));
-      gap:16px; margin-top:8px;
-    }
-    @media (max-width:720px){ #galerie .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
-    #galerie .ph{
-      aspect-ratio: 3/4; border:3px solid #ff7a1a; border-radius:16px;
-      background:#fff; overflow:hidden; display:flex; align-items:center; justify-content:center;
-    }
-    #galerie .ph img{ width:100%; height:100%; object-fit:cover }
-    #galerie .ph.empty{ color:#ff7a1a; font-weight:700 }
-
-    #galerie .fab{
-      position: fixed; right: 22px; bottom: 22px; z-index: 40;
-      width:64px; height:64px; border-radius:50%;
-      background:#ff7a1a; border:3px solid #000; color:#000;
-      font-size:34px; font-weight:800; line-height:1; cursor:pointer;
-      align-items:center; justify-content:center;
-    }
-  </style>
-</head>
-<body>
-  <noscript>Active JavaScript pour naviguer entre les pages.</noscript>
-
-  <!-- ======= PAGE 1 : Accueil ======= -->
-  <section id="page1" class="page active">
-    <div class="wrap">
-      <h1>bienvenu dans ton<br>espace de cours</h1>
-      <div class="row center">
-        <button class="btn-outline" data-go="#page2" data-autofocus>continuer</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======= PAGE 2 : Prénom ======= -->
-  <section id="page2" class="page">
-    <div class="wrap">
-      <h1>quel est ton<br>prenom&nbsp;?</h1>
-      <div class="row center" style="margin: clamp(24px, 6vh, 48px) 0;">
-        <label class="sr-only" for="prenomInput">Ton prénom</label>
-        <input id="prenomInput" class="input-pill" type="text" placeholder="ton prénom"
-               autocomplete="given-name" data-autofocus />
-      </div>
-      <div class="row center">
-        <button class="btn-outline" id="btnPrenom">continuer</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======= PAGE 3 : Bonjour ======= -->
-  <section id="page3" class="page">
-    <div class="wrap">
-      <h1>bonjour <span id="prenomDisplay">prenom</span></h1>
-      <p class="lead" style="font-weight:700;font-size:clamp(18px,4.8vw,34px);line-height:1.25;letter-spacing:-0.01em;max-width:32ch;margin:0 0 clamp(24px,6vh,48px) 0;">
-        tu retrouveras ici<br>tous tes cours<br>dans toutes les matières<br>depuis le début de l’année
-      </p>
-      <div class="row center">
-        <button class="btn-outline" data-go="#page4" data-autofocus>continuer</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======= PAGE 4 : Matières (+ admin) ======= -->
-  <section id="page4" class="page">
-    <div class="wrap">
-      <button id="gearBtn" class="gear-btn" aria-label="Admin">⚙️</button>
-
-      <div id="adminPanel" class="admin-panel" hidden>
-        <label for="adminCode">Code admin</label>
-        <input id="adminCode" type="password" class="input-pill" placeholder="2525" />
-        <div class="row" style="gap:8px; margin-top:10px;">
-          <button class="btn-outline" id="adminValidate">Valider</button>
-          <button class="btn-outline" id="adminClose">Fermer</button>
-        </div>
-        <p id="adminMsg" style="font-weight:700;margin:.6rem 0 0"></p>
-      </div>
-
-      <ul class="subjects" id="subjectsList" aria-label="Matières"></ul>
-    </div>
-  </section>
-
-  <!-- ======= PAGE Chapitres ======= -->
-  <section id="chapitres" class="page">
-    <div class="wrap">
-      <div class="chip" id="chipMatiere">matière</div>
-      <div id="chaptersList" class="chapters" style="margin-top:12px;"></div>
-      <div class="row center admin-only" style="margin-top:16px;">
-        <button class="btn-outline" id="addChapterBtn">+ ajouter un chapitre</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======= PAGE Galerie ======= -->
-  <section id="galerie" class="page">
-    <div class="wrap">
-      <div class="row" style="gap:12px; align-items:center; margin-bottom:12px;">
-        <div class="chip" id="chipMat">matière</div>
-        <div class="chip" id="chipChap">chapitre</div>
-      </div>
-      <div id="grid" class="grid"></div>
-
-      <button id="fabAdd" class="fab admin-only" aria-label="Ajouter des photos">+</button>
-      <input id="fileInput" type="file" accept="image/*" multiple hidden />
-    </div>
-  </section>
-
-  <!-- ========= APP SCRIPT + FIREBASE ========= -->
-  <script type="module">
-    /* ---------- Firebase ---------- */
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getFirestore, doc, setDoc, getDoc, collection, getDocs,
-      addDoc, onSnapshot, query, orderBy, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import {
-      getStorage, ref as sRef, uploadBytes, getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-    const firebaseConfig = {
-      // ⬅︎ ta config ici (console.firebase.google.com > web app)
-      apiKey: "",
-      authDomain: "",
-      projectId: "",
-      storageBucket: "",
-      appId: ""
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    /* ---------- Etat global + Router ---------- */
-    const APP = {
-      state: { isAdmin:false, prenom:"", currentSubject:null, currentSubjectDoc:null, currentChapterId:null, currentChapterDoc:null },
-      go, // navigation
-    };
-    window.APP = APP;
-
-    function show(id){
-      id = (id||'').replace(/^#/, '');
-      document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
-      document.dispatchEvent(new CustomEvent('app:show', { detail:{ id } }));
-      // focus auto
-      const auto = document.querySelector('.page.active [data-autofocus]');
-      if(auto) auto.focus();
-    }
-    function fromHash(){
-      const id = (location.hash || '#page1').replace(/^#/, '');
-      const el = document.getElementById(id);
-      show(el ? id : 'page1');
-    }
-    function go(id){ location.hash = id.startsWith('#') ? id : '#'+id; }
-    window.addEventListener('hashchange', fromHash);
-    document.addEventListener('click', e=>{
-      const t = e.target.closest('[data-go]');
-      if(!t) return;
-      e.preventDefault();
-      go(t.getAttribute('data-go'));
-    });
-
-    /* ---------- Admin ---------- */
-    function setAdmin(on){
-      document.documentElement.setAttribute('data-admin', on ? '1' : '0');
-      localStorage.setItem('isAdmin', on ? '1' : '0');
-      APP.state.isAdmin = !!on;
-    }
-    setAdmin(localStorage.getItem('isAdmin') === '1');
-
-    // Panel admin (page4)
-    const gearBtn = document.getElementById('gearBtn');
-    const adminPanel = document.getElementById('adminPanel');
-    const adminCode  = document.getElementById('adminCode');
-    const adminValidate = document.getElementById('adminValidate');
-    const adminClose = document.getElementById('adminClose');
-    const adminMsg   = document.getElementById('adminMsg');
-    gearBtn?.addEventListener('click', ()=>{ adminPanel.hidden = !adminPanel.hidden; if(!adminPanel.hidden) adminCode.focus(); });
-    adminClose?.addEventListener('click', ()=> adminPanel.hidden = true);
-    adminValidate?.addEventListener('click', ()=>{
-      const ok = (adminCode.value||'').trim() === '2525';
-      adminMsg.textContent = ok ? '✅ Admin activé' : '❌ Code incorrect';
-      adminMsg.style.color = ok ? '#117e00' : '#c00000';
-      if(ok){ setAdmin(true); setTimeout(()=>adminPanel.hidden=true, 600); }
-    });
-    adminCode?.addEventListener('keydown', e=>{ if(e.key==='Enter') adminValidate.click(); });
-
-    /* ---------- Données de base (matières) ---------- */
-    const SUBJECTS = {
-      math:     { label:'math',     color:'#ffb0b0' },
-      francais: { label:'francais', color:'#c9d0ff' },
-      histoire: { label:'histoire', color:'#ffc999' },
-      svt:      { label:'s.v.t',    color:'#cfeec2' },
-      physique: { label:'physique', color:'#fff1b3' },
-      ses:      { label:'s.e.s',    color:'#eac6ff' },
-      snt:      { label:'s.n.t',    color:'#c9f0f3' },
-      anglais:  { label:'anglais',  color:'#ffc0da' },
-      allemand: { label:'allemend', color:'#b7a7ef' },
-      espagnol: { label:'espagnol', color:'#fde0b0' }
-    };
-
-    // S'assure que les docs "subjects" existent (id stable = clé)
-    async function ensureSubjects(){
-      await Promise.all(Object.entries(SUBJECTS).map(async ([id, s])=>{
-        const d = doc(db, 'subjects', id);
-        const snap = await getDoc(d);
-        if(!snap.exists()){
-          await setDoc(d, { label: s.label, color: s.color, createdAt: serverTimestamp() }, { merge:true });
-        }
-      }));
-    }
-
-    /* ---------- Page 1/2/3 : prénom & enchaînement ---------- */
-    const prenomInput = document.getElementById('prenomInput');
-    const btnPrenom   = document.getElementById('btnPrenom');
-    const prenomDisplay = document.getElementById('prenomDisplay');
-
-    function loadPrenom(){
-      APP.state.prenom = localStorage.getItem('prenom') || '';
-      if(prenomInput) prenomInput.value = APP.state.prenom;
-      if(prenomDisplay) prenomDisplay.textContent = APP.state.prenom || 'prenom';
-    }
-    function savePrenom(){
-      const v = (prenomInput.value||'').trim();
-      if(!v){ prenomInput.classList.add('is-invalid'); prenomInput.focus(); return; }
-      prenomInput.classList.remove('is-invalid');
-      APP.state.prenom = v;
-      localStorage.setItem('prenom', v);
-      prenomDisplay.textContent = v;
-      go('#page3');
-    }
-    btnPrenom?.addEventListener('click', savePrenom);
-    prenomInput?.addEventListener('keydown', e=>{ if(e.key==='Enter') savePrenom(); });
-
-    /* ---------- Page 4 : matières ---------- */
-    const subjectsList = document.getElementById('subjectsList');
-
-    async function renderSubjects(){
-      await ensureSubjects();
-      const snap = await getDocs(collection(db,'subjects'));
-      const items = [];
-      snap.forEach(d=> items.push({ id:d.id, ...d.data() }));
-      // fallback si vide
-      if(items.length===0){
-        Object.entries(SUBJECTS).forEach(([id, s])=> items.push({ id, ...s }));
-      }
-      subjectsList.innerHTML = '';
-      items.forEach(s=>{
-        const li = document.createElement('li');
-        li.className = 'subject-item';
-        li.style.background = s.color || '#eee';
-        li.innerHTML = `<span>${s.label}</span><span class="arrow">→</span>`;
-        li.addEventListener('click', ()=>{
-          APP.state.currentSubject = s.id;
-          APP.state.currentSubjectDoc = s;
-          go('#chapitres');
-        });
-        subjectsList.appendChild(li);
+    for (var img in selectedImages) {
+      final ref = FirebaseStorage.instance.ref().child("courses/${courseRef.id}/${DateTime.now().millisecondsSinceEpoch}.jpg");
+      await ref.putFile(img);
+      final url = await ref.getDownloadURL();
+      await courseRef.collection("images").add({
+        "url": url,
+        "timestamp": FieldValue.serverTimestamp(),
       });
     }
 
-    /* ---------- Page Chapitres ---------- */
-    const chipMatiere  = document.getElementById('chipMatiere');
-    const chaptersList = document.getElementById('chaptersList');
-    const addChapterBtn= document.getElementById('addChapterBtn');
-    let unsubscribeChapters = null;
+    Navigator.pop(context);
+  }
 
-    function stopChaptersListener(){ if(unsubscribeChapters){ unsubscribeChapters(); unsubscribeChapters=null; } }
-
-    function currentSubjectInfo(){
-      const sid = APP.state.currentSubject;
-      if(!sid) return null;
-      const sDoc = APP.state.currentSubjectDoc || SUBJECTS[sid] || { label:sid, color:'#eee' };
-      return { sid, sDoc };
-    }
-
-    async function renderChapters(){
-      stopChaptersListener();
-      const info = currentSubjectInfo();
-      if(!info){ go('#page4'); return; }
-
-      chipMatiere.textContent = info.sDoc.label;
-      chipMatiere.style.background = info.sDoc.color || '#ffd4b3';
-      chaptersList.innerHTML = '';
-
-      const qRef = query(collection(db,'subjects',info.sid,'chapters'), orderBy('createdAt','asc'));
-      unsubscribeChapters = onSnapshot(qRef, (qSnap)=>{
-        chaptersList.innerHTML = '';
-        if(qSnap.empty){
-          // Rien encore (l’admin peut ajouter)
-          return;
-        }
-        qSnap.forEach(d=>{
-          const ch = { id: d.id, ...d.data() };
-          const card = document.createElement('div');
-          card.className = 'chapter-card';
-          card.textContent = ch.title || 'chapitre';
-          card.addEventListener('click', ()=>{
-            APP.state.currentChapterId = ch.id;
-            APP.state.currentChapterDoc = ch;
-            go('#galerie');
-          });
-          chaptersList.appendChild(card);
-        });
-      });
-    }
-
-    async function addChapter(){
-      if(!APP.state.isAdmin){ alert('Admin requis'); return; }
-      const info = currentSubjectInfo();
-      if(!info) return;
-      const title = prompt('Titre du chapitre :', 'chapitre 1');
-      if(!title) return;
-      await addDoc(collection(db,'subjects',info.sid,'chapters'), {
-        title, createdAt: serverTimestamp()
-      });
-    }
-    addChapterBtn?.addEventListener('click', addChapter);
-
-    /* ---------- Page Galerie ---------- */
-    const chipMat  = document.getElementById('chipMat');
-    const chipChap = document.getElementById('chipChap');
-    const grid     = document.getElementById('grid');
-    const fabAdd   = document.getElementById('fabAdd');
-    const fileInput= document.getElementById('fileInput');
-    let unsubscribePhotos = null;
-    function stopPhotosListener(){ if(unsubscribePhotos){ unsubscribePhotos(); unsubscribePhotos=null; } }
-
-    function currentChapterInfo(){
-      const s = currentSubjectInfo();
-      if(!s) return null;
-      const cid = APP.state.currentChapterId;
-      const cDoc = APP.state.currentChapterDoc || null;
-      return { ...s, cid, cDoc };
-    }
-
-    function renderPlaceholders(n=6){
-      for(let i=0;i<n;i++){
-        const ph = document.createElement('div');
-        ph.className = 'ph empty';
-        ph.textContent = ' ';
-        grid.appendChild(ph);
-      }
-    }
-
-    async function renderGallery(){
-      stopPhotosListener();
-      const ctx = currentChapterInfo();
-      if(!ctx || !ctx.cid){ go('#chapitres'); return; }
-
-      chipMat.textContent = ctx.sDoc.label;
-      chipMat.style.background = ctx.sDoc.color || '#ffd4b3';
-      chipChap.textContent = ctx.cDoc?.title || 'chapitre';
-
-      grid.innerHTML = '';
-
-      const qRef = query(collection(db,'subjects',ctx.sid,'chapters',ctx.cid,'photos'), orderBy('createdAt','asc'));
-      unsubscribePhotos = onSnapshot(qRef, (qSnap)=>{
-        grid.innerHTML = '';
-        if(qSnap.empty){ renderPlaceholders(); return; }
-        qSnap.forEach(d=>{
-          const p = d.data();
-          const cell = document.createElement('div'); cell.className = 'ph';
-          const img = new Image(); img.src = p.url; cell.appendChild(img);
-          grid.appendChild(cell);
-        });
-      });
-    }
-
-    fabAdd?.addEventListener('click', ()=>{
-      if(!APP.state.isAdmin){ alert('Admin requis'); return; }
-      fileInput.click();
-    });
-
-    fileInput?.addEventListener('change', async (e)=>{
-      const files = [...(e.target.files || [])];
-      if(files.length===0) return;
-      const ctx = currentChapterInfo();
-      if(!ctx) return;
-
-      for(const f of files){
-        const path = `subjects/${ctx.sid}/chapters/${ctx.cid}/${Date.now()}_${f.name}`;
-        const r = sRef(storage, path);
-        await uploadBytes(r, f);
-        const url = await getDownloadURL(r);
-        await addDoc(collection(db,'subjects',ctx.sid,'chapters',ctx.cid,'photos'), {
-          url, storagePath: path, createdAt: serverTimestamp()
-        });
-      }
-      fileInput.value = '';
-    });
-
-    /* ---------- Hooks d’affichage des pages ---------- */
-    document.addEventListener('app:show', (e)=>{
-      switch(e.detail.id){
-        case 'page1': break;
-        case 'page2': loadPrenom(); break;
-        case 'page3': loadPrenom(); break;
-        case 'page4': renderSubjects(); break;
-        case 'chapitres': renderChapters(); break;
-        case 'galerie': renderGallery(); break;
-      }
-    });
-
-    /* ---------- Boot ---------- */
-    document.addEventListener('DOMContentLoaded', ()=>{
-      loadPrenom();
-      fromHash();
-    });
-  </script>
-</body>
-</html>
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("➕ Ajouter un cours")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(controller: titleController, decoration: const InputDecoration(labelText: "Titre du cours")),
+            const SizedBox(height: 10),
+            ElevatedButton(onPressed: pickImages, child: const Text("Sélectionner des images")),
+            const SizedBox(height: 10),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+                itemCount: selectedImages.length,
+                itemBuilder: (ctx, i) => Image.file(selectedImages[i], fit: BoxFit.cover),
+              ),
+            ),
+            ElevatedButton(onPressed: uploadCourse, child: const Text("Enregistrer le cours")),
+          ],
+        ),
+      ),
+    );
+  }
+}
